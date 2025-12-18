@@ -1,0 +1,29 @@
+{
+    "HomePage": {
+        "title": "SaaS Inventory System",
+        "login": "Login",
+        "register": "Register"
+    },
+    "Dashboard": {
+        "title": "Dashboard",
+        "dashboard": "Dashboard",
+        "products": "Products",
+        "warehouses": "Warehouses",
+        "sales": "Sales",
+        "purchases": "Purchases",
+        "invoices": "Invoices",
+        "expenses": "Expenses",
+        "settings": "Settings",
+        "welcome": "Welcome back"
+    },
+    "Common": {
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel",
+        "actions": "Actions",
+        "total": "Total",
+        "date": "Date"
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "Dashboard": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "warehouses": "المخازن",
+    "sales": "المبيعات",
+    "purchases": "المشتريات",
+    "invoices": "الفواتير",
+    "expenses": "المصروفات",
+    "settings": "الإعدادات"
+  },
+  "Common": {
+    "welcome": "مرحباً",
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "success": "تم بنجاح",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية"
+  }
+}
+
