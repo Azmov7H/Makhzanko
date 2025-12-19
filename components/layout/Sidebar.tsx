@@ -19,9 +19,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ThemeToggle } from "./Toggel";
+
+
 
 const NAV_ITEMS = [
     { label: "لوحة التحكم", href: "/dashboard", icon: LayoutDashboard },
@@ -115,36 +115,4 @@ function NavContent({ mobile = false }: { mobile?: boolean }) {
     );
 }
 
-function ThemeToggle() {
-    const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) {
-        return <div className="h-9 w-9" />;
-    }
-
-    return (
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="w-full justify-start gap-3"
-        >
-            {theme === "dark" ? (
-                <>
-                    <Sun className="h-4 w-4" />
-                    <span>الوضع النهاري</span>
-                </>
-            ) : (
-                <>
-                    <Moon className="h-4 w-4" />
-                    <span>الوضع الليلي</span>
-                </>
-            )}
-        </Button>
-    );
-}

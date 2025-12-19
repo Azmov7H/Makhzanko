@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
+
+/* =========================
+   CSS Variables (Design Tokens)
+========================= */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --color-primary: #46ec13;
+
+  --bg-light: #f6f8f6;
+  --bg-dark: #142210;
+
+  --surface-dark: #1e271c;
+  --border-dark: #2c3928;
+
+  --text-primary: #079d11;
+  --text-secondary: #637588;
+
+  /* Radius */
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* =========================
+   Dark Mode Overrides
+========================= */
+.dark {
+  --bg-light: #142210;
+  --text-primary: #ffffff;
+  --text-secondary: #a3b99d;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* =========================
+   Base Styles
+========================= */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Manrope", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  transition: background-color var(--transition-base),
+    color var(--transition-base);
+}
+
+/* =========================
+   RTL Support (Arabic First)
+========================= */
+html[lang="ar"],
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Fix icons & numbers in RTL */
+[dir="rtl"] .material-symbols-outlined {
+  direction: ltr;
+}
+
+/* =========================
+   Typography Helpers
+========================= */
+.heading {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.subheading {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+/* =========================
+   Cards & Surfaces
+========================= */
+.surface {
+  background-color: white;
+  border-radius: var(--radius-md);
+  transition: transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.dark .surface {
+  background-color: var(--surface-dark);
+}
+
+.surface-hover:hover {
+  transform: translateY(-4px);
+}
+
+/* =========================
+   Buttons
+========================= */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #142210;
+  font-weight: 700;
+  border-radius: var(--radius-lg);
+  transition: opacity var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 25px rgba(70, 236, 19, 0.5);
+}
+
+.btn-outline {
+  border: 2px solid #e5e7eb;
+  border-radius: var(--radius-lg);
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.dark .btn-outline {
+  border-color: var(--border-dark);
+}
+
+/* =========================
+   Scrollbar Styling
+========================= */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.3);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(163, 185, 157, 0.3);
+}
+
+/* =========================
+   Selection
+========================= */
+::selection {
+  background-color: rgba(70, 236, 19, 0.25);
+}
+
+/* =========================
+   Utility Enhancements
+========================= */
+.transition-base {
+  transition: all var(--transition-base);
+}
+
+.glass {
+  backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+.dark .glass {
+  background-color: rgba(30, 39, 28, 0.85);
 }
