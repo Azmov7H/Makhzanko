@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkLimit } from "@/lib/limits";
 
-export async function createWarehouseAction(formData: FormData) {
+export async function createWarehouseAction(prevState: any, formData: FormData) {
     const context = await getTenantContext();
 
     const name = formData.get("name") as string;

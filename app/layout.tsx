@@ -4,16 +4,19 @@ import "./globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
-import { ThemeProvider } from "@/components/providers/theme-provider";
 
-import { Tajawal } from "next/font/google";
+import { Tajawal, Manrope } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
 });
-
+export const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
+})
 export const metadata: Metadata = {
   title: "مخزنكو - نظام إدارة المخازن والمحاسبة",
   description: "نظام متعدد المستأجرين لإدارة المخازن والمحاسبة والمبيعات",
@@ -24,16 +27,16 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale?: string }>;
 }) {
-  const { locale } = params;
+  const { locale = "ar" } = await params;
   const messages = await getMessages({ locale });
 
   const isRTL = locale === "ar";
 
   return (
-    <html  lang={locale} dir={isRTL ? "rtl" : "ltr"} suppressHydrationWarning>
-      <body className={`${tajawal.className} antialiased`}>
+    <html lang={locale} dir={isRTL ? "rtl" : "ltr"} suppressHydrationWarning>
+      <body className={`${tajawal.className} ${manrope.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -45,6 +48,6 @@ export default async function RootLayout({
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>
-    </html>
+    </html >
   );
 }

@@ -6,10 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function AuditListPage() {
     const auth = await getAuthPayload();
     if (!auth?.tenantId) redirect("/login");
+
+    const t = await getTranslations("Inventory");
 
     const audits = await db.inventoryCount.findMany({
         where: { tenantId: auth.tenantId },
@@ -21,12 +24,12 @@ export default async function AuditListPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Inventory Audits</h1>
-                    <p className="text-muted-foreground text-sm">Perform physical inventory counts and adjustments.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+                    <p className="text-muted-foreground text-sm">{t("description")}</p>
                 </div>
                 <Button asChild>
                     <Link href="/dashboard/inventory/audits/new">
-                        <Plus className="mr-2 h-4 w-4" /> New Audit
+                        <Plus className="mr-2 h-4 w-4" /> {t("new_audit")}
                     </Link>
                 </Button>
             </div>
@@ -35,17 +38,17 @@ export default async function AuditListPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Warehouse</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead>{t("date")}</TableHead>
+                            <TableHead>{t("warehouse")}</TableHead>
+                            <TableHead>{t("status")}</TableHead>
+                            <TableHead className="text-right">{t("action")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {audits.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={4} className="h-24 text-center">
-                                    No audits found.
+                                    {t("no_audits")}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -61,7 +64,7 @@ export default async function AuditListPage() {
                                     <TableCell className="text-right">
                                         <Button asChild variant="ghost" size="sm">
                                             <Link href={`/dashboard/inventory/audits/${audit.id}`}>
-                                                {audit.status === "COMPLETED" ? "View Results" : "Continue Count"}
+                                                {audit.status === "COMPLETED" ? t("view_results") : t("continue_count")}
                                             </Link>
                                         </Button>
                                     </TableCell>

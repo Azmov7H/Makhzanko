@@ -4,36 +4,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl";
 
 export default async function LedgerPage(props: { params: Promise<{ accountId: string; locale: string }> }) {
     const params = await props.params;
-
     const { accountId } = params;
+
+    const t = await getTranslations("Accounting");
+    const tc = await getTranslations("Common");
 
     const data = await getAccountLedger(accountId);
 
-    if (!data) return <div>Account not found</div>;
+    if (!data) return <div className="p-8 text-center">{t("account_not_found")}</div>;
 
     const { account, transactions } = data;
 
-    // Calculate running balance? 
-    // Usually Ledger shows running balance.
-    // For MVP, lets just list them.
-
-    let balance = 0;
-    const items = transactions.reverse().map(tx => {
-        if (["ASSET", "EXPENSE"].includes(account.type)) {
-            balance += (tx.type === "DEBIT" ? Number(tx.amount) : -Number(tx.amount));
-        } else {
-            balance += (tx.type === "CREDIT" ? Number(tx.amount) : -Number(tx.amount));
-        }
-        return { ...tx, runningBalance: balance };
-    }).reverse(); // Show newest first? Or oldest first for ledger? Ledgers usually oldest first. 
-
-    // Let's sort oldest first for Ledger to make sense of running balance.
+    // Sort oldest first for Ledger to make sense of running balance.
     const sortedTransactions = transactions.sort((a, b) => new Date(a.journalEntry.date).getTime() - new Date(b.journalEntry.date).getTime());
 
-    balance = 0;
+    let balance = 0;
     const ledgerRows = sortedTransactions.map(tx => {
         if (["ASSET", "EXPENSE"].includes(account.type)) {
             balance += (tx.type === "DEBIT" ? Number(tx.amount) : -Number(tx.amount));
@@ -43,7 +32,6 @@ export default async function LedgerPage(props: { params: Promise<{ accountId: s
         return { ...tx, runningBalance: balance };
     });
 
-
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -51,31 +39,31 @@ export default async function LedgerPage(props: { params: Promise<{ accountId: s
                     <Link href="/dashboard/accounting/chart-of-accounts"><ArrowLeft className="h-4 w-4" /></Link>
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Ledger: {account.name}</h1>
-                    <p className="text-muted-foreground text-sm">Code: {account.code} • Type: {account.type}</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("ledger")}: {account.name}</h1>
+                    <p className="text-muted-foreground text-sm">{t("code")}: {account.code} • {t("type")}: {account.type}</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Transaction History</CardTitle>
-                    <CardDescription>All debits and credits for this account.</CardDescription>
+                    <CardTitle>{t("ledger_history")}</CardTitle>
+                    <CardDescription>{t("ledger_history_desc")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead className="text-right">Debit</TableHead>
-                                <TableHead className="text-right">Credit</TableHead>
-                                <TableHead className="text-right">Balance</TableHead>
+                                <TableHead>{t("date")}</TableHead>
+                                <TableHead>{t("description")}</TableHead>
+                                <TableHead className="text-right">{t("debit")}</TableHead>
+                                <TableHead className="text-right">{t("credit")}</TableHead>
+                                <TableHead className="text-right">{t("balance")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {ledgerRows.map(tx => (
                                 <TableRow key={tx.id}>
-                                    <TableCell>{tx.journalEntry.date.toLocaleDateString()}</TableCell>
+                                    <TableCell>{new Date(tx.journalEntry.date).toLocaleDateString()}</TableCell>
                                     <TableCell>
                                         <div className="font-medium">{tx.journalEntry.description}</div>
                                         <div className="text-xs text-muted-foreground">Ref: {tx.journalEntry.reference}</div>
@@ -93,7 +81,7 @@ export default async function LedgerPage(props: { params: Promise<{ accountId: s
                             ))}
                             {ledgerRows.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">No transactions found.</TableCell>
+                                    <TableCell colSpan={5} className="h-24 text-center">{t("no_transactions")}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

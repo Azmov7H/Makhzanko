@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, ExternalLink } from "lucide-react";
 import { PlanType } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { PromoCodeRedemption } from "./PromoCodeRedemption";
 
 export default async function BillingPage({
   searchParams,
@@ -88,8 +89,8 @@ export default async function BillingPage({
                     currentSubscription.status === "active"
                       ? "default"
                       : currentSubscription.status === "trialing"
-                      ? "secondary"
-                      : "outline"
+                        ? "secondary"
+                        : "outline"
                   }
                 >
                   {currentSubscription.status}
@@ -120,6 +121,9 @@ export default async function BillingPage({
           )}
         </CardContent>
       </Card>
+
+      {/* Promo Code Redemption */}
+      <PromoCodeRedemption />
 
       {/* Available Plans */}
       <div className="space-y-4">

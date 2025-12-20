@@ -1,5 +1,9 @@
+import { useTranslations } from "next-intl";
+
 type Props = {};
 export default function Logo({ }: Props) {
+    const t = useTranslations("Dashboard");
+
     return (
         <div className="flex items-center gap-4 ">
             <div className="size-8 text-primary dark:text-primary">
@@ -8,11 +12,11 @@ export default function Logo({ }: Props) {
                         <path clipRule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fillRule="evenodd"></path>
                     </g>
                     <defs>
-                    <clipPath id="clip0_6_330"><rect fill="white" height="48" width="48"></rect></clipPath>
+                        <clipPath id="clip0_6_330"><rect fill="white" height="48" width="48"></rect></clipPath>
                     </defs>
                 </svg>
             </div>
-            <h2 className=" text-xl font-bold leading-tight tracking-[-0.015em]">مخزنكو</h2>
+            <h2 className=" text-xl font-bold leading-tight tracking-[-0.015em]">{t("brand_name")}</h2>
         </div>
     )
 };

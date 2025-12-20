@@ -1,11 +1,117 @@
 {
-    "HomePage": {
-        "title": "SaaS Inventory System",
+    "Landing": {
+        "hero": {
+            "title_start": "Your Future Starts with",
+            "title_highlight": "Smart",
+            "title_end": "Business Management",
+            "description": "Makhzanko is the integrated solution for warehouse management, accounting, and sales. Designed specifically for the Egyptian market to save you time and effort.",
+            "start_free": "Start Your Free Trial",
+            "explore_features": "Explore Features",
+            "no_credit": "No Credit Card Required",
+            "support_24_7": "24/7 Tech Support",
+            "trial_14_days": "14-Day Free Trial",
+            "badge": "New Version 2.0 Now Available",
+            "floating": {
+                "total_sales": "Total Sales",
+                "new_customers": "New Customers",
+                "sales_value": "12,450 EGP",
+                "customers_value": "+120 records"
+            }
+        },
+        "features": {
+            "title": "Makhzanko Features",
+            "subtitle": "Why Choose Makhzanko?",
+            "description": "Everything you need to manage your business in one integrated platform.",
+            "inventory": {
+                "title": "Smart Inventory Management",
+                "desc": "Advanced product tracking across multiple warehouses with real-time updates and automatic alerts."
+            },
+            "reports": {
+                "title": "Accurate Financial Reports",
+                "desc": "Interactive dashboards displaying sales, expenses, and net profit with extreme precision."
+            },
+            "alerts": {
+                "title": "Instant Alerts",
+                "desc": "Never miss a transaction; alert system for new orders, low stock, or expiring documents."
+            },
+            "multi_lang": {
+                "title": "Multi-language & Currency",
+                "desc": "Flexible interface fully supporting Arabic and English with easy currency conversion."
+            },
+            "team": {
+                "title": "Team Management",
+                "desc": "Complete control over your team's access; define who sees reports or performs sales."
+            },
+            "security": {
+                "title": "Bank-level Security",
+                "desc": "Your data is encrypted and saved on secure cloud servers with daily backup system."
+            }
+        },
+        "pricing": {
+            "title": "Pricing Plans",
+            "subtitle": "Simple Competitive Pricing",
+            "description": "Choose the plan that fits your business size. No hidden fees, cancel anytime.",
+            "starter": "Starter Plan",
+            "starter_desc": "Perfect for startups and small shops.",
+            "pro": "Pro Plan",
+            "pro_desc": "For expanding companies needing advanced features.",
+            "month": "per month",
+            "popular": "Most Popular",
+            "contact_us": "Contact Us",
+            "get_started": "Get Started",
+            "features": {
+                "one_warehouse": "1 Warehouse",
+                "basic_stats": "Basic Statistics",
+                "limit_products": "Up to 1,000 Products",
+                "one_user": "1 User",
+                "email_support": "Email Support",
+                "unlimited_warehouses": "Unlimited Warehouses",
+                "advanced_reports": "Advanced Reports & Forecasts",
+                "unlimited_products": "Unlimited Products",
+                "five_users": "5 Users",
+                "premium_support": "Premium Technical Support",
+                "tax_integration": "Tax System Integration"
+            },
+            "enterprise_query": "Do you have more than 5 branches?",
+            "custom_offer": "to get a custom offer."
+        },
+        "footer": {
+            "desc": "An integrated system for warehouse and accounting management, designed to help SMEs grow and thrive.",
+            "quick_links": "Quick Links",
+            "support": "Support",
+            "contact": "Contact Us",
+            "rights": "All rights reserved.",
+            "terms": "Terms & Conditions",
+            "privacy": "Privacy Policy",
+            "links": {
+                "home": "Home",
+                "features": "Features",
+                "pricing": "Pricing",
+                "faq": "FAQ",
+                "contact_us": "Contact Us",
+                "docs": "Documentation",
+                "location": "Cairo, Egypt"
+            }
+        }
+    },
+    "Auth": {
         "login": "Login",
-        "register": "Register"
+        "register": "Register",
+        "email": "Email",
+        "password": "Password",
+        "forgot_password": "Forgot Password?",
+        "sign_in": "Sign In",
+        "sign_up": "Sign Up",
+        "create_account": "Create New Account",
+        "enter_details": "Enter your email and password to access your account",
+        "no_account": "Don't have an account?",
+        "already_account": "Already have an account?",
+        "tenant_name": "Company Name",
+        "full_name": "Full Name",
+        "placeholder_email": "m@example.com"
     },
     "Dashboard": {
-        "title": "Dashboard",
+        "brand_name": "Makhzanko",
         "dashboard": "Dashboard",
         "products": "Products",
         "warehouses": "Warehouses",
@@ -14,16 +120,214 @@
         "invoices": "Invoices",
         "expenses": "Expenses",
         "settings": "Settings",
-        "welcome": "Welcome back"
+        "accounting": "Accounting",
+        "reports": "Reports",
+        "owner_panel": "Owner Panel",
+        "logout": "Logout",
+        "welcome": "Welcome to Makhzanko",
+        "welcome_desc": "Comprehensive warehouse, accounting, and sales management system",
+        "total_products": "Total Products",
+        "products_desc": "products registered in the system",
+        "total_sales": "Sales",
+        "sales_desc": "completed sales transactions",
+        "total_revenue": "Revenue",
+        "revenue_desc": "total product sales",
+        "total_warehouses": "Warehouses",
+        "warehouses_desc": "currently active warehouses",
+        "quick_links": "Quick Links",
+        "quick_links_desc": "Quick access to main modules",
+        "login": "Login",
+        "get_started": "Get Started",
+        "features": "Features",
+        "pricing": "Pricing",
+        "support": "Support",
+        "plans": {
+            "FREE": "Free",
+            "PRO": "Pro",
+            "BUSINESS": "Business"
+        },
+        "user_menu": {
+            "my_account": "My Account",
+            "profile": "Profile",
+            "billing": "Billing & Subscription",
+            "support": "Support",
+            "open_user_menu": "Open user menu"
+        }
+    },
+    "Accounting": {
+        "title": "Accounting System",
+        "chart_title": "Chart of Accounts",
+        "chart_desc": "Review your general ledger accounts.",
+        "journal_entries": "Journal Entries",
+        "journal_desc": "Chronological record of all financial transactions.",
+        "ledger": "General Ledger",
+        "trial_balance": "Trial Balance",
+        "new_entry": "New Entry",
+        "account_name": "Account Name",
+        "account_code": "Account Code",
+        "account": "Account",
+        "code": "Code",
+        "type": "Type",
+        "debit": "Debit",
+        "credit": "Credit",
+        "balance": "Balance",
+        "description": "Description",
+        "view_ledger": "View Ledger",
+        "action": "Action",
+        "no_entries": "No journal entries found.",
+        "ledger_history": "Transaction History",
+        "ledger_history_desc": "All debits and credits for this account.",
+        "no_transactions": "No transactions found.",
+        "account_not_found": "Account not found"
+    },
+    "Sales": {
+        "title": "Sales & Invoices",
+        "description": "View and manage sales transactions.",
+        "new_sale": "New Sale",
+        "invoice_no": "Invoice #",
+        "date": "Date",
+        "customer": "Customer",
+        "items": "Items",
+        "total": "Total",
+        "status": "Status",
+        "walk_in": "Walk-in",
+        "items_count": "{count} items",
+        "no_sales": "No sales recorded yet."
+    },
+    "Invoices": {
+        "title": "Invoices",
+        "new_invoice": "New Invoice",
+        "design": "Design",
+        "create_design": "Create Design",
+        "invoice_no": "Invoice #",
+        "date": "Date",
+        "amount": "Amount",
+        "action": "Action",
+        "no_invoices": "No invoices found.",
+        "view": "View"
+    },
+    "Expenses": {
+        "title": "Expenses",
+        "description": "Track business expenses.",
+        "add_expense": "Add Expense",
+        "date": "Date",
+        "category": "Category",
+        "amount": "Amount",
+        "action": "Action",
+        "no_expenses": "No expenses records found.",
+        "delete": "Delete"
+    },
+    "Purchases": {
+        "title": "Purchase Orders",
+        "description": "Manage inventory purchases and incoming stock.",
+        "new_po": "New Purchase Order",
+        "po_no": "PO #",
+        "date": "Date",
+        "supplier": "Supplier",
+        "warehouse": "Warehouse",
+        "total": "Total",
+        "status": "Status",
+        "no_purchases": "No purchase orders found."
+    },
+    "Warehouses": {
+        "title": "Warehouses",
+        "description": "Manage physical storage locations.",
+        "add_warehouse": "Add Warehouse",
+        "no_location": "No location specified",
+        "items_in_stock": "{count} items in stock",
+        "no_warehouses": "No warehouses found",
+        "empty_desc": "Get started by creating your first warehouse.",
+        "delete": "Delete"
+    },
+    "Settings": {
+        "title": "Settings",
+        "description": "Manage your account settings and preferences.",
+        "general": "General",
+        "billing_plans": "Billing & Plans",
+        "team": "Team",
+        "store_info": "Store Information",
+        "store_info_desc": "Update your store name and contact details.",
+        "store_name": "Store Name",
+        "save_changes": "Save Changes",
+        "manage_billing": "Manage your subscription and billing at",
+        "billing_sub": "Billing & Subscription",
+        "team_members": "Team Members",
+        "team_members_desc": "Invite and manage team members.",
+        "team_soon": "Team management coming soon."
+    },
+    "Products": {
+        "title": "Products",
+        "description": "Manage your product catalog and inventory",
+        "new_product": "New Product",
+        "add_product": "Add Product",
+        "no_products": "No products found",
+        "empty_desc": "Start by adding your first product to manage inventory and sales",
+        "list_title": "Product List",
+        "list_desc": "All products in the system",
+        "total_products": "Total Products",
+        "total_stock": "Total Stock",
+        "product_name": "Name",
+        "sku": "Product SKU",
+        "price": "Price",
+        "cost": "Cost",
+        "stock": "Stock",
+        "category": "Category",
+        "actions": "Actions"
+    },
+    "Inventory": {
+        "title": "Inventory Audits",
+        "description": "Perform physical inventory counts and adjustments.",
+        "new_audit": "New Audit",
+        "date": "Date",
+        "warehouse": "Warehouse",
+        "status": "Status",
+        "action": "Action",
+        "no_audits": "No audits found.",
+        "view_results": "View Results",
+        "continue_count": "Continue Count",
+        "audits": "Inventory Audits",
+        "audit_details": "Audit Details",
+        "location": "Location / Warehouse"
     },
     "Common": {
-        "add": "Add",
-        "edit": "Edit",
-        "delete": "Delete",
         "save": "Save",
         "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "add": "Add",
+        "view": "View",
+        "search": "Search...",
+        "filter": "Filter",
+        "loading": "Loading...",
+        "error": "Something went wrong",
+        "success": "Operation successful",
         "actions": "Actions",
-        "total": "Total",
-        "date": "Date"
+        "no_data": "No data available",
+        "currency": "EGP"
+    },
+    "OwnerPanel": {
+        "title": "Owner Dashboard",
+        "subtitle": "Comprehensive overview of your platform",
+        "promo_codes": "Promo Codes",
+        "total_tenants": "Total Tenants",
+        "active_users": "Active Users",
+        "active_subscriptions": "Active Subscriptions",
+        "conversion_rate": "Conversion Rate",
+        "tenants_unit": "active organizations",
+        "users_unit": "active users",
+        "subs_unit": "paid subscriptions",
+        "conversion_desc": "trial to paid",
+        "top_actions": "Most Used Actions",
+        "top_actions_desc": "most frequent activities on platform",
+        "plan_distribution": "Plan Distribution",
+        "plan_dist_desc": "number of customers per plan"
+    },
+    "Charts": {
+        "monthly_revenue": "Monthly Revenue",
+        "revenue_overview": "Revenue overview for the last 7 months",
+        "user_growth": "User Growth",
+        "new_users_monthly": "New users per month",
+        "revenue_label": "Revenue",
+        "users_label": "Users"
     }
 }

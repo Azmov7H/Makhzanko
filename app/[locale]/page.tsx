@@ -1,21 +1,19 @@
-import { useTranslations } from 'next-intl';
-
 import Navbar from '@/components/layout/Navbar';
-
 import Hero from '@/components/layout/Landing/Hero';
-import Feutcher from '@/components/layout/Landing/Feutcher';
-import Pricing from '@/components/layout/Landing/Plan';
+import Features from '@/components/layout/Landing/Features';
+import Pricing from '@/components/layout/Landing/Pricing';
+import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
-
-
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen ">
-        <Navbar />
-          <Hero />
-          <Feutcher />
-          <Pricing />
-       
-        </div>
-    );
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <Navbar />
+      <main className="flex-grow">
+        <Hero />
+        <Features />
+        <Pricing />
+      </main>
+      <Footer />
+    </div>
+  );
 }

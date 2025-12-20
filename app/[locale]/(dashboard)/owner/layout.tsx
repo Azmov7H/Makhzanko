@@ -1,5 +1,4 @@
 import { requireOwner } from "@/lib/auth-role";
-import { Sidebar, MobileSidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,8 +8,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CircleUser, LayoutDashboard, Shield } from "lucide-react";
+import {
+  Shield,
+  LayoutDashboard,
+  Users,
+  Building2,
+  CreditCard,
+  Activity,
+  Ticket,
+  Menu,
+  LogOut,
+  CircleUser,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default async function OwnerLayout({
   children,
@@ -19,87 +30,154 @@ export default async function OwnerLayout({
 }) {
   await requireOwner();
 
+  const navItems = [
+    { href: "/owner", icon: LayoutDashboard, label: "لوحة التحكم" },
+    { href: "/owner/users", icon: Users, label: "المستخدمون" },
+    { href: "/owner/tenants", icon: Building2, label: "المنظمات" },
+    { href: "/owner/subscriptions", icon: CreditCard, label: "الاشتراكات" },
+    { href: "/owner/promo-codes", icon: Ticket, label: "أكواد الترويج" },
+    { href: "/owner/activity", icon: Activity, label: "سجل النشاطات" },
+  ];
+
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-      <aside className="hidden border-r bg-sidebar lg:block lg:w-64 transition-colors">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-[60px] items-center border-b border-sidebar-border px-6">
-            <Link href="/owner" className="flex items-center gap-2 font-bold text-lg">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Shield className="h-5 w-5" />
-              </div>
-              <span className="font-cairo">لوحة المالك</span>
-            </Link>
-          </div>
-          <nav className="flex-1 overflow-auto py-4 px-3">
-            <div className="grid gap-1">
-              <Link
-                href="/owner"
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>لوحة التحكم</span>
-              </Link>
-              <Link
-                href="/owner/users"
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <CircleUser className="h-4 w-4" />
-                <span>المستخدمون</span>
-              </Link>
-              <Link
-                href="/owner/tenants"
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>المنظمات</span>
-              </Link>
-              <Link
-                href="/owner/subscriptions"
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>الاشتراكات</span>
-              </Link>
-              <Link
-                href="/owner/activity"
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>سجل النشاطات</span>
-              </Link>
+    <div className="min-h-screen bg-background">
+      {/* Desktop Sidebar */}
+      <aside className="fixed inset-y-0 right-0 z-10 hidden w-64 flex-col border-l bg-card shadow-lg lg:flex">
+        {/* Logo */}
+        <div className="flex h-16 items-center border-b px-6">
+          <Link href="/owner" className="flex items-center gap-3 font-bold">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg">
+              <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
-          </nav>
+            <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              لوحة المالك
+            </span>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-primary/10 hover:text-primary hover:scale-105"
+                >
+                  <Icon className="h-5 w-5 transition-transform group-hover:scale-110" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t p-4">
+          <form
+            action={async () => {
+              "use server";
+              const { ownerLogoutAction } = await import("@/actions/owner/auth");
+              await ownerLogoutAction();
+            }}
+          >
+            <Button
+              type="submit"
+              variant="ghost"
+              className="w-full justify-start gap-3 hover:bg-destructive/10 hover:text-destructive"
+            >
+              <LogOut className="h-5 w-5" />
+              تسجيل الخروج
+            </Button>
+          </form>
         </div>
       </aside>
-      <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-card px-6 lg:h-[60px] transition-colors">
-          <MobileSidebar />
-          <div className="w-full flex-1" />
+
+      {/* Main Content */}
+      <div className="lg:pr-64">
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-card/80 backdrop-blur-lg px-6 lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="lg:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-64 p-0">
+              {/* Mobile Logo */}
+              <div className="flex h-16 items-center border-b px-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent">
+                    <Shield className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                  <span className="font-bold">لوحة المالك</span>
+                </div>
+              </div>
+
+              {/* Mobile Navigation */}
+              <nav className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-1">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium hover:bg-primary/10 hover:text-primary"
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
+
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent">
+              <Shield className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="font-bold">لوحة المالك</span>
+          </div>
+
+          <div className="flex-1" />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">قائمة المستخدم</span>
+                <CircleUser className="h-6 w-6" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>حساب المالك</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard">لوحة المستخدم</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>الإعدادات</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>تسجيل الخروج</DropdownMenuItem>
+              <form
+                action={async () => {
+                  "use server";
+                  const { ownerLogoutAction } = await import("@/actions/owner/auth");
+                  await ownerLogoutAction();
+                }}
+              >
+                <DropdownMenuItem asChild>
+                  <button type="submit" className="w-full text-right cursor-pointer flex items-center gap-2">
+                    <LogOut className="h-4 w-4" />
+                    تسجيل الخروج
+                  </button>
+                </DropdownMenuItem>
+              </form>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background transition-colors">
+
+        {/* Page Content */}
+        <main className="p-6 lg:p-8">
           {children}
         </main>
       </div>
     </div>
   );
 }
-

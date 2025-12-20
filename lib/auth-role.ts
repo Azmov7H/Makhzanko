@@ -33,16 +33,18 @@ export async function requireRole(requiredRole: Role): Promise<TenantContext> {
 }
 
 /**
- * Require OWNER role specifically (for admin panel)
+ * Require OWNER session (for owner panel)
+ * Now checks for separate owner authentication
  */
-export async function requireOwner(): Promise<TenantContext> {
-  const context = await getTenantContext();
+export async function requireOwner(): Promise<{ username: string }> {
+  const { getOwnerSession } = await import("@/actions/owner/auth");
+  const session = await getOwnerSession();
 
-  if (context.role !== Role.OWNER) {
-    redirect("/dashboard");
+  if (!session || !session.authenticated) {
+    redirect("/owner/login");
   }
 
-  return context;
+  return { username: session.username };
 }
 
 /**

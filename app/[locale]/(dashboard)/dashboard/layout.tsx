@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
 import { Toaster } from "@/components/ui/toaster";
 import { logoutAction } from "@/actions/auth";
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function DashboardLayout({
     children,
@@ -22,20 +23,15 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     const context = await getTenantContext();
+    const t = await getTranslations("Dashboard");
 
     const tenant = await db.tenant.findUnique({
         where: { id: context.tenantId },
         select: { name: true, plan: true }
     });
 
-    const tenantName = tenant?.name || "شركتك";
+    const tenantName = tenant?.name || t("brand_name");
     const plan = tenant?.plan || "FREE";
-
-    const planNameMap: Record<string, string> = {
-        FREE: "مجاني",
-        PRO: "احترافي",
-        BUSINESS: "أعمال",
-    };
 
     const planColors: Record<string, string> = {
         FREE: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
@@ -53,14 +49,14 @@ export default async function DashboardLayout({
                         <div className="w-full flex-1 flex items-center gap-3">
                             <span className="font-semibold text-foreground">{tenantName}</span>
                             <Badge variant="outline" className={planColors[plan]}>
-                                {planNameMap[plan]}
+                                {t(`plans.${plan}`)}
                             </Badge>
                         </div>
                         {context.role === "OWNER" && (
                             <Link href="/owner">
                                 <Button variant="ghost" size="sm" className="gap-2">
                                     <Shield className="h-4 w-4" />
-                                    <span className="hidden sm:inline">لوحة المالك</span>
+                                    <span className="hidden sm:inline">{t("owner_panel")}</span>
                                 </Button>
                             </Link>
                         )}
@@ -68,34 +64,34 @@ export default async function DashboardLayout({
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="rounded-full">
                                     <CircleUser className="h-5 w-5" />
-                                    <span className="sr-only">قائمة المستخدم</span>
+                                    <span className="sr-only">{t("user_menu.open_user_menu")}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+                                <DropdownMenuLabel>{t("user_menu.my_account")}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
                                     <Link href="/dashboard/settings" className="flex items-center gap-2 cursor-pointer">
                                         <Settings className="h-4 w-4" />
-                                        <span>الإعدادات</span>
+                                        <span>{t("settings")}</span>
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <Link href="/dashboard/settings/billing" className="flex items-center gap-2 cursor-pointer">
                                         <Settings className="h-4 w-4" />
-                                        <span>الاشتراك والفوترة</span>
+                                        <span>{t("user_menu.billing")}</span>
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <HelpCircle className="h-4 w-4 ml-2" />
-                                    <span>الدعم</span>
+                                    <span>{t("user_menu.support")}</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <form action={logoutAction}>
                                     <DropdownMenuItem asChild>
                                         <button type="submit" className="flex w-full items-center gap-2 cursor-pointer text-destructive">
                                             <LogOut className="h-4 w-4" />
-                                            <span>تسجيل الخروج</span>
+                                            <span>{t("logout")}</span>
                                         </button>
                                     </DropdownMenuItem>
                                 </form>
