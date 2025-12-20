@@ -13,10 +13,14 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function ExpensesPage() {
     const auth = await getAuthPayload();
     if (!auth?.tenantId) redirect("/login");
+
+    const t = await getTranslations("Expenses");
+    const tc = await getTranslations("Common");
 
     const expenses = await db.expense.findMany({
         where: { tenantId: auth.tenantId },
@@ -27,12 +31,12 @@ export default async function ExpensesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
-                    <p className="text-muted-foreground text-sm">Track business expenses.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+                    <p className="text-muted-foreground text-sm">{t("description")}</p>
                 </div>
                 <Button asChild>
                     <Link href="/dashboard/expenses/new">
-                        <Plus className="mr-2 h-4 w-4" /> Add Expense
+                        <Plus className="mr-2 h-4 w-4" /> {t("add_expense")}
                     </Link>
                 </Button>
             </div>
@@ -41,18 +45,18 @@ export default async function ExpensesPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead>{t("date")}</TableHead>
+                            <TableHead>{tc("description")}</TableHead>
+                            <TableHead>{t("category")}</TableHead>
+                            <TableHead>{t("amount")}</TableHead>
+                            <TableHead className="text-right">{t("action")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {expenses.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="h-24 text-center">
-                                    No expenses records found.
+                                    {t("no_expenses")}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -65,7 +69,7 @@ export default async function ExpensesPage() {
                                         {expense.description}
                                     </TableCell>
                                     <TableCell>{expense.category}</TableCell>
-                                    <TableCell>${Number(expense.amount).toFixed(2)}</TableCell>
+                                    <TableCell>{Number(expense.amount).toFixed(2)} {tc("currency")}</TableCell>
                                     <TableCell className="text-right">
                                         <form action={async () => {
                                             "use server";
@@ -77,7 +81,7 @@ export default async function ExpensesPage() {
                                                 className="h-8 w-8 text-red-600 hover:text-red-900 hover:bg-red-50"
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">Delete</span>
+                                                <span className="sr-only">{t("delete")}</span>
                                             </Button>
                                         </form>
                                     </TableCell>

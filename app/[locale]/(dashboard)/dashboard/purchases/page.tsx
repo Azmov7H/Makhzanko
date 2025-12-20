@@ -13,10 +13,14 @@ import {
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function PurchasesPage() {
     const auth = await getAuthPayload();
     if (!auth?.tenantId) redirect("/login");
+
+    const t = await getTranslations("Purchases");
+    const tc = await getTranslations("Common");
 
     const purchases = await db.purchaseOrder.findMany({
         where: { tenantId: auth.tenantId },
@@ -28,12 +32,12 @@ export default async function PurchasesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Purchase Orders</h1>
-                    <p className="text-muted-foreground text-sm">Manage inventory purchases and incoming stock.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+                    <p className="text-muted-foreground text-sm">{t("description")}</p>
                 </div>
                 <Button asChild>
                     <Link href="/dashboard/purchases/new">
-                        <Plus className="mr-2 h-4 w-4" /> New Purchase Order
+                        <Plus className="mr-2 h-4 w-4" /> {t("new_po")}
                     </Link>
                 </Button>
             </div>
@@ -42,19 +46,19 @@ export default async function PurchasesPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>PO #</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Supplier</TableHead>
-                            <TableHead>Warehouse</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                            <TableHead className="text-right">Status</TableHead>
+                            <TableHead>{t("po_no")}</TableHead>
+                            <TableHead>{t("date")}</TableHead>
+                            <TableHead>{t("supplier")}</TableHead>
+                            <TableHead>{t("warehouse")}</TableHead>
+                            <TableHead className="text-right">{t("total")}</TableHead>
+                            <TableHead className="text-right">{t("status")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {purchases.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center">
-                                    No purchase orders found.
+                                    {t("no_purchases")}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -64,7 +68,7 @@ export default async function PurchasesPage() {
                                     <TableCell>{new Date(po.date).toLocaleDateString()}</TableCell>
                                     <TableCell>{po.supplier || "-"}</TableCell>
                                     <TableCell>{po.warehouse?.name}</TableCell>
-                                    <TableCell className="text-right font-medium">${Number(po.total).toFixed(2)}</TableCell>
+                                    <TableCell className="text-right font-medium">{Number(po.total).toFixed(2)} {tc("currency")}</TableCell>
                                     <TableCell className="text-right">
                                         <Badge variant={po.status === "RECEIVED" ? "default" : "secondary"}>
                                             {po.status}

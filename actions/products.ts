@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { checkLimit } from "@/lib/limits";
 
-export async function createProductAction(formData: FormData) {
+export async function createProductAction(prevState: any, formData: FormData) {
     const context = await getTenantContext();
 
     const name = formData.get("name") as string;

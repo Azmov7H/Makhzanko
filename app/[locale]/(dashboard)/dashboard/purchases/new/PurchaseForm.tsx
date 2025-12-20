@@ -1,3 +1,4 @@
+"use client"
 import { createPurchaseAction } from "@/actions/purchases";
 import { useActionState, useState } from "react";
 import { Link } from "@/i18n/navigation";

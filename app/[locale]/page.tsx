@@ -1,21 +1,19 @@
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
+import Navbar from '@/components/layout/Navbar';
+import Hero from '@/components/layout/Landing/Hero';
+import Features from '@/components/layout/Landing/Features';
+import Pricing from '@/components/layout/Landing/Pricing';
+import Footer from '@/components/layout/Footer';
 
 export default function HomePage() {
-    const t = useTranslations('HomePage');
-
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen py-2">
-            <h1 className="text-4xl font-bold mb-8">{t('title')}</h1>
-            <div className="flex gap-4">
-                <Link href="/login">
-                    <Button>{t('login')}</Button>
-                </Link>
-                <Link href="/register">
-                    <Button variant="outline">{t('register')}</Button>
-                </Link>
-            </div>
-        </div>
-    );
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <Navbar />
+      <main className="flex-grow">
+        <Hero />
+        <Features />
+        <Pricing />
+      </main>
+      <Footer />
+    </div>
+  );
 }

@@ -75,3 +75,93 @@ export async function getBestSellingProducts() {
         };
     });
 }
+
+export async function getDashboardChartData() {
+    const context = await getTenantContext();
+    const today = new Date();
+    // Get last 7 months
+    const startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+
+    // 1. Monthly Revenue
+    const sales = await db.sale.findMany({
+        where: {
+            tenantId: context.tenantId,
+            date: { gte: startDate },
+            status: "COMPLETED"
+        },
+        select: {
+            date: true,
+            total: true
+        }
+    });
+
+    // 2. Monthly New Users (Staff/Admins)
+    const users = await db.user.findMany({
+        where: {
+            tenantId: context.tenantId,
+            createdAt: { gte: startDate }
+        },
+        select: {
+            createdAt: true
+        }
+    });
+
+    // Process data into months
+    const months = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+        months.push({
+            date: d,
+            name: d.toLocaleString('ar-SA', { month: 'long' }),
+            key: `${d.getFullYear()}-${d.getMonth()}`
+        });
+    }
+
+    const revenueMap = new Map();
+    sales.forEach(s => {
+        const d = new Date(s.date);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        const current = revenueMap.get(key) || 0;
+        revenueMap.set(key, current + Number(s.total));
+    });
+
+    const userMap = new Map();
+    users.forEach(u => {
+        const d = new Date(u.createdAt);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        const current = userMap.get(key) || 0;
+        userMap.set(key, current + 1);
+    });
+
+    return {
+        revenueData: months.map(m => ({
+            name: m.name,
+            value: revenueMap.get(m.key) || 0
+        })),
+        userGrowthData: months.map(m => ({
+            name: m.name,
+            users: userMap.get(m.key) || 0
+        }))
+    };
+}
+
+export async function getDashboardSummary() {
+    const context = await getTenantContext();
+
+    const [productsCount, salesCount, warehousesCount, salesData] = await Promise.all([
+        db.product.count({ where: { tenantId: context.tenantId } }),
+        db.sale.count({ where: { tenantId: context.tenantId, status: "COMPLETED" } }),
+        db.warehouse.count({ where: { tenantId: context.tenantId } }),
+        db.sale.aggregate({
+            where: { tenantId: context.tenantId, status: "COMPLETED" },
+            _sum: { total: true }
+        })
+    ]);
+
+    return {
+        totalProducts: productsCount,
+        totalSales: salesCount,
+        totalRevenue: Number(salesData._sum.total || 0),
+        totalWarehouses: warehousesCount
+    };
+}

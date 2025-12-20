@@ -62,6 +62,7 @@ model Tenant {
   subscriptions     Subscription[]
   trialOverride     TrialOverride?
   activityLogs      ActivityLog[]
+  redemptions       Redemption[]
 }
 
 model Plan {
@@ -410,4 +411,36 @@ model ActivityLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+// --- Promo Code System ---
+
+model PromoCode {
+  id            String      @id @default(cuid())
+  code          String      @unique
+  planType      PlanType
+  expiresAt     DateTime?
+  maxUses       Int?
+  currentUses   Int         @default(0)
+  isActive      Boolean     @default(true)
+  createdBy     String      // Owner username who created it
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  redemptions   Redemption[]
+  
+  @@index([code])
+  @@index([isActive])
+}
+
+model Redemption {
+  id           String    @id @default(cuid())
+  promoCodeId  String
+  promoCode    PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  tenantId     String
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  redeemedAt   DateTime  @default(now())
+  
+  @@index([promoCodeId])
+  @@index([tenantId])
 }

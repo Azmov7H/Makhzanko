@@ -35,13 +35,13 @@ export async function createTrialOverride(
     update: {
       plan,
       expiresAt,
-      createdBy: context.userId,
+      createdBy: context.username,
     },
     create: {
       tenantId,
       plan,
       expiresAt,
-      createdBy: context.userId,
+      createdBy: context.username,
     },
   });
 
@@ -76,7 +76,7 @@ export async function createTrialOverride(
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "create_trial_override",
     resource: "trial",
     metadata: {
@@ -122,7 +122,7 @@ export async function removeTrialOverride(tenantId: string) {
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "remove_trial_override",
     resource: "trial",
     metadata: {},

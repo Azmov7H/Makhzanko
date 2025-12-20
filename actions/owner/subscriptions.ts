@@ -14,7 +14,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-12-18",
+  apiVersion: "2025-02-24.acacia",
   typescript: true,
 });
 
@@ -83,7 +83,7 @@ export async function cancelSubscription(subscriptionId: string) {
     const { ip, userAgent } = getRequestMetadata(headersList);
     await logActivity({
       tenantId: subscription.tenantId,
-      userId: context.userId,
+      userId: context.username,
       action: "cancel_subscription",
       resource: "subscription",
       metadata: {
@@ -139,7 +139,7 @@ export async function forceChangePlan(tenantId: string, plan: PlanType) {
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "force_change_plan",
     resource: "subscription",
     metadata: {
@@ -199,7 +199,7 @@ export async function extendSubscriptionPeriod(
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId: subscription.tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "extend_subscription_period",
     resource: "subscription",
     metadata: {

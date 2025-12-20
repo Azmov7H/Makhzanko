@@ -90,7 +90,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId: user.tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "update_user_role",
     resource: "user",
     metadata: {
@@ -135,7 +135,7 @@ export async function toggleUserStatus(userId: string) {
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId: user.tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: user.isActive ? "deactivate_user" : "activate_user",
     resource: "user",
     metadata: {
@@ -182,7 +182,7 @@ export async function deleteUser(userId: string) {
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId: user.tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "delete_user",
     resource: "user",
     metadata: {
@@ -218,7 +218,7 @@ export async function forceLogoutUser(userId: string) {
   const { ip, userAgent } = getRequestMetadata(headersList);
   await logActivity({
     tenantId: user.tenantId,
-    userId: context.userId,
+    userId: context.username,
     action: "force_logout_user",
     resource: "user",
     metadata: {

@@ -1,6 +1,6 @@
 import { deleteWarehouseAction } from "@/actions/warehouses";
 import { db } from "@/lib/db";
-import { getAuthPayload } from "@/lib/auth";
+import { getTenantContext } from "@/lib/auth";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,20 +11,15 @@ import {
     CardTitle
 } from "@/components/ui/card";
 import { MapPin, Plus, Trash2 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 
 export default async function WarehousesPage() {
-    const auth = await getAuthPayload();
-    if (!auth?.tenantId) {
-        // If tenantId is not found, redirect to login
-        // (This matches the pattern in your other dashboard pages)
-        // You may need to import redirect from 'next/navigation' if not already
-        const { redirect } = await import("next/navigation");
-        redirect("/login");
-    }
+    const context = await getTenantContext();
+    const t = await getTranslations("Warehouses");
 
     const warehouses = await db.warehouse.findMany({
-        where: { tenantId: auth.tenantId },
+        where: { tenantId: context.tenantId },
         orderBy: { name: "asc" },
         include: { _count: { select: { stocks: true } } }
     });
@@ -33,12 +28,12 @@ export default async function WarehousesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Warehouses</h1>
-                    <p className="text-muted-foreground text-sm">Manage physical storage locations.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+                    <p className="text-muted-foreground text-sm">{t("description")}</p>
                 </div>
                 <Button asChild>
                     <Link href="/dashboard/warehouses/new">
-                        <Plus className="mr-2 h-4 w-4" /> Add Warehouse
+                        <Plus className="mr-2 h-4 w-4" /> {t("add_warehouse")}
                     </Link>
                 </Button>
             </div>
@@ -54,17 +49,17 @@ export default async function WarehousesPage() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-muted-foreground">
-                                {warehouse.location || "No location specified"}
+                                {warehouse.location || t("no_location")}
                             </p>
                             <p className="text-xs text-muted-foreground mt-2">
-                                {warehouse._count.stocks} items in stock
+                                {t("items_in_stock", { count: warehouse._count.stocks })}
                             </p>
                         </CardContent>
                         <CardFooter className="justify-end">
                             <form action={deleteWarehouseAction}>
                                 <input type="hidden" name="id" value={warehouse.id} />
                                 <Button variant="destructive" size="sm" type="submit">
-                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                    <Trash2 className="h-4 w-4 mr-2" /> {t("delete")}
                                 </Button>
                             </form>
                         </CardFooter>
@@ -75,13 +70,13 @@ export default async function WarehousesPage() {
                         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
                             <MapPin className="h-6 w-6 text-gray-400" />
                         </div>
-                        <h3 className="mt-4 text-lg font-semibold">No warehouses found</h3>
+                        <h3 className="mt-4 text-lg font-semibold">{t("no_warehouses")}</h3>
                         <p className="mb-4 mt-2 text-sm text-muted-foreground">
-                            Get started by creating your first warehouse.
+                            {t("empty_desc")}
                         </p>
                         <Button asChild variant="outline">
                             <Link href="/dashboard/warehouses/new">
-                                <Plus className="mr-2 h-4 w-4" /> Add Warehouse
+                                <Plus className="mr-2 h-4 w-4" /> {t("add_warehouse")}
                             </Link>
                         </Button>
                     </div>

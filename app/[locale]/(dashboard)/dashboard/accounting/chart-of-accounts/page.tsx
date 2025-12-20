@@ -3,16 +3,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function ChartOfAccountsPage() {
     const accounts = await getChartOfAccounts();
+    const t = await getTranslations("Accounting");
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Chart of Accounts</h1>
-                    <p className="text-muted-foreground text-sm">Review your general ledger accounts.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t("chart_title")}</h1>
+                    <p className="text-muted-foreground text-sm">{t("chart_desc")}</p>
                 </div>
             </div>
 
@@ -20,10 +22,10 @@ export default async function ChartOfAccountsPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Code</TableHead>
-                            <TableHead>Account Name</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead>{t("code")}</TableHead>
+                            <TableHead>{t("account_name")}</TableHead>
+                            <TableHead>{t("type")}</TableHead>
+                            <TableHead className="text-right">{t("action")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -36,7 +38,7 @@ export default async function ChartOfAccountsPage() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <Button asChild variant="ghost" size="sm">
-                                        <Link href={`/dashboard/accounting/ledger/${account.id}`}>View Ledger</Link>
+                                        <Link href={`/dashboard/accounting/ledger/${account.id}`}>{t("view_ledger")}</Link>
                                     </Button>
                                 </TableCell>
                             </TableRow>
