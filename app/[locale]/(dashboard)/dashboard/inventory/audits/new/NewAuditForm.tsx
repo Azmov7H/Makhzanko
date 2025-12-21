@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 
 export default function NewAuditForm({ warehouses }: { warehouses: any[] }) {
     const [warehouseId, setWarehouseId] = useState<string>("");
+    const [isPending, startTransition] = useTransition();
     const { locale } = useI18n();
     const router = useRouter();
 
