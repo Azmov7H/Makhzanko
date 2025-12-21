@@ -17,19 +17,21 @@ export function getDirection(locale: Locale) {
 export async function getI18n(locale: Locale) {
     const messages = await getMessages(locale);
 
-    return (key: string, variables?: Record<string, any>) => {
+    return (key: string, variables?: Record<string, any>): string => {
         const keys = key.split(".");
-        let value = messages;
+        let value: any = messages;
         for (const k of keys) {
             value = value?.[k];
         }
 
-        if (typeof value !== "string") return value || key;
+        if (typeof value !== "string") return String(value || key);
 
         if (variables) {
+            let result = value;
             Object.entries(variables).forEach(([k, v]) => {
-                value = (value as string).replace(`{${k}}`, String(v));
+                result = result.replace(new RegExp(`{${k}}`, "g"), String(v));
             });
+            return result;
         }
 
         return value;

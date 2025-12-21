@@ -25,7 +25,9 @@ export function I18nProvider({
     return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
-export function useI18n() {
+export type TranslateFn = (key: string, variables?: Record<string, string | number>) => string;
+
+export function useI18n(): { t: TranslateFn; locale: Locale } {
     const context = useContext(I18nContext);
     if (!context) {
         throw new Error("useI18n must be used within an I18nProvider");
@@ -33,9 +35,9 @@ export function useI18n() {
 
     const { messages, locale } = context;
 
-    const t = (key: string, variables?: Record<string, string | number>) => {
+    const t: TranslateFn = (key, variables) => {
         const keys = key.split(".");
-        let value = messages;
+        let value: any = messages;
         for (const k of keys) {
             value = value?.[k];
         }
@@ -47,7 +49,7 @@ export function useI18n() {
         if (variables) {
             return Object.entries(variables).reduce((acc, [k, v]) => {
                 return acc.replace(new RegExp(`{${k}}`, "g"), String(v));
-            }, value);
+            }, value as string);
         }
 
         return value;
