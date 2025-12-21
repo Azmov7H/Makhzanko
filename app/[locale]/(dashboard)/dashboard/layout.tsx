@@ -46,10 +46,10 @@ export default async function DashboardLayout({
     return (
         <>
             <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-                <Sidebar />
+                <Sidebar role={context.role} />
                 <div className="flex flex-col">
                     <header className="flex h-14 items-center gap-4 border-b bg-card px-6 lg:h-[60px] transition-colors">
-                        <MobileSidebar />
+                        <MobileSidebar role={context.role} />
                         <div className="w-full flex-1 flex items-center gap-3">
                             <span className="font-semibold text-foreground">{tenantName}</span>
                             <Badge variant="outline" className={planColors[plan]}>

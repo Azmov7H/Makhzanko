@@ -1,14 +1,16 @@
 import { getTenantContext } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
-import { Store, CreditCard, Users, Save } from "lucide-react";
+import { Store, CreditCard, Users, User } from "lucide-react";
+import { db } from "@/lib/db";
+import { GeneralSettings } from "./_components/GeneralSettings";
+import { TeamSettings } from "./_components/TeamSettings";
+import { Button } from "@/components/ui/button"
+import { ProfileSettings } from "./_components/ProfileSettings";
 
 export default async function SettingsPage({
     params,
@@ -19,66 +21,99 @@ export default async function SettingsPage({
     const context = await getTenantContext();
     const t = await getI18n(locale as Locale);
 
+    // Fetch data for settings
+    const [tenant, users, currentUser] = await Promise.all([
+        db.tenant.findUnique({
+            where: { id: context.tenantId },
+            select: { name: true, plan: true }
+        }),
+        db.user.findMany({
+            where: { tenantId: context.tenantId },
+            select: { id: true, email: true, name: true, role: true },
+            orderBy: { createdAt: "asc" }
+        }),
+        db.user.findUnique({
+            where: { id: context.userId },
+            select: { name: true, email: true, role: true }
+        })
+    ]);
+
+    if (!tenant || !currentUser) {
+        return <div>Error loading settings</div>;
+    }
+
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">{t("Settings.title")}</h1>
-                <p className="text-muted-foreground mt-1">{t("Settings.description")}</p>
+        <div className="space-y-6 px-4 md:px-0 max-w-6xl mx-auto">
+            <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    {t("Settings.title")}
+                </h1>
+                <p className="text-muted-foreground">{t("Settings.description")}</p>
             </div>
 
-            <Separator />
+            <Separator className="bg-primary/5" />
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 max-w-md bg-muted/50 p-1 rounded-xl">
-                    <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                        <Store className="h-4 w-4 mr-2" />
-                        {t("Settings.general")}
-                    </TabsTrigger>
-                    <TabsTrigger value="billing" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                        <CreditCard className="h-4 w-4 mr-2" />
-                        {t("Settings.billing_plans")}
-                    </TabsTrigger>
-                    <TabsTrigger value="team" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                        <Users className="h-4 w-4 mr-2" />
-                        {t("Settings.team")}
-                    </TabsTrigger>
-                </TabsList>
+                <div className="overflow-x-auto pb-2 mb-2 scrollbar-none">
+                    <TabsList className="flex h-auto w-auto min-w-full sm:min-w-[400px] sm:grid sm:grid-cols-4 bg-muted/30 p-1 rounded-xl border border-primary/5">
+                        <TabsTrigger value="general" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                            <Store />
+                            {t("Settings.general")}
+                        </TabsTrigger>
+                        <TabsTrigger value="team" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                            <Users />
+                            {t("Settings.team")}
+                        </TabsTrigger>
+                        <TabsTrigger value="profile" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                            <User />
+                            {t("Settings.profile")}
+                        </TabsTrigger>
+                        <TabsTrigger value="billing" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                            <CreditCard />
+                            {t("Settings.billing_plans")}
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
-                <TabsContent value="general" className="mt-6 space-y-6">
+                <TabsContent value="general" className="mt-6 animate-in fade-in-50 duration-300">
+                    <GeneralSettings initialName={tenant.name} />
+                </TabsContent>
+
+                <TabsContent value="team" className="mt-6 animate-in fade-in-50 duration-300">
+                    <TeamSettings
+                        users={users}
+                        currentPlan={tenant.plan}
+                        currentUserId={context.userId}
+                    />
+                </TabsContent>
+
+                <TabsContent value="profile" className="mt-6 animate-in fade-in-50 duration-300">
+                    <ProfileSettings user={currentUser} />
+                </TabsContent>
+
+                <TabsContent value="billing" className="mt-6 animate-in fade-in-50 duration-300">
                     <Card className="border-primary/5 shadow-sm overflow-hidden">
                         <CardHeader className="bg-muted/30 border-b">
                             <CardTitle className="flex items-center gap-2">
-                                <Store className="h-5 w-5 text-primary" />
-                                {t("Settings.store_info")}
+                                <CreditCard className="h-5 w-5 text-primary" />
+                                {t("Settings.billing_sub")}
                             </CardTitle>
                             <CardDescription>
-                                {t("Settings.store_info_desc")}
+                                {t("Settings.manage_billing")}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-6">
-                            <div className="space-y-2 max-w-md">
-                                <Label htmlFor="name" className="text-sm font-bold">{t("Settings.store_name")}</Label>
-                                <Input id="name" defaultValue="Phone Store" className="h-11 rounded-lg border-primary/10" />
+                        <CardContent className="p-8 md:p-12 text-center space-y-6">
+                            <div className="bg-primary/5 h-20 w-20 rounded-2xl flex items-center justify-center mx-auto rotate-3 hover:rotate-0 transition-transform duration-300">
+                                <CreditCard className="h-10 w-10 text-primary" />
                             </div>
-                            <Button className="gap-2 h-11 px-8 rounded-lg shadow-lg shadow-primary/20">
-                                <Save className="h-4 w-4" />
-                                {t("Settings.save_changes")}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="billing" className="mt-6">
-                    <Card className="border-primary/5 shadow-sm">
-                        <CardContent className="p-10 text-center space-y-4">
-                            <div className="bg-primary/5 h-16 w-16 rounded-full flex items-center justify-center mx-auto">
-                                <CreditCard className="h-8 w-8 text-primary" />
-                            </div>
-                            <div className="max-w-xs mx-auto space-y-2">
-                                <p className="text-muted-foreground text-sm">
-                                    {t("Settings.manage_billing")}
-                                </p>
-                                <Button asChild variant="outline" className="w-full h-11 rounded-lg border-primary/20 hover:bg-primary/5 hover:text-primary">
+                            <div className="max-w-md mx-auto space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-xl font-bold">Manage Your Plan</h4>
+                                    <p className="text-muted-foreground text-sm">
+                                        Current Plan: <span className="text-primary font-bold uppercase">{tenant.plan}</span>
+                                    </p>
+                                </div>
+                                <Button asChild variant="outline" className="w-full h-12 rounded-xl border-primary/20 hover:bg-primary/5 hover:text-primary transition-all shadow-sm">
                                     <Link href={`/${locale}/dashboard/settings/billing`}>
                                         {t("Settings.billing_sub")}
                                     </Link>
@@ -87,26 +122,8 @@ export default async function SettingsPage({
                         </CardContent>
                     </Card>
                 </TabsContent>
-
-                <TabsContent value="team" className="mt-6">
-                    <Card className="border-primary/5 shadow-sm border-dashed">
-                        <CardHeader className="text-center pb-2">
-                            <div className="bg-muted h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Users className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                            <CardTitle>{t("Settings.team_members")}</CardTitle>
-                            <CardDescription>
-                                {t("Settings.team_members_desc")}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-10 pt-2">
-                            <p className="text-center text-sm font-medium text-primary bg-primary/5 py-2 px-4 rounded-full w-fit mx-auto">
-                                {t("Settings.team_soon")}
-                            </p>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
             </Tabs>
         </div>
     );
 }
+

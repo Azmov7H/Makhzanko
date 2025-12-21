@@ -71,7 +71,7 @@ export default async function ProductsPage({
         <Card>
           <CardContent className="p-0">
             <EmptyState
-              icon={Package}
+              icon={<Package className="h-8 w-8 text-muted-foreground" />}
               title={t("Products.no_products")}
               description={t("Products.empty_desc")}
               action={{

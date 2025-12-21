@@ -22,22 +22,26 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "./Toggel";
 
-const NAV_ITEMS = (t: any) => [
-    { label: t("Dashboard.dashboard"), href: "/dashboard", icon: LayoutDashboard },
-    { label: t("Dashboard.products"), href: "/dashboard/inventory/products", icon: Package },
-    { label: t("Dashboard.warehouses"), href: "/dashboard/inventory/warehouses", icon: Warehouse },
-    { label: t("Dashboard.sales"), href: "/dashboard/sales-flow/sales", icon: ShoppingCart },
-    { label: t("Dashboard.purchases"), href: "/dashboard/finance/purchases", icon: Truck },
-    { label: t("Dashboard.invoices"), href: "/dashboard/sales-flow/invoices", icon: FileText },
-    { label: t("Dashboard.expenses"), href: "/dashboard/finance/expenses", icon: Receipt },
-    { label: t("Dashboard.accounting"), href: "/dashboard/finance/accounting", icon: Calculator },
-    { label: t("Dashboard.reports"), href: "/dashboard/finance/reports", icon: BarChart3 },
-    { label: t("Dashboard.settings"), href: "/dashboard/settings", icon: Settings },
-];
+const NAV_ITEMS = (t: any, role: string) => {
+    const items = [
+        { label: t("Dashboard.dashboard"), href: "/dashboard", icon: LayoutDashboard, roles: ["OWNER", "MANAGER", "STAFF"] },
+        { label: t("Dashboard.products"), href: "/dashboard/inventory/products", icon: Package, roles: ["OWNER", "MANAGER", "STAFF"] }, // Staff might need to request
+        { label: t("Dashboard.warehouses"), href: "/dashboard/inventory/warehouses", icon: Warehouse, roles: ["OWNER", "MANAGER"] },
+        { label: t("Dashboard.sales"), href: "/dashboard/sales-flow/sales", icon: ShoppingCart, roles: ["OWNER", "STAFF", "MANAGER"] },
+        { label: t("Dashboard.purchases"), href: "/dashboard/finance/purchases", icon: Truck, roles: ["OWNER", "MANAGER"] },
+        { label: t("Dashboard.invoices"), href: "/dashboard/sales-flow/invoices", icon: FileText, roles: ["OWNER", "STAFF", "MANAGER"] },
+        { label: t("Dashboard.expenses"), href: "/dashboard/finance/expenses", icon: Receipt, roles: ["OWNER", "MANAGER"] },
+        { label: t("Dashboard.accounting"), href: "/dashboard/finance/accounting", icon: Calculator, roles: ["OWNER"] }, // Advanced accounting usually owner
+        { label: t("Dashboard.reports"), href: "/dashboard/finance/reports", icon: BarChart3, roles: ["OWNER", "MANAGER"] },
+        { label: t("Dashboard.settings"), href: "/dashboard/settings", icon: Settings, roles: ["OWNER", "MANAGER", "STAFF"] },
+    ];
 
-export function Sidebar() {
+    return items.filter(item => item.roles.includes(role));
+};
+
+export function Sidebar({ role }: { role: string }) {
     const { t } = useI18n();
-    const items = NAV_ITEMS(t);
+    const items = NAV_ITEMS(t, role);
 
     return (
         <aside className="hidden border-e bg-sidebar lg:block lg:w-64 transition-colors">
@@ -61,9 +65,9 @@ export function Sidebar() {
     );
 }
 
-export function MobileSidebar() {
+export function MobileSidebar({ role }: { role: string }) {
     const { t } = useI18n();
-    const items = NAV_ITEMS(t);
+    const items = NAV_ITEMS(t, role);
 
     return (
         <Sheet>
