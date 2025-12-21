@@ -122,7 +122,7 @@ export async function createSaleAction(data: {
             return newSale;
         });
 
-        revalidatePath("/dashboard/sales");
+        revalidatePath("/dashboard/sales-flow/sales");
         return { success: true, saleId: sale.id };
 
     } catch (error) {

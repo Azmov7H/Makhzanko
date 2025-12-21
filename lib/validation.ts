@@ -1,47 +1,44 @@
 import { z } from "zod";
 
 /**
- * Zod validation schemas for security
+ * Factory functions for Zod validation schemas with i18n support.
  */
 
-// Auth schemas
-export const loginSchema = z.object({
-    email: z.string().email("البريد الإلكتروني غير صحيح"),
-    password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
+export const getLoginSchema = (t: (key: string) => string) => z.object({
+    email: z.string().email(t("Auth.email_invalid")),
+    password: z.string().min(6, t("Auth.password_min")),
 });
 
-export const registerSchema = z.object({
-    name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل"),
-    email: z.string().email("البريد الإلكتروني غير صحيح"),
-    password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
-    tenantName: z.string().min(2, "اسم المؤسسة يجب أن يكون حرفين على الأقل"),
+export const getRegisterSchema = (t: (key: string) => string) => z.object({
+    name: z.string().min(2, t("Auth.name_min")),
+    email: z.string().email(t("Auth.email_invalid")),
+    password: z.string().min(6, t("Auth.password_min")),
+    tenantName: z.string().min(2, t("Auth.tenant_name_min")),
 });
 
-// Product schema
-export const productSchema = z.object({
-    name: z.string().min(2, "اسم المنتج يجب أن يكون حرفين على الأقل"),
-    sku: z.string().min(1, "رمز المنتج مطلوب"),
-    price: z.number().positive("السعر يجب أن يكون أكبر من صفر"),
-    cost: z.number().positive("التكلفة يجب أن تكون أكبر من صفر"),
+export const getProductSchema = (t: (key: string) => string) => z.object({
+    name: z.string().min(2, t("Products.name_min")),
+    sku: z.string().min(1, t("Products.sku_required")),
+    price: z.coerce.number().positive(t("Products.price_positive")),
+    cost: z.coerce.number().positive(t("Products.cost_positive")),
 });
 
-// Warehouse schema
-export const warehouseSchema = z.object({
-    name: z.string().min(2, "اسم المستودع يجب أن يكون حرفين على الأقل"),
+export const getWarehouseSchema = (t: (key: string) => string) => z.object({
+    name: z.string().min(2, t("Warehouses.name_min")),
     location: z.string().optional(),
 });
 
-// Promo code schema
-export const promoCodeSchema = z.object({
-    planType: z.enum(["PRO", "BUSINESS"]),
-    maxUses: z.number().positive().optional(),
-    expiresAt: z.date().optional(),
+// Original schemas (keeping for backward compatibility or simple server-side use with default messages)
+export const loginSchema = z.object({
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// Owner login schema
-export const ownerLoginSchema = z.object({
-    username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
-    password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
+export const productSchema = z.object({
+    name: z.string().min(2, "Name too short"),
+    sku: z.string().min(1, "SKU required"),
+    price: z.coerce.number().positive("Price must be positive"),
+    cost: z.coerce.number().positive("Cost must be positive"),
 });
 
 // Sanitization helpers
@@ -53,9 +50,11 @@ export function sanitizeEmail(email: string): string {
     return email.toLowerCase().trim();
 }
 
-// Input validation helper
-export function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; error: string } {
-    const result = schema.safeParse(data);
+/**
+ * Validates data against a schema and returns the data or a first error message.
+ */
+export async function validateData<T>(schema: z.ZodSchema<T>, data: unknown): Promise<{ success: true; data: T } | { success: false; error: string }> {
+    const result = await schema.safeParseAsync(data);
 
     if (result.success) {
         return { success: true, data: result.data };

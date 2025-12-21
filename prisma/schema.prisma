@@ -63,6 +63,9 @@ model Tenant {
   trialOverride     TrialOverride?
   activityLogs      ActivityLog[]
   redemptions       Redemption[]
+
+  @@index([slug])
+  @@index([stripeCustomerId])
 }
 
 model Plan {
@@ -200,6 +203,8 @@ model Product {
   inventoryCountLines InventoryCountLine[]
 
   @@unique([tenantId, sku])
+  @@index([tenantId, name])
+  @@index([tenantId, price])
 }
 
 model Stock {
@@ -238,7 +243,11 @@ model Sale {
   invoice        Invoice?
   journalEntryId String?    
   
-  @@unique([tenantId, number]) 
+  @@unique([tenantId, number])
+  @@index([tenantId, date])
+  @@index([userId])
+  @@index([customerId])
+  @@index([status])
 }
 
 model SaleItem {
@@ -282,6 +291,9 @@ model PurchaseOrder {
   warehouse      Warehouse      @relation(fields: [warehouseId], references: [id])
   
   @@unique([tenantId, number])
+  @@index([tenantId, date])
+  @@index([supplier])
+  @@index([status])
 }
 
 model PurchaseItem {
@@ -322,6 +334,7 @@ model Account {
   entries        Transaction[]
 
   @@unique([tenantId, code])
+  @@index([tenantId, type])
 }
 
 model JournalEntry {

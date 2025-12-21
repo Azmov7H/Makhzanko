@@ -4,47 +4,53 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Users, Building2, CreditCard, TrendingUp, Activity, Shield, ArrowUp, ArrowDown, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { LocaleLink } from "@/components/ui/LocaleLink";
 import { DashboardCharts } from "./DashboardCharts";
-import { getTranslations } from "next-intl/server";
+import { getI18n } from "@/lib/i18n/server";
+import { Locale } from "@/lib/i18n/config";
 
-export default async function OwnerDashboardPage() {
+export default async function OwnerDashboardPage({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
     await requireOwner();
     const analytics = await getOwnerAnalytics();
-    const t = await getTranslations("OwnerPanel");
+    const t = await getI18n(locale as Locale);
 
     const stats = [
         {
-            title: t("total_tenants"),
+            title: t("OwnerPanel.total_tenants"),
             value: analytics.totalTenants,
-            subtitle: t("tenants_unit"),
+            subtitle: t("OwnerPanel.tenants_unit"),
             icon: Building2,
             gradient: "from-blue-500 to-cyan-500",
             change: "+12%",
             trend: "up"
         },
         {
-            title: t("active_users"),
+            title: t("OwnerPanel.active_users"),
             value: analytics.activeUsers,
-            subtitle: t("users_unit"),
+            subtitle: t("OwnerPanel.users_unit"),
             icon: Users,
             gradient: "from-purple-500 to-pink-500",
             change: "+8%",
             trend: "up"
         },
         {
-            title: t("active_subscriptions"),
+            title: t("OwnerPanel.active_subscriptions"),
             value: analytics.activeSubscriptions,
-            subtitle: t("subs_unit"),
+            subtitle: t("OwnerPanel.subs_unit"),
             icon: CreditCard,
             gradient: "from-orange-500 to-red-500",
             change: "+23%",
             trend: "up"
         },
         {
-            title: t("conversion_rate"),
+            title: t("OwnerPanel.conversion_rate"),
             value: `${analytics.conversionRate}%`,
-            subtitle: t("conversion_desc"),
+            subtitle: t("OwnerPanel.conversion_desc"),
             icon: TrendingUp,
             gradient: "from-green-500 to-emerald-500",
             change: "+5%",
@@ -53,25 +59,27 @@ export default async function OwnerDashboardPage() {
     ];
 
     return (
-        <div className="space-y-8 animate-fade-in-up">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="space-y-1 text-center md:text-start">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent">
-                            <Shield className="h-6 w-6 text-primary-foreground" />
+                        <div className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 backdrop-blur-md border border-primary/10 shadow-xl">
+                            <Shield className="h-8 w-8 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-                            <p className="text-muted-foreground">{t("subtitle")}</p>
+                            <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                                {t("OwnerPanel.title")}
+                            </h1>
+                            <p className="text-muted-foreground text-lg">{t("OwnerPanel.subtitle")}</p>
                         </div>
                     </div>
                 </div>
-                <Button asChild className="gap-2">
-                    <Link href="/owner/promo-codes">
+                <Button asChild size="lg" className="gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all rounded-full px-6">
+                    <LocaleLink href="/owner/promo-codes">
                         <Sparkles className="h-4 w-4" />
-                        {t("promo_codes")}
-                    </Link>
+                        {t("OwnerPanel.promo_codes")}
+                    </LocaleLink>
                 </Button>
             </div>
 
@@ -84,27 +92,32 @@ export default async function OwnerDashboardPage() {
                     return (
                         <Card
                             key={idx}
-                            className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+                            className="relative overflow-hidden border-none bg-background/60 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group ring-1 ring-border/50"
                             style={{ animationDelay: `${idx * 100}ms` }}
                         >
                             {/* Gradient Background */}
-                            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-5 group-hover:opacity-10 transition-opacity`} />
+                            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500`} />
 
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            {/* Decorative Circle */}
+                            <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br ${stat.gradient} opacity-[0.1] blur-2xl group-hover:opacity-[0.2] transition-opacity duration-500`} />
+
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
                                     {stat.title}
                                 </CardTitle>
-                                <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.gradient} shadow-lg`}>
+                                <div className={`p-2.5 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg ring-1 ring-black/5`}>
                                     <Icon className="h-5 w-5 text-white" />
                                 </div>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold mb-1">{stat.value}</div>
+                            <CardContent className="relative z-10">
+                                <div className="text-4xl font-black mb-2 tracking-tight">{stat.value}</div>
                                 <div className="flex items-center justify-between">
-                                    <p className="text-xs text-muted-foreground">{stat.subtitle}</p>
+                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.subtitle}</p>
                                     <Badge
                                         variant="secondary"
-                                        className={`gap-1 ${stat.trend === "up" ? "text-green-600 bg-green-50 dark:bg-green-950" : "text-red-600 bg-red-50 dark:bg-red-950"
+                                        className={`gap-1 px-2 py-0.5 text-xs font-semibold backdrop-blur-sm border-0 ${stat.trend === "up"
+                                            ? "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400 dark:bg-emerald-500/20"
+                                            : "text-rose-600 bg-rose-500/10 dark:text-rose-400 dark:bg-rose-500/20"
                                             }`}
                                     >
                                         <TrendIcon className="h-3 w-3" />
@@ -118,33 +131,35 @@ export default async function OwnerDashboardPage() {
             </div>
 
             {/* Charts Section */}
-            <DashboardCharts />
+            <div className="rounded-[2rem] border border-border/50 bg-background/50 backdrop-blur-xl shadow-2xl overflow-hidden p-1">
+                <DashboardCharts />
+            </div>
 
             {/* Additional Info Cards */}
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Top Actions */}
-                <Card className="shadow-lg">
+                <Card className="shadow-xl bg-background/60 backdrop-blur-xl border-border/50">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 text-xl">
                             <Activity className="h-5 w-5 text-primary" />
-                            {t("top_actions")}
+                            {t("OwnerPanel.top_actions")}
                         </CardTitle>
-                        <CardDescription>{t("top_actions_desc")}</CardDescription>
+                        <CardDescription>{t("OwnerPanel.top_actions_desc")}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {analytics.topActions.map((stat, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center justify-between p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all duration-200"
+                                    className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-accent/50 hover:border-primary/20 transition-all duration-300 group"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary ring-4 ring-primary/5 group-hover:ring-primary/20 transition-all">
                                             {idx + 1}
                                         </div>
-                                        <span className="font-medium">{stat.action}</span>
+                                        <span className="font-semibold text-foreground/90">{stat.action}</span>
                                     </div>
-                                    <Badge variant="secondary" className="text-base">
+                                    <Badge variant="outline" className="text-base font-mono bg-background/50">
                                         {stat._count.action}
                                     </Badge>
                                 </div>
@@ -154,33 +169,36 @@ export default async function OwnerDashboardPage() {
                 </Card>
 
                 {/* Plan Distribution */}
-                <Card className="shadow-lg">
+                <Card className="shadow-xl bg-background/60 backdrop-blur-xl border-border/50">
                     <CardHeader>
-                        <CardTitle>{t("plan_distribution")}</CardTitle>
-                        <CardDescription>{t("plan_dist_desc")}</CardDescription>
+                        <CardTitle className="flex items-center gap-2 text-xl">
+                            <Users className="h-5 w-5 text-purple-500" />
+                            {t("OwnerPanel.plan_distribution")}
+                        </CardTitle>
+                        <CardDescription>{t("OwnerPanel.plan_dist_desc")}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             {analytics.planDistribution.map((dist, idx) => {
                                 const colors = {
-                                    FREE: "from-gray-500 to-gray-600",
-                                    PRO: "from-blue-500 to-blue-600",
-                                    BUSINESS: "from-purple-500 to-purple-600",
+                                    FREE: "from-slate-500 to-slate-600 shadow-slate-500/25",
+                                    PRO: "from-blue-500 to-indigo-600 shadow-blue-500/25",
+                                    BUSINESS: "from-purple-500 to-pink-600 shadow-purple-500/25",
                                 };
 
                                 return (
-                                    <div key={idx} className="space-y-2">
+                                    <div key={idx} className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <Badge
-                                                className={`bg-gradient-to-r ${colors[dist.plan as keyof typeof colors]} text-white border-none`}
+                                                className={`bg-gradient-to-r ${colors[dist.plan as keyof typeof colors]} text-white border-none px-3 py-1`}
                                             >
                                                 {dist.plan}
                                             </Badge>
-                                            <span className="text-2xl font-bold">{dist._count.plan}</span>
+                                            <span className="text-2xl font-black text-foreground/80">{dist._count.plan}</span>
                                         </div>
-                                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                        <div className="h-3 bg-muted/50 rounded-full overflow-hidden p-0.5 backdrop-blur-sm">
                                             <div
-                                                className={`h-full bg-gradient-to-r ${colors[dist.plan as keyof typeof colors]} rounded-full transition-all duration-1000`}
+                                                className={`h-full bg-gradient-to-r ${colors[dist.plan as keyof typeof colors]} rounded-full transition-all duration-1000 shadow-sm`}
                                                 style={{
                                                     width: `${(dist._count.plan / analytics.totalTenants) * 100}%`,
                                                 }}
@@ -196,4 +214,3 @@ export default async function OwnerDashboardPage() {
         </div>
     );
 }
-

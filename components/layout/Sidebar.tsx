@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { LocaleLink as Link } from "@/components/ui/LocaleLink";
+import { usePathname } from "next/navigation";
+import { useI18n } from "@/lib/i18n/context";
 import {
     LayoutDashboard,
     Package,
@@ -21,23 +22,21 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "./Toggel";
 
-
-
 const NAV_ITEMS = (t: any) => [
-    { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
-    { label: t("products"), href: "/dashboard/products", icon: Package },
-    { label: t("warehouses"), href: "/dashboard/warehouses", icon: Warehouse },
-    { label: t("sales"), href: "/dashboard/sales", icon: ShoppingCart },
-    { label: t("purchases"), href: "/dashboard/purchases", icon: Truck },
-    { label: t("invoices"), href: "/dashboard/invoices", icon: FileText },
-    { label: t("expenses"), href: "/dashboard/expenses", icon: Receipt },
-    { label: t("accounting"), href: "/dashboard/accounting", icon: Calculator },
-    { label: t("reports"), href: "/dashboard/reports", icon: BarChart3 },
-    { label: t("settings"), href: "/dashboard/settings", icon: Settings },
+    { label: t("Dashboard.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { label: t("Dashboard.products"), href: "/dashboard/inventory/products", icon: Package },
+    { label: t("Dashboard.warehouses"), href: "/dashboard/inventory/warehouses", icon: Warehouse },
+    { label: t("Dashboard.sales"), href: "/dashboard/sales-flow/sales", icon: ShoppingCart },
+    { label: t("Dashboard.purchases"), href: "/dashboard/finance/purchases", icon: Truck },
+    { label: t("Dashboard.invoices"), href: "/dashboard/sales-flow/invoices", icon: FileText },
+    { label: t("Dashboard.expenses"), href: "/dashboard/finance/expenses", icon: Receipt },
+    { label: t("Dashboard.accounting"), href: "/dashboard/finance/accounting", icon: Calculator },
+    { label: t("Dashboard.reports"), href: "/dashboard/finance/reports", icon: BarChart3 },
+    { label: t("Dashboard.settings"), href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
-    const t = useTranslations("Dashboard");
+    const { t } = useI18n();
     const items = NAV_ITEMS(t);
 
     return (
@@ -48,7 +47,7 @@ export function Sidebar() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                             <Package className="h-5 w-5" />
                         </div>
-                        <span className="font-tajawal">{t("brand_name")}</span>
+                        <span className="font-tajawal">{t("Dashboard.brand_name")}</span>
                     </Link>
                 </div>
                 <div className="flex-1 overflow-auto py-4">
@@ -63,7 +62,7 @@ export function Sidebar() {
 }
 
 export function MobileSidebar() {
-    const t = useTranslations("Dashboard");
+    const { t } = useI18n();
     const items = NAV_ITEMS(t);
 
     return (
@@ -80,7 +79,7 @@ export function MobileSidebar() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                             <Package className="h-5 w-5" />
                         </div>
-                        <span className="font-tajawal">{t("brand_name")}</span>
+                        <span className="font-tajawal">{t("Dashboard.brand_name")}</span>
                     </Link>
                 </div>
                 <NavContent items={items} mobileView />
@@ -98,7 +97,7 @@ function NavContent({ items, mobileView = false }: { items: any[], mobileView?: 
     return (
         <nav className={cn("grid items-start px-3 text-sm font-medium", mobileView ? "gap-1" : "gap-1")}>
             {items.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                const isActive = pathname.endsWith(item.href) || (item.href !== '/dashboard' && pathname.includes(item.href));
 
                 return (
                     <Link
@@ -120,5 +119,3 @@ function NavContent({ items, mobileView = false }: { items: any[], mobileView?: 
         </nav>
     );
 }
-
-

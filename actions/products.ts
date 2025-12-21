@@ -39,8 +39,8 @@ export async function createProductAction(prevState: any, formData: FormData) {
         return { error: "Failed to create product. SKU might be duplicate." };
     }
 
-    revalidatePath("/dashboard/products");
-    redirect("/dashboard/products");
+    revalidatePath("/dashboard/inventory/products");
+    redirect("/dashboard/inventory/products");
 }
 
 export async function deleteProductAction(formData: FormData) {
@@ -55,5 +55,5 @@ export async function deleteProductAction(formData: FormData) {
         },
     });
 
-    revalidatePath("/dashboard/products");
+    revalidatePath("/dashboard/inventory/products");
 }

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Loader2, CheckCircle } from "lucide-react";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
 
 export default function AuditCountTable({ count }: { count: any }) {
     const [isFinalizing, startFinalizing] = useTransition();

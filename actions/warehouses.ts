@@ -30,8 +30,8 @@ export async function createWarehouseAction(prevState: any, formData: FormData) 
         },
     });
 
-    revalidatePath("/dashboard/warehouses");
-    redirect("/dashboard/warehouses");
+    revalidatePath("/dashboard/inventory/warehouses");
+    redirect("/dashboard/inventory/warehouses");
 }
 
 export async function deleteWarehouseAction(formData: FormData) {
@@ -43,5 +43,5 @@ export async function deleteWarehouseAction(formData: FormData) {
         where: { id, tenantId: context.tenantId },
     });
 
-    revalidatePath("/dashboard/warehouses");
+    revalidatePath("/dashboard/inventory/warehouses");
 }

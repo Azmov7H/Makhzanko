@@ -1,17 +1,27 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
+import { Globe } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { Locale } from "@/lib/i18n/config";
 
 export default function LanguageToggle() {
-  const pathname = usePathname();
+  const { locale } = useI18n();
   const router = useRouter();
-
-  const isArabic = pathname.startsWith("/ar");
+  const pathname = usePathname();
 
   const toggleLanguage = () => {
-    const newLocale = isArabic ? "en" : "ar";
-    const newPath = pathname.replace(/^\/(ar|en)/, `/${newLocale}`);
+    const newLocale: Locale = locale === "ar" ? "en" : "ar";
+
+    // Set cookie for persistence
+    document.cookie = `locale=${newLocale}; path=/; max-age=31536000`; // 1 year
+
+    // Update URL
+    const segments = pathname.split("/");
+    segments[1] = newLocale;
+    const newPath = segments.join("/");
+
     router.push(newPath);
   };
 
@@ -19,10 +29,12 @@ export default function LanguageToggle() {
     <Button
       variant="outline"
       size="sm"
+      className="gap-2 font-semibold rounded-full"
       onClick={toggleLanguage}
-      className="font-semibold"
     >
-      {isArabic ? "EN" : "AR"}
+      <Globe className="h-4 w-4" />
+      {locale === "ar" ? "English" : "العربية"}
     </Button>
   );
 }
+

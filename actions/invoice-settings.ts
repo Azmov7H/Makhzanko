@@ -82,6 +82,6 @@ export async function updateInvoiceSettingsAction(data: InvoiceSettingsData) {
         }
     });
 
-    revalidatePath("/dashboard/invoices/design");
+    revalidatePath("/dashboard/sales-flow/invoices/design");
     return { success: true };
 }

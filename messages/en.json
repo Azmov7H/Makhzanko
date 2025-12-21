@@ -18,6 +18,19 @@
                 "customers_value": "+120 records"
             }
         },
+        "reports": {
+            "title": "Analytics & Reports",
+            "description": "Key business metrics and performance indicators.",
+            "sales_30d": "Total Sales (30 Days)",
+            "inventory_valuation": "Inventory Valuation",
+            "inventory_items": "{count} items in stock",
+            "sales_count": "{count} sales",
+            "sales_trend": "Sales Trend",
+            "sales_trend_desc": "Sales growth over the last 7 months",
+            "best_sellers": "Best Sellers",
+            "best_sellers_desc": "Top 5 products by quantity sold.",
+            "sold": "Sold"
+        },
         "features": {
             "title": "Makhzanko Features",
             "subtitle": "Why Choose Makhzanko?",
@@ -77,6 +90,7 @@
         },
         "footer": {
             "desc": "An integrated system for warehouse and accounting management, designed to help SMEs grow and thrive.",
+            "brand_name": "Makhzanko",
             "quick_links": "Quick Links",
             "support": "Support",
             "contact": "Contact Us",
@@ -87,11 +101,18 @@
                 "home": "Home",
                 "features": "Features",
                 "pricing": "Pricing",
+                "login": "Login",
                 "faq": "FAQ",
                 "contact_us": "Contact Us",
                 "docs": "Documentation",
                 "location": "Cairo, Egypt"
             }
+        },
+        "notFound": {
+            "title": "404 - Page Not Found",
+            "description": "Oops! The page you are looking for doesn't exist or has been moved.",
+            "back_to_home": "Back to Home",
+            "explore": "Explore Our Features"
         }
     },
     "Auth": {
@@ -329,5 +350,48 @@
         "new_users_monthly": "New users per month",
         "revenue_label": "Revenue",
         "users_label": "Users"
+    },
+    "SEO": {
+        "home": {
+            "title": "Makhzanko - Inventory, Accounting & Sales Management System",
+            "description": "Complete inventory, accounting and sales management system designed for the Egyptian market. Start your free 14-day trial with no credit card required.",
+            "keywords": "inventory management, accounting system, sales management, ERP, point of sale, stock management, Egyptian accounting software"
+        },
+        "dashboard": {
+            "title": "Dashboard - Makhzanko",
+            "description": "Main dashboard for managing your inventory, sales, and accounting"
+        },
+        "products": {
+            "title": "Product Management - Makhzanko",
+            "description": "Manage your product catalog and inventory easily and effectively"
+        },
+        "sales": {
+            "title": "Sales & Invoices - Makhzanko",
+            "description": "View and manage sales transactions and invoices"
+        },
+        "accounting": {
+            "title": "Accounting System - Makhzanko",
+            "description": "Chart of accounts, journal entries, general ledger and trial balance"
+        },
+        "warehouses": {
+            "title": "Warehouse Management - Makhzanko",
+            "description": "Manage physical storage locations and track inventory"
+        },
+        "purchases": {
+            "title": "Purchase Orders - Makhzanko",
+            "description": "Manage inventory purchases and incoming stock"
+        },
+        "inventory": {
+            "title": "Inventory Audits - Makhzanko",
+            "description": "Perform physical inventory counts and adjustments"
+        },
+        "login": {
+            "title": "Login - Makhzanko",
+            "description": "Sign in to your Makhzanko account"
+        },
+        "register": {
+            "title": "Create Account - Makhzanko",
+            "description": "Create a new account and start managing your business"
+        }
     }
 }
