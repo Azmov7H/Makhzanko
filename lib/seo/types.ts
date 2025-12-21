@@ -5,7 +5,7 @@
 export interface PageMetadata {
     title: string;
     description: string;
-    keywords?: string[];
+    keywords?: readonly string[];
     ogImage?: string;
     noIndex?: boolean;
     canonical?: string;
@@ -37,7 +37,7 @@ export interface TwitterCardMetadata {
     creator?: string;
     title: string;
     description: string;
-    images?: string[];
+    images?: readonly string[];
 }
 
 export interface BreadcrumbItem {
@@ -49,7 +49,7 @@ export interface BreadcrumbItem {
 export interface ProductStructuredData {
     name: string;
     description: string;
-    image: string[];
+    image: readonly string[];
     sku: string;
     offers: {
         price: string;

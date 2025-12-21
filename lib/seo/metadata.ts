@@ -104,6 +104,6 @@ export function getSiteName(locale: Locale): string {
 /**
  * Get localized keywords
  */
-export function getKeywords(locale: Locale): string[] {
+export function getKeywords(locale: Locale): readonly string[] {
     return seoConfig.keywords[locale];
 }
