@@ -59,8 +59,8 @@ export async function createExpenseAction(prevState: any, formData: FormData) {
         return { error: "Failed to create expense" };
     }
 
-    revalidatePath("/dashboard/expenses");
-    redirect("/dashboard/expenses");
+    revalidatePath("/dashboard/finance/expenses");
+    redirect("/dashboard/finance/expenses");
 }
 
 export async function deleteExpenseAction(id: string) {
@@ -73,7 +73,7 @@ export async function deleteExpenseAction(id: string) {
         await db.expense.delete({
             where: { id, tenantId },
         });
-        revalidatePath("/dashboard/expenses");
+        revalidatePath("/dashboard/finance/expenses");
     } catch (error) {
         return { error: "Failed to delete expense" };
     }

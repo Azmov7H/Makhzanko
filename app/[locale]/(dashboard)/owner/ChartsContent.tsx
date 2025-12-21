@@ -12,7 +12,7 @@ import {
     Area,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useTranslations } from "next-intl";
+import { useI18n } from "@/lib/i18n/context";
 
 // Data interfaces
 interface RevenueData {
@@ -31,15 +31,14 @@ interface ChartsContentProps {
 }
 
 export default function ChartsContent({ revenueData, userGrowthData }: ChartsContentProps) {
-    const t = useTranslations("Charts");
-    const tc = useTranslations("Common");
+    const { t } = useI18n();
 
     return (
         <div className="grid gap-6 md:grid-cols-2">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                    <CardTitle>{t("monthly_revenue")}</CardTitle>
-                    <CardDescription>{t("revenue_overview")}</CardDescription>
+                    <CardTitle>{t("Charts.monthly_revenue")}</CardTitle>
+                    <CardDescription>{t("Charts.revenue_overview")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="h-[300px] w-full" dir="ltr">
@@ -62,11 +61,11 @@ export default function ChartsContent({ revenueData, userGrowthData }: ChartsCon
                                     tick={{ fontSize: 12 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    tickFormatter={(value) => `${value} ${tc("currency")}`}
+                                    tickFormatter={(value) => `${value} ${t("Common.currency")}`}
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                    formatter={(value: number | undefined) => [`${value || 0} ${tc("currency")}`, t("revenue_label")]}
+                                    formatter={(value: number | undefined) => [`${value || 0} ${t("Common.currency")}`, t("Charts.revenue_label")]}
                                 />
                                 <Area
                                     type="monotone"
@@ -83,8 +82,8 @@ export default function ChartsContent({ revenueData, userGrowthData }: ChartsCon
 
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                    <CardTitle>{t("user_growth")}</CardTitle>
-                    <CardDescription>{t("new_users_monthly")}</CardDescription>
+                    <CardTitle>{t("Charts.user_growth")}</CardTitle>
+                    <CardDescription>{t("Charts.new_users_monthly")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="h-[300px] w-full" dir="ltr">
@@ -104,7 +103,7 @@ export default function ChartsContent({ revenueData, userGrowthData }: ChartsCon
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                    formatter={(value: number | undefined) => [value || 0, t("users_label")]}
+                                    formatter={(value: number | undefined) => [value || 0, t("Charts.users_label")]}
                                 />
                                 <Line
                                     type="monotone"
@@ -122,4 +121,3 @@ export default function ChartsContent({ revenueData, userGrowthData }: ChartsCon
         </div>
     );
 }
-

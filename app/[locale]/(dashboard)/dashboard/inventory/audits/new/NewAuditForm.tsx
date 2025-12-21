@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useState, useTransition } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n/context";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export default function NewAuditForm({ warehouses }: { warehouses: any[] }) {
     const [warehouseId, setWarehouseId] = useState<string>("");
-    const [isPending, startTransition] = useTransition();
+    const { locale } = useI18n();
     const router = useRouter();
 
     const handleSubmit = () => {
@@ -27,7 +28,7 @@ export default function NewAuditForm({ warehouses }: { warehouses: any[] }) {
                 toast.error(result.error);
             } else {
                 toast.success("Audit started");
-                router.push(`/dashboard/inventory/audits/${result.countId}`);
+                router.push(`/${locale}/dashboard/inventory/audits/${result.countId}`);
             }
         });
     };

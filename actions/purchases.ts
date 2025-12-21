@@ -114,6 +114,6 @@ export async function createPurchaseAction(prevState: unknown, formData: FormDat
         return { error: "Failed to process purchase order" };
     }
 
-    revalidatePath("/dashboard/purchases");
-    redirect("/dashboard/purchases");
+    revalidatePath("/dashboard/finance/purchases");
+    redirect("/dashboard/finance/purchases");
 }

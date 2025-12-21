@@ -1,70 +1,67 @@
-import createMiddleware from 'next-intl/middleware';
-import { routing } from './i18n/routing';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { NextRequest, NextResponse } from "next/server";
+import { locales, defaultLocale } from "./lib/i18n/config";
+import { jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || '');
-
-// Create next-intl middleware
-const intlMiddleware = createMiddleware(routing);
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "");
 
 export default async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+    const { pathname } = request.nextUrl;
 
-  // Skip i18n routing for /owner routes (they handle auth separately)
-  if (pathname.startsWith('/owner')) {
-    // Protect /owner routes (except /owner/login)
-    if (!pathname.startsWith('/owner/login')) {
-      const ownerToken = request.cookies.get('owner_token')?.value;
+    // 1. i18n redirect logic (if locale is missing)
+    const pathnameHasLocale = locales.some(
+        (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+    );
 
-      if (!ownerToken) {
-        return NextResponse.redirect(new URL('/owner/login', request.url));
-      }
-
-      try {
-        const { payload } = await jwtVerify(ownerToken, secret);
-
-        if (payload.type !== 'owner') {
-          return NextResponse.redirect(new URL('/owner/login', request.url));
-        }
-      } catch {
-        return NextResponse.redirect(new URL('/owner/login', request.url));
-      }
+    if (!pathnameHasLocale) {
+        // Skip redirect for public assets (though matcher should handle most)
+        if (pathname.includes('.')) return NextResponse.next();
+        
+        const locale = request.cookies.get("locale")?.value || defaultLocale;
+        request.nextUrl.pathname = `/${locale}${pathname}`;
+        return NextResponse.redirect(request.nextUrl);
     }
 
-    // Add security headers
-    const response = NextResponse.next();
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    // 2. Auth protection for owner panel
+    const segments = pathname.split("/");
+    const currentLocale = segments[1];
+    
+    // Check if it's an owner route (/[locale]/owner/...)
+    if (segments[2] === "owner") {
+        // Protect /owner routes (except /[locale]/owner/login)
+        if (segments[3] !== "login") {
+            const ownerToken = request.cookies.get("owner_token")?.value;
 
-    if (process.env.NODE_ENV === 'production') {
-      response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            if (!ownerToken) {
+                return NextResponse.redirect(new URL(`/${currentLocale}/owner/login`, request.url));
+            }
+
+            try {
+                const { payload } = await jwtVerify(ownerToken, secret);
+                if (payload.type !== "owner") {
+                   return NextResponse.redirect(new URL(`/${currentLocale}/owner/login`, request.url));
+                }
+            } catch {
+                return NextResponse.redirect(new URL(`/${currentLocale}/owner/login`, request.url));
+            }
+        }
+    }
+
+    // 3. Prepare response and add security headers
+    const response = NextResponse.next();
+    
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    response.headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+
+    if (process.env.NODE_ENV === "production") {
+        response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     }
 
     return response;
-  }
-
-  // Apply next-intl routing for all other routes
-  const response = intlMiddleware(request);
-
-  // Add security headers
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-
-  return response;
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|trpc|_next|_vercel|.*\\..*).*)'
-  ],
+    // Matcher tailored to ignore static assets, api routes and standard vercel files
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icon.png|logo.png|manifest.json|robots.txt|sitemap.xml|.*\\.[\\w]+$).*)"],
 };

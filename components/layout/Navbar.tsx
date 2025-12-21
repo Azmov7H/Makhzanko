@@ -1,22 +1,22 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
+import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Menu, X } from "lucide-react";
-import LanguageToggle from "./LanguageToggle"
+import LanguageToggle from "./LanguageToggle";
 import Logo from "./Logo";
 import { ThemeToggle } from "./Toggel";
-import { useTranslations } from "next-intl";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function Navbar() {
-  const t = useTranslations("Dashboard");
+  const { t, locale } = useI18n();
 
   const links = [
-    { id: 1, name: t("features"), href: "/#features" },
-    { id: 2, name: t("pricing"), href: "/#pricing" },
-    { id: 3, name: t("support"), href: "/support" },
+    { id: 1, name: t("Landing.features.title"), href: "/#features" },
+    { id: 2, name: t("Landing.pricing.title"), href: "/#pricing" },
+    { id: 3, name: t("Landing.footer.support"), href: "/support" },
   ];
 
   const [open, setOpen] = useState(false);
@@ -51,13 +51,13 @@ export default function Navbar() {
 
           <Link href="/login" className="hidden sm:block">
             <Button variant="outline" size="sm" className="rounded-full">
-              {t("login")}
+              {t("Auth.login")}
             </Button>
           </Link>
 
           <Link href="/register">
             <Button size="sm" className="rounded-full gradient-primary">
-              {t("get_started")}
+              {t("Auth.register")}
             </Button>
           </Link>
 
@@ -85,7 +85,7 @@ export default function Navbar() {
               <hr className="border-border my-2" />
               <Link href="/login" onClick={() => setOpen(false)}>
                 <Button variant="outline" size="sm" className="w-full rounded-full">
-                  {t("login")}
+                  {t("Auth.login")}
                 </Button>
               </Link>
             </PopoverContent>

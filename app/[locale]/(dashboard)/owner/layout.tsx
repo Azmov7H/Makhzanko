@@ -20,7 +20,7 @@ import {
   LogOut,
   CircleUser,
 } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default async function OwnerLayout({

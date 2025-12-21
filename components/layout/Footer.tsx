@@ -1,12 +1,12 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
+import { useI18n } from "@/lib/i18n/context";
+import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import Logo from "./Logo";
 import { Facebook, Twitter, Instagram, Github } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 export default function Footer() {
-    const t = useTranslations("Landing.footer");
+    const { t, locale } = useI18n();
     const currentYear = new Date().getFullYear();
 
     return (
@@ -37,31 +37,31 @@ export default function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="font-bold mb-6">{t("quick_links")}</h4>
+                        <h4 className="font-bold mb-6">{t("Landing.footer.quick_links")}</h4>
                         <ul className="flex flex-col gap-4 text-sm text-muted-foreground">
-                            <li><Link href="/" className="hover:text-primary transition-colors">{t("links.home")}</Link></li>
-                            <li><Link href="#features" className="hover:text-primary transition-colors">{t("links.features")}</Link></li>
-                            <li><Link href="#pricing" className="hover:text-primary transition-colors">{t("links.pricing")}</Link></li>
-                            <li><Link href="/login" className="hover:text-primary transition-colors">{t("links.login") || "تسجيل الدخول"}</Link></li>
+                            <li><Link href="/" className="hover:text-primary transition-colors">{t("Landing.footer.links.home")}</Link></li>
+                            <li><Link href="/#features" className="hover:text-primary transition-colors">{t("Landing.footer.links.features")}</Link></li>
+                            <li><Link href="/#pricing" className="hover:text-primary transition-colors">{t("Landing.footer.links.pricing")}</Link></li>
+                            <li><Link href="/login" className="hover:text-primary transition-colors">{t("Landing.footer.links.login")}</Link></li>
                         </ul>
                     </div>
 
                     {/* Support */}
                     <div>
-                        <h4 className="font-bold mb-6">{t("support")}</h4>
+                        <h4 className="font-bold mb-6">{t("Landing.footer.support")}</h4>
                         <ul className="flex flex-col gap-4 text-sm text-muted-foreground">
-                            <li><Link href="/faq" className="hover:text-primary transition-colors">{t("links.faq")}</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition-colors">{t("links.contact_us")}</Link></li>
-                            <li><Link href="/docs" className="hover:text-primary transition-colors">{t("links.docs")}</Link></li>
-                            <li><Link href="/privacy" className="hover:text-primary transition-colors">{t("privacy")}</Link></li>
+                            <li><Link href="/faq" className="hover:text-primary transition-colors">{t("Landing.footer.links.faq")}</Link></li>
+                            <li><Link href="/contact" className="hover:text-primary transition-colors">{t("Landing.footer.links.contact_us")}</Link></li>
+                            <li><Link href="/docs" className="hover:text-primary transition-colors">{t("Landing.footer.links.docs")}</Link></li>
+                            <li><Link href="/privacy" className="hover:text-primary transition-colors">{t("Landing.footer.privacy")}</Link></li>
                         </ul>
                     </div>
 
                     {/* Contact Info */}
                     <div>
-                        <h4 className="font-bold mb-6">{t("contact")}</h4>
+                        <h4 className="font-bold mb-6">{t("Landing.footer.contact")}</h4>
                         <ul className="flex flex-col gap-4 text-sm text-muted-foreground">
-                            <li>{t("links.location")}</li>
+                            <li>{t("Landing.footer.links.location")}</li>
                             <li>support@makhzanko.com</li>
                             <li>+20 123 456 7890</li>
                         </ul>
@@ -69,10 +69,10 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-                    <p>© {currentYear} {t("brand_name") || "مخزنكو"}. {t("rights")}</p>
+                    <p>© {currentYear} {t("Landing.footer.brand_name")}. {t("Landing.footer.rights")}</p>
                     <div className="flex items-center gap-6">
-                        <Link href="/terms" className="hover:text-primary transition-colors">{t("terms")}</Link>
-                        <Link href="/privacy" className="hover:text-primary transition-colors">{t("privacy")}</Link>
+                        <Link href="/terms" className="hover:text-primary transition-colors">{t("Landing.footer.terms")}</Link>
+                        <Link href="/privacy" className="hover:text-primary transition-colors">{t("Landing.footer.privacy")}</Link>
                     </div>
                 </div>
             </div>
