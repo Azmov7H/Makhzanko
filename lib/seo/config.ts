@@ -15,11 +15,11 @@ export const seoConfig = {
     },
 
     // URLs
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://makhzanko.com",
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://makhzanko.vercel.app/",
 
     // Default Images
     defaultOgImage: "/og-image.png",
-    logo: "/logo.png",
+    logo: "/dashboard-preview.png",
 
     // Organization Info
     organization: {
@@ -56,6 +56,7 @@ export const seoConfig = {
         ar: [
             "إدارة المخازن",
             "نظام محاسبة",
+            "كاشير",
             "إدارة المبيعات",
             "ERP",
             "نظام نقاط البيع",

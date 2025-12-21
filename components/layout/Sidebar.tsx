@@ -87,9 +87,6 @@ export function MobileSidebar({ role }: { role: string }) {
                     </Link>
                 </div>
                 <NavContent items={items} mobileView />
-                <div className="mt-auto border-t border-sidebar-border pt-4">
-                    <ThemeToggle />
-                </div>
             </SheetContent>
         </Sheet>
     );
