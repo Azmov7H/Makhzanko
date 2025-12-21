@@ -129,7 +129,7 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                             <ShoppingCart className="h-5 w-5 text-primary" />
                             {t("Sales.current_order")}
                         </span>
-                        <Badge variant="primary" className="bg-primary text-primary-foreground">
+                        <Badge variant="default" className="bg-primary text-primary-foreground">
                             {cart.length} {t("Sales.items_label")}
                         </Badge>
                     </CardTitle>
