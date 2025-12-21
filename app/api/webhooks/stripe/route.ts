@@ -4,18 +4,20 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
-}
+let stripeInstance: Stripe | null = null;
 
-if (!process.env.STRIPE_WEBHOOK_SECRET) {
-  throw new Error("STRIPE_WEBHOOK_SECRET is not set");
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY is not set");
+  }
+  if (!stripeInstance) {
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-02-24.acacia",
+      typescript: true,
+    });
+  }
+  return stripeInstance;
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-02-24.acacia",
-  typescript: true,
-});
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -25,13 +27,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No signature" }, { status: 400 });
   }
 
-  let event: Stripe.Event;
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    throw new Error("STRIPE_WEBHOOK_SECRET is not set");
+  }
 
+  let event: Stripe.Event;
+  const stripe = getStripe();
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
     const error = err as Error;
@@ -106,6 +112,7 @@ async function handleSubscriptionCreated(
   }
 
   // Fetch subscription from Stripe
+  const stripe = getStripe();
   const stripeSubscription = await stripe.subscriptions.retrieve(
     stripeSubscriptionId
   );
