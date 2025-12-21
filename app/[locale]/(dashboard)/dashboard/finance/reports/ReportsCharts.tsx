@@ -56,7 +56,7 @@ export default function ReportsCharts({ data, label, currency }: ReportsChartsPr
                         }}
                         itemStyle={{ color: 'hsl(var(--primary))', fontWeight: 'bold' }}
                         labelStyle={{ color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}
-                        formatter={(value: number) => [`${value.toLocaleString()} ${currency}`, label]}
+                        formatter={(value: any) => [`${Number(value || 0).toLocaleString()} ${currency}`, label]}
                         cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
                     />
                     <Area

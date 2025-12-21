@@ -65,7 +65,7 @@ export default function ChartsContent({ revenueData, userGrowthData }: ChartsCon
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                    formatter={(value: number | undefined) => [`${value || 0} ${t("Common.currency")}`, t("Charts.revenue_label")]}
+                                    formatter={(value: any) => [`${value || 0} ${t("Common.currency")}`, t("Charts.revenue_label")]}
                                 />
                                 <Area
                                     type="monotone"
@@ -103,7 +103,7 @@ export default function ChartsContent({ revenueData, userGrowthData }: ChartsCon
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                    formatter={(value: number | undefined) => [value || 0, t("Charts.users_label")]}
+                                    formatter={(value: any) => [value || 0, t("Charts.users_label")]}
                                 />
                                 <Line
                                     type="monotone"
