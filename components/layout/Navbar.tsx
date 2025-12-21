@@ -55,7 +55,7 @@ export default function Navbar() {
             </Button>
           </Link>
 
-          <Link href="/register">
+          <Link href="/register" className="hidden sm:block">
             <Button size="sm" className="rounded-full gradient-primary">
               {t("Auth.register")}
             </Button>
