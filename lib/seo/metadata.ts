@@ -21,7 +21,7 @@ export function generatePageMetadata(
     return {
         title: page.title,
         description: page.description,
-        keywords: page.keywords,
+        keywords: page.keywords ? [...page.keywords] : undefined,
 
         // Canonical URL
         alternates: {
