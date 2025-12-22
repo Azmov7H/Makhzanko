@@ -3,9 +3,11 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, Warehouse, ShoppingCart, FileText, TrendingUp, DollarSign } from "lucide-react";
-import { getDashboardSummary } from "@/actions/reports";
+import { getDashboardSummary, getInventoryAlerts } from "@/actions/reports";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
+import { AlertTriangle, TrendingDown, Clock, MoveRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default async function DashboardLandingPage({
     params,
@@ -14,7 +16,10 @@ export default async function DashboardLandingPage({
 }) {
     const { locale } = await params;
     await getTenantContext();
-    const stats = await getDashboardSummary();
+    const [stats, alerts] = await Promise.all([
+        getDashboardSummary(),
+        getInventoryAlerts()
+    ]);
     const t = await getI18n(locale as Locale);
 
     const quickLinks = [
@@ -99,6 +104,77 @@ export default async function DashboardLandingPage({
                     </div>
                 </CardContent>
             </Card>
+
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Low Stock Alerts */}
+                <Card className="border-red-100 dark:border-red-900/30">
+                    <CardHeader className="flex flex-row items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                        <div>
+                            <CardTitle className="text-lg">{t("Dashboard.alerts.low_stock_title")}</CardTitle>
+                            <CardDescription>{t("Dashboard.alerts.low_stock_desc")}</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {alerts.lowStock.length === 0 ? (
+                                <p className="text-sm text-muted-foreground py-4 text-center">
+                                    {t("Dashboard.alerts.no_alerts")}
+                                </p>
+                            ) : (
+                                alerts.lowStock.map(p => (
+                                    <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-red-50 dark:bg-red-900/10">
+                                        <div>
+                                            <p className="font-bold text-sm">{p.name}</p>
+                                            <p className="text-xs text-muted-foreground">{p.sku}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <Badge variant="destructive">{p.totalStock} / {p.minStock}</Badge>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Demand Forecast */}
+                <Card className="border-blue-100 dark:border-blue-900/30">
+                    <CardHeader className="flex flex-row items-center gap-2">
+                        <TrendingDown className="h-5 w-5 text-blue-500" />
+                        <div>
+                            <CardTitle className="text-lg">{t("Dashboard.alerts.forecast_title")}</CardTitle>
+                            <CardDescription>{t("Dashboard.alerts.forecast_desc")}</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {alerts.forecasts.length === 0 ? (
+                                <p className="text-sm text-muted-foreground py-4 text-center">
+                                    {t("Dashboard.alerts.no_forecasts")}
+                                </p>
+                            ) : (
+                                alerts.forecasts.map(f => (
+                                    <div key={f.id} className="flex items-center justify-between p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                                        <div>
+                                            <p className="font-bold text-sm">{f.name}</p>
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                                <Clock className="h-3 w-3" />
+                                                <span>{locale === "ar" ? `يكفي لـ ${f.daysLeft} أيام` : `Lasts for ${f.daysLeft} days`}</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                                                {locale === "ar" ? `${f.weeklySales} قطعة/أسبوع` : `${f.weeklySales} units/week`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }

@@ -16,6 +16,7 @@ import {
     BarChart3,
     Calculator,
     Shield,
+    HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ const NAV_ITEMS = (t: any, role: string) => {
         { label: t("Dashboard.expenses"), href: "/dashboard/finance/expenses", icon: Receipt, roles: ["OWNER", "MANAGER"] },
         { label: t("Dashboard.accounting"), href: "/dashboard/finance/accounting", icon: Calculator, roles: ["OWNER"] }, // Advanced accounting usually owner
         { label: t("Dashboard.reports"), href: "/dashboard/finance/reports", icon: BarChart3, roles: ["OWNER", "MANAGER"] },
+        { label: t("Dashboard.user_menu.support"), href: "/dashboard/contact", icon: HelpCircle, roles: ["OWNER", "MANAGER", "STAFF"] },
         { label: t("Dashboard.settings"), href: "/dashboard/settings", icon: Settings, roles: ["OWNER", "MANAGER", "STAFF"] },
     ];
 

@@ -165,3 +165,64 @@ export async function getDashboardSummary() {
         totalWarehouses: warehousesCount
     };
 }
+
+export async function getInventoryAlerts() {
+    const context = await getTenantContext();
+
+    // 1. Low Stock Alerts
+    const products = await db.product.findMany({
+        where: { tenantId: context.tenantId },
+        include: { stocks: true }
+    });
+
+    const lowStock = products.map(p => {
+        const totalStock = p.stocks.reduce((sum, s) => sum + s.quantity, 0);
+        return {
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            totalStock,
+            minStock: p.minStock
+        };
+    }).filter(p => p.totalStock <= p.minStock && p.minStock > 0);
+
+    // 2. Basic Demand Forecast (Simple moving average of last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const recentSales = await db.saleItem.findMany({
+        where: {
+            sale: {
+                tenantId: context.tenantId,
+                date: { gte: sevenDaysAgo },
+                status: "COMPLETED"
+            }
+        },
+        select: {
+            productId: true,
+            quantity: true
+        }
+    });
+
+    const salesMap = new Map();
+    recentSales.forEach(s => {
+        const current = salesMap.get(s.productId) || 0;
+        salesMap.set(s.productId, current + s.quantity);
+    });
+
+    const forecasts = products.map(p => {
+        const weeklySales = salesMap.get(p.id) || 0;
+        const dailyAvg = weeklySales / 7;
+        const totalStock = p.stocks.reduce((sum, s) => sum + s.quantity, 0);
+
+        return {
+            id: p.id,
+            name: p.name,
+            weeklySales,
+            dailyAvg: dailyAvg.toFixed(2),
+            daysLeft: dailyAvg > 0 ? Math.floor(totalStock / dailyAvg) : Infinity
+        };
+    }).filter(f => f.weeklySales > 0).sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 5);
+
+    return { lowStock, forecasts };
+}

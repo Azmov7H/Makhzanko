@@ -38,9 +38,10 @@ model Tenant {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   
-  // Subscription
+  // Subscription & Trial
   plan              PlanType         @default(FREE)
   stripeCustomerId  String?          @unique
+  trialEndsAt       DateTime?        // 14-day trial expiration
   
   // Branding & Settings
   invoiceSettings   InvoiceSettings?
@@ -63,6 +64,8 @@ model Tenant {
   trialOverride     TrialOverride?
   activityLogs      ActivityLog[]
   redemptions       Redemption[]
+  returns           Return[]
+  chatSessions      ChatSession[]
 
   @@index([slug])
   @@index([stripeCustomerId])
@@ -127,15 +130,26 @@ model InvoiceSettings {
   tenantId       String  @unique
   tenant         Tenant  @relation(fields: [tenantId], references: [id])
   
+  // Branding
   logoUrl        String?
   primaryColor   String? @default("#000000")
+  accentColor    String? @default("#4F46E5")
   fontFamily     String? @default("Inter")
+  fontSize       String? @default("medium") // small, medium, large
   templateStyle  String  @default("modern") 
   
+  // Visibility toggles
   showTax        Boolean @default(true)
   showDiscount   Boolean @default(true)
   showSeller     Boolean @default(true)
   showWarehouse  Boolean @default(false)
+  showCustomerSection Boolean @default(true)
+  showItemCode   Boolean @default(true)
+  
+  // Company info
+  companyAddress String?
+  companyPhone   String?
+  companyEmail   String?
   footerNotes    String?
 }
 
@@ -201,6 +215,7 @@ model Product {
   saleItems      SaleItem[]
   purchaseItems  PurchaseItem[]
   inventoryCountLines InventoryCountLine[]
+  returnItems    ReturnItem[]
 
   @@unique([tenantId, sku])
   @@index([tenantId, name])
@@ -263,14 +278,83 @@ model SaleItem {
 }
 
 model Invoice {
-  id             String   @id @default(cuid())
-  jsonSnapshot   Json     
-  pdfUrl         String?
+  id              String    @id @default(cuid())
+  token           String?   @unique @default(cuid())  // Human-readable: INV-2024-XXXX (default for migration)
+  customerName    String?             // Customer name for the invoice
+  
+  // Financial fields
+  subtotal        Decimal   @default(0)  // Pre-discount total
+  discountType    String?             // "percentage" | "fixed" | null
+  discountValue   Decimal?            // The discount percentage or fixed amount
+  discountAmount  Decimal   @default(0) // Calculated discount amount
+  taxRate         Decimal?            // Tax percentage if applicable
+  taxAmount       Decimal   @default(0) // Calculated tax amount
+  total           Decimal   @default(0) // Final total
+  
+  // Status & metadata
+  status          String    @default("COMPLETED") // DRAFT, PENDING, COMPLETED, PARTIAL_REFUND, REFUNDED, CANCELLED
+  notes           String?             // Invoice notes
+  jsonSnapshot    Json                // Snapshot of sale data
+  pdfUrl          String?
+  
+  // Relations
+  saleId          String    @unique
+  sale            Sale      @relation(fields: [saleId], references: [id])
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  returns         Return[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now()) @updatedAt
+  
+  @@index([token])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
 
-  saleId         String   @unique
-  sale           Sale     @relation(fields: [saleId], references: [id])
-  tenantId       String
-  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+// --- Returns / Refunds ---
+
+model Return {
+  id              String    @id @default(cuid())
+  token           String    @unique  // Human-readable: RET-2024-XXXX
+  
+  invoiceId       String
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id])
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  
+  returnType      String    // "FULL" | "PARTIAL"
+  reason          String
+  notes           String?
+  
+  // Financial calculations (proportional to discount)
+  itemsTotal      Decimal   // Total of returned items at original price
+  discountShare   Decimal   // Proportional discount amount
+  refundAmount    Decimal   // Final refund = itemsTotal - discountShare
+  
+  status          String    @default("PENDING") // PENDING, APPROVED, COMPLETED, REJECTED
+  processedAt     DateTime?
+  processedBy     String?
+  
+  items           ReturnItem[]
+  journalEntryId  String?
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([invoiceId])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
+
+model ReturnItem {
+  id          String   @id @default(cuid())
+  returnId    String
+  return      Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  price       Decimal  // Original sale price
+  cost        Decimal  // Product cost for accounting
 }
 
 model PurchaseOrder {
@@ -457,3 +541,74 @@ model Redemption {
   @@index([promoCodeId])
   @@index([tenantId])
 }
+
+// --- Live Support Chat System ---
+
+model ChatSession {
+  id          String        @id @default(cuid())
+  tenantId    String
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  status      String        @default("ACTIVE") // ACTIVE, ENDED, EXPIRED
+  startedAt   DateTime      @default(now())
+  endsAt      DateTime      // Automatically calculated: startedAt + 15 minutes
+  endedAt     DateTime?
+  
+  messages    ChatMessage[]
+  
+  @@index([tenantId])
+  @@index([status])
+  @@index([endsAt])
+}
+
+model ChatMessage {
+  id          String      @id @default(cuid())
+  sessionId   String
+  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender      String      // "OWNER" | "CLIENT"
+  senderName  String?
+  content     String
+  createdAt   DateTime    @default(now())
+  
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// --- Platform Management ---
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  type      String   @default("INFO") // INFO, WARNING, CRITICAL
+  target    String   @default("ALL")  // ALL, FREE, PRO, BUSINESS
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([target])
+}
+
+model GlobalSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model PlatformAdmin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String?
+  role      String   @default("SUPER") // SUPER, SUPPORT, FINANCE
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([username])
+}
+

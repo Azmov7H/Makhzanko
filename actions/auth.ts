@@ -32,11 +32,16 @@ export async function registerAction(prevState: any, formData: FormData) {
         const slug = companyName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(); // Simple slug gen
 
         const { user, tenant } = await db.$transaction(async (tx) => {
+            // Calculate 14-day trial expiration
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
             const tenant = await tx.tenant.create({
                 data: {
                     name: companyName,
                     slug,
                     plan: "FREE",
+                    trialEndsAt, // 14-day trial
                 },
             });
 
