@@ -9,7 +9,8 @@ import {
     AlertTriangle,
     AlertCircle,
     Calendar,
-    Users
+    Users,
+    Megaphone
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,7 +78,7 @@ export function AnnouncementList({
                         <div className="flex flex-col md:flex-row items-stretch">
                             {/* Type Indicator */}
                             <div className={`w-2 h-auto ${item.type === 'CRITICAL' ? 'bg-red-500' :
-                                    item.type === 'WARNING' ? 'bg-amber-500' : 'bg-blue-500'
+                                item.type === 'WARNING' ? 'bg-amber-500' : 'bg-blue-500'
                                 }`} />
 
                             <div className="flex-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -148,4 +149,3 @@ export function AnnouncementList({
     );
 }
 
-import { Megaphone } from "lucide-react";

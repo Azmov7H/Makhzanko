@@ -29,7 +29,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     }));
 
     const invoiceData = {
-        token: invoice.token,
+        token: invoice.token || `INV-${invoice.id.substring(0, 8)}`,
         customerName: invoice.customerName || undefined,
         date: invoice.sale.date.toISOString(),
         items,

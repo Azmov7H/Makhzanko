@@ -18,6 +18,7 @@ import { ShoppingCart, Trash2, CreditCard, Plus, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export default function SalesForm({ products, warehouses }: { products: any[]; warehouses: any[] }) {

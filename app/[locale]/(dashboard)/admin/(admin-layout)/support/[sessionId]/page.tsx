@@ -32,6 +32,8 @@ export default async function AdminSessionPage({
                 sessionId={sessionId}
                 initialMessages={initialMessages.map(m => ({
                     ...m,
+                    sender: m.sender as "OWNER" | "CLIENT",
+                    senderName: m.senderName ?? undefined,
                     createdAt: new Date(m.createdAt)
                 }))}
                 tenantName={session.tenant.name}
