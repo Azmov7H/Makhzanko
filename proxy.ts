@@ -15,7 +15,7 @@ export default async function middleware(request: NextRequest) {
     if (!pathnameHasLocale) {
         // Skip redirect for public assets (though matcher should handle most)
         if (pathname.includes('.')) return NextResponse.next();
-        
+
         const locale = request.cookies.get("locale")?.value || defaultLocale;
         request.nextUrl.pathname = `/${locale}${pathname}`;
         return NextResponse.redirect(request.nextUrl);
@@ -24,31 +24,31 @@ export default async function middleware(request: NextRequest) {
     // 2. Auth protection for owner panel
     const segments = pathname.split("/");
     const currentLocale = segments[1];
-    
-    // Check if it's an owner route (/[locale]/owner/...)
-    if (segments[2] === "owner") {
-        // Protect /owner routes (except /[locale]/owner/login)
+
+    // Check if it's an admin route (/[locale]/admin/...)
+    if (segments[2] === "admin") {
+        // Protect /admin routes (except /[locale]/admin/login)
         if (segments[3] !== "login") {
             const ownerToken = request.cookies.get("owner_token")?.value;
 
             if (!ownerToken) {
-                return NextResponse.redirect(new URL(`/${currentLocale}/owner/login`, request.url));
+                return NextResponse.redirect(new URL(`/${currentLocale}/admin/login`, request.url));
             }
 
             try {
                 const { payload } = await jwtVerify(ownerToken, secret);
                 if (payload.type !== "owner") {
-                   return NextResponse.redirect(new URL(`/${currentLocale}/owner/login`, request.url));
+                    return NextResponse.redirect(new URL(`/${currentLocale}/admin/login`, request.url));
                 }
             } catch {
-                return NextResponse.redirect(new URL(`/${currentLocale}/owner/login`, request.url));
+                return NextResponse.redirect(new URL(`/${currentLocale}/admin/login`, request.url));
             }
         }
     }
 
     // 3. Prepare response and add security headers
     const response = NextResponse.next();
-    
+
     response.headers.set("X-Frame-Options", "DENY");
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");

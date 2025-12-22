@@ -17,6 +17,11 @@ import { logoutAction } from "@/actions/auth";
 import Link from "next/link";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
+import { ChatBot } from "@/components/chatbot/ChatBot";
+import { getTrialStatus } from "@/lib/trial-check";
+import { TrialBanner } from "@/components/dashboard/TrialBanner";
+import { getActiveAnnouncementsAction } from "@/actions/admin/announcements";
+import { AnnouncementBanner } from "@/components/ui/AnnouncementBanner";
 
 export default async function DashboardLayout({
     children,
@@ -43,6 +48,9 @@ export default async function DashboardLayout({
         BUSINESS: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
     };
 
+    const trialStatus = await getTrialStatus(context.tenantId);
+    const announcements = await getActiveAnnouncementsAction(plan);
+
     return (
         <>
             <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
@@ -57,10 +65,10 @@ export default async function DashboardLayout({
                             </Badge>
                         </div>
                         {context.role === "OWNER" && (
-                            <Link href={`/${locale}/owner`}>
+                            <Link href={`/${locale}/admin`}>
                                 <Button variant="ghost" size="sm" className="gap-2">
                                     <Shield className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{t("Dashboard.owner_panel")}</span>
+                                    <span className="hidden sm:inline">{t("Dashboard.admin_panel")}</span>
                                 </Button>
                             </Link>
                         )}
@@ -102,12 +110,22 @@ export default async function DashboardLayout({
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </header>
+                    <AnnouncementBanner
+                        announcements={JSON.parse(JSON.stringify(announcements))}
+                        locale={locale}
+                    />
+                    <TrialBanner
+                        daysRemaining={trialStatus.daysRemaining}
+                        isExpired={trialStatus.isExpired}
+                        locale={locale}
+                    />
                     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background transition-colors">
                         {children}
                     </main>
                 </div>
             </div>
             <Toaster />
+            <ChatBot locale={locale as "en" | "ar"} />
         </>
     );
 }

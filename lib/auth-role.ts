@@ -37,11 +37,11 @@ export async function requireRole(requiredRole: Role): Promise<TenantContext> {
  * Now checks for separate owner authentication
  */
 export async function requireOwner(): Promise<{ username: string }> {
-  const { getOwnerSession } = await import("@/actions/owner/auth");
+  const { getOwnerSession } = await import("@/actions/admin/auth");
   const session = await getOwnerSession();
 
   if (!session || !session.authenticated) {
-    redirect("/owner/login");
+    redirect("/admin/login");
   }
 
   return { username: session.username };

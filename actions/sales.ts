@@ -10,10 +10,13 @@ export async function createSaleAction(data: {
     warehouseId: string;
     items: { productId: string; quantity: number; price: number }[];
     customerId?: string;
+    customerName?: string;
+    discountType?: "percentage" | "fixed";
+    discountValue?: number;
 }) {
     const context = await getTenantContext();
 
-    const { warehouseId, items, customerId } = data;
+    const { warehouseId, items, customerId, customerName, discountType, discountValue } = data;
 
     if (!items || items.length === 0) return { error: "No items in sale" };
     if (!warehouseId) return { error: "Warehouse required" };
@@ -35,8 +38,18 @@ export async function createSaleAction(data: {
             });
             const nextNumber = (lastSale?.number || 0) + 1;
 
-            // 2. Calculate Total & Create Sale
-            const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // 2. Calculate Subtotal, Discount, and Total
+            const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            // Calculate discount amount
+            let discountAmount = 0;
+            if (discountType === "percentage" && discountValue) {
+                discountAmount = (subtotal * discountValue) / 100;
+            } else if (discountType === "fixed" && discountValue) {
+                discountAmount = Math.min(discountValue, subtotal);
+            }
+
+            const total = subtotal - discountAmount;
 
             const newSale = await tx.sale.create({
                 data: {
@@ -85,12 +98,34 @@ export async function createSaleAction(data: {
                 }
             }
 
-            // 4. Create Invoice placeholder
+            // 4. Generate human-readable invoice token: INV-YYYY-XXXX
+            const year = new Date().getFullYear();
+            const paddedNumber = String(nextNumber).padStart(4, '0');
+            const invoiceToken = `INV-${year}-${paddedNumber}`;
+
+            // 5. Create Invoice with all financial details
             await tx.invoice.create({
                 data: {
                     saleId: newSale.id,
                     tenantId: context.tenantId,
-                    jsonSnapshot: { ...newSale, items }
+                    token: invoiceToken,
+                    customerName: customerName || null,
+                    subtotal: subtotal,
+                    discountType: discountType || null,
+                    discountValue: discountValue || null,
+                    discountAmount: discountAmount,
+                    total: total,
+                    status: "COMPLETED",
+                    jsonSnapshot: {
+                        ...newSale,
+                        items,
+                        customerName,
+                        subtotal,
+                        discountType,
+                        discountValue,
+                        discountAmount,
+                        total
+                    }
                 }
             });
 

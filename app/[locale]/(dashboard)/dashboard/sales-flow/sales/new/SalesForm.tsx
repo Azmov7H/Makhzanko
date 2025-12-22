@@ -18,6 +18,7 @@ import { ShoppingCart, Trash2, CreditCard, Plus, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function SalesForm({ products, warehouses }: { products: any[]; warehouses: any[] }) {
     const { t, locale } = useI18n();
@@ -25,6 +26,11 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
     const [selectedWarehouse, setSelectedWarehouse] = useState(warehouses[0]?.id || "");
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
+
+    // New fields for invoice enhancement
+    const [customerName, setCustomerName] = useState("");
+    const [discountType, setDiscountType] = useState<"percentage" | "fixed" | "none">("none");
+    const [discountValue, setDiscountValue] = useState(0);
 
     const addToCart = (productId: string) => {
         const product = products.find(p => p.id === productId);
@@ -55,7 +61,7 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
 
     const handleCheckout = () => {
         if (!selectedWarehouse) {
-            alert(t("Sales.select_warehouse_error"));
+            toast.error(t("Sales.select_warehouse_error"));
             return;
         }
         if (cart.length === 0) return;
@@ -63,18 +69,30 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
         startTransition(async () => {
             const result = await createSaleAction({
                 warehouseId: selectedWarehouse,
-                items: cart.map(item => ({ productId: item.productId, quantity: item.quantity, price: item.price }))
+                items: cart.map(item => ({ productId: item.productId, quantity: item.quantity, price: item.price })),
+                customerName: customerName || undefined,
+                discountType: discountType !== "none" ? discountType : undefined,
+                discountValue: discountType !== "none" ? discountValue : undefined,
             });
 
             if (result.error) {
-                alert(result.error);
+                toast.error(result.error);
             } else {
                 router.push(`/${locale}/dashboard/sales-flow/sales`);
             }
         });
     };
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    // Calculate discount amount
+    const discountAmount = discountType === "percentage"
+        ? (subtotal * discountValue / 100)
+        : discountType === "fixed"
+            ? Math.min(discountValue, subtotal)
+            : 0;
+
+    const total = subtotal - discountAmount;
 
     return (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 h-[calc(100vh-180px)] min-h-[600px]">
@@ -225,10 +243,70 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                 </CardContent>
 
                 <CardFooter className="flex-col border-t bg-card p-6 gap-4">
-                    <div className="flex w-full justify-between items-center bg-primary/5 p-4 rounded-xl border border-primary/10">
-                        <span className="text-muted-foreground font-medium">{t("Sales.total_amount")}</span>
-                        <div className="text-2xl font-black text-primary">
-                            {total.toLocaleString()} <span className="text-xs font-normal uppercase">{t("Common.currency")}</span>
+                    {/* Customer Name Input */}
+                    <div className="w-full">
+                        <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                            {t("Sales.customer_name")}
+                        </label>
+                        <Input
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder={t("Sales.customer_name_placeholder")}
+                            className="bg-muted/50"
+                        />
+                    </div>
+
+                    {/* Discount Section */}
+                    <div className="w-full grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                {t("Sales.discount_type")}
+                            </label>
+                            <Select value={discountType} onValueChange={(v: "none" | "percentage" | "fixed") => setDiscountType(v)}>
+                                <SelectTrigger className="bg-muted/50">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">{t("Sales.no_discount")}</SelectItem>
+                                    <SelectItem value="percentage">{t("Sales.percentage")}</SelectItem>
+                                    <SelectItem value="fixed">{t("Sales.fixed_amount")}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {discountType !== "none" && (
+                            <div>
+                                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                                    {discountType === "percentage" ? t("Sales.discount_percent") : t("Sales.discount_amount")}
+                                </label>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    max={discountType === "percentage" ? 100 : subtotal}
+                                    value={discountValue}
+                                    onChange={(e) => setDiscountValue(Number(e.target.value))}
+                                    className="bg-muted/50"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Totals Display */}
+                    <div className="w-full space-y-2 bg-primary/5 p-4 rounded-xl border border-primary/10">
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>{t("Sales.subtotal")}</span>
+                            <span>{subtotal.toLocaleString()} {t("Common.currency")}</span>
+                        </div>
+                        {discountAmount > 0 && (
+                            <div className="flex justify-between text-sm text-green-600">
+                                <span>{t("Sales.discount")}</span>
+                                <span>-{discountAmount.toLocaleString()} {t("Common.currency")}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center pt-2 border-t border-primary/10">
+                            <span className="font-medium">{t("Sales.total_amount")}</span>
+                            <div className="text-2xl font-black text-primary">
+                                {total.toLocaleString()} <span className="text-xs font-normal uppercase">{t("Common.currency")}</span>
+                            </div>
                         </div>
                     </div>
 
