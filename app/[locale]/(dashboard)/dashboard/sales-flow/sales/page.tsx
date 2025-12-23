@@ -16,12 +16,24 @@ import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function SalesPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    return (
+        <Suspense fallback={<SalesSkeleton />}>
+            <SalesContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function SalesContent({ locale }: { locale: string }) {
     const context = await getTenantContext();
     const t = await getI18n(locale as Locale);
 
@@ -32,7 +44,7 @@ export default async function SalesPage({
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-start">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">{t("Sales.title")}</h1>
@@ -45,7 +57,7 @@ export default async function SalesPage({
                 </Button>
             </div>
 
-            <Card>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-xl flex items-center gap-2">
                         <ShoppingCart className="h-5 w-5 text-primary" />
@@ -53,32 +65,32 @@ export default async function SalesPage({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    <div className="rounded-xl border overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                    <TableHead>{t("Sales.invoice_no")}</TableHead>
-                                    <TableHead>{t("Sales.date")}</TableHead>
-                                    <TableHead>{t("Sales.customer")}</TableHead>
-                                    <TableHead>{t("Sales.items")}</TableHead>
+                                    <TableHead className="text-right">{t("Sales.invoice_no")}</TableHead>
+                                    <TableHead className="text-right">{t("Sales.date")}</TableHead>
+                                    <TableHead className="text-right">{t("Sales.customer")}</TableHead>
+                                    <TableHead className="text-right">{t("Sales.items")}</TableHead>
                                     <TableHead className="text-right">{t("Sales.total")}</TableHead>
-                                    <TableHead className="text-right">{t("Sales.status")}</TableHead>
+                                    <TableHead className="text-left">{t("Sales.status")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {sales.map((sale) => (
                                     <TableRow key={sale.id} className="hover:bg-muted/30 transition-colors">
-                                        <TableCell className="font-medium">#{sale.number}</TableCell>
+                                        <TableCell className="font-bold text-primary">#{sale.number}</TableCell>
                                         <TableCell>{new Date(sale.date).toLocaleDateString(locale)}</TableCell>
                                         <TableCell>{sale.customerId || t("Sales.walk_in")}</TableCell>
                                         <TableCell>{t("Sales.items_count", { count: sale.items.length })}</TableCell>
-                                        <TableCell className="text-right font-semibold">
+                                        <TableCell className="text-right font-bold text-primary">
                                             {Number(sale.total).toLocaleString()} {t("Common.currency")}
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-left">
                                             <Badge
                                                 variant={sale.status === "COMPLETED" ? "default" : "secondary"}
-                                                className={sale.status === "COMPLETED" ? "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" : ""}
+                                                className={sale.status === "COMPLETED" ? "bg-green-500/10 text-green-600 border-none rounded-lg" : "rounded-lg"}
                                             >
                                                 {sale.status}
                                             </Badge>
@@ -97,6 +109,18 @@ export default async function SalesPage({
                     </div>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function SalesSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-20 w-1/3 rounded-xl" />
+                <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-[500px] w-full rounded-2xl" />
         </div>
     );
 }

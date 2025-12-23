@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Trash2, Plus, Receipt } from "lucide-react";
 import { deleteExpenseAction } from "@/actions/expenses";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
     Table,
     TableBody,
@@ -16,14 +17,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function ExpensesPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
-    const context = await getTenantContext();
 
+    return (
+        <Suspense fallback={<ExpensesSkeleton />}>
+            <ExpensesContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function ExpensesContent({ locale }: { locale: string }) {
+    const context = await getTenantContext();
     const t = await getI18n(locale as Locale);
 
     const expenses = await db.expense.findMany({
@@ -32,7 +44,7 @@ export default async function ExpensesPage({
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-start">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("Expenses.title")}</h1>
@@ -45,7 +57,7 @@ export default async function ExpensesPage({
                 </Button>
             </div>
 
-            <Card>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                         <Receipt className="h-5 w-5 text-primary" />
@@ -53,15 +65,15 @@ export default async function ExpensesPage({
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 sm:p-6">
-                    <div className="overflow-x-auto rounded-md border">
+                    <div className="overflow-x-auto rounded-xl border overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                    <TableHead>{t("Expenses.date")}</TableHead>
-                                    <TableHead>{t("Common.description")}</TableHead>
-                                    <TableHead>{t("Expenses.category")}</TableHead>
-                                    <TableHead>{t("Expenses.amount")}</TableHead>
-                                    <TableHead className="text-right">{t("Expenses.action")}</TableHead>
+                                    <TableHead className="text-right">{t("Expenses.date")}</TableHead>
+                                    <TableHead className="text-right">{t("Common.description")}</TableHead>
+                                    <TableHead className="text-right">{t("Expenses.category")}</TableHead>
+                                    <TableHead className="text-right">{t("Expenses.amount")}</TableHead>
+                                    <TableHead className="text-left">{t("Expenses.action")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -80,11 +92,13 @@ export default async function ExpensesPage({
                                             <TableCell className="font-medium">
                                                 {expense.description}
                                             </TableCell>
-                                            <TableCell>{expense.category}</TableCell>
-                                            <TableCell className="font-semibold">
+                                            <TableCell>
+                                                <Badge variant="outline" className="rounded-lg">{expense.category}</Badge>
+                                            </TableCell>
+                                            <TableCell className="font-bold text-primary">
                                                 {Number(expense.amount).toLocaleString()} {t("Common.currency")}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-left">
                                                 <form action={async () => {
                                                     "use server";
                                                     await deleteExpenseAction(expense.id);
@@ -92,7 +106,7 @@ export default async function ExpensesPage({
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                         <span className="sr-only">{t("Expenses.delete")}</span>
@@ -107,6 +121,18 @@ export default async function ExpensesPage({
                     </div>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function ExpensesSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-20 w-1/3 rounded-xl" />
+                <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-[500px] w-full rounded-2xl" />
         </div>
     );
 }

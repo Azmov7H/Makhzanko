@@ -18,18 +18,30 @@ import { Badge } from "@/components/ui/badge";
 import { AnnouncementForm } from "./AnnouncementForm";
 import { AnnouncementList } from "./AnnouncementList";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function AdminAnnouncementsPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    return (
+        <Suspense fallback={<AnnouncementsSkeleton />}>
+            <AnnouncementsContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function AnnouncementsContent({ locale }: { locale: string }) {
     await requireOwner();
     const t = await getI18n(locale as Locale);
     const announcements = await getAnnouncementsAction();
 
     return (
-        <div className="space-y-8 p-6">
+        <div className="space-y-8 p-6 text-start">
             {/* Header */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
@@ -71,6 +83,18 @@ export default async function AdminAnnouncementsPage({
                         locale={locale}
                     />
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function AnnouncementsSkeleton() {
+    return (
+        <div className="space-y-8 p-6">
+            <Skeleton className="h-20 w-3/4 rounded-xl" />
+            <div className="grid gap-8 lg:grid-cols-3">
+                <Skeleton className="h-[400px] w-full rounded-2xl" />
+                <Skeleton className="h-[400px] w-full rounded-2xl lg:col-span-2" />
             </div>
         </div>
     );

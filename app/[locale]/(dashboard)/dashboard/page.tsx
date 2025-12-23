@@ -18,9 +18,6 @@ export default async function DashboardLandingPage({
 }) {
     const { locale } = await params;
     await getTenantContext();
-
-    // Core stats load immediately or are prefetched
-    const stats = await getDashboardSummary();
     const t = await getI18n(locale as Locale);
 
     const quickLinks = [
@@ -31,74 +28,37 @@ export default async function DashboardLandingPage({
     ];
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">{t("Dashboard.welcome")}</h1>
-                <p className="text-muted-foreground mt-2">
+        <div className="space-y-8 text-start">
+            <div className="flex flex-col gap-2">
+                <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    {t("Dashboard.welcome")}
+                </h1>
+                <p className="text-muted-foreground text-lg font-medium">
                     {t("Dashboard.welcome_desc")}
                 </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="hover:shadow-md transition-shadow border-t-4 border-t-blue-500">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t("Dashboard.total_products")}</CardTitle>
-                        <Package className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalProducts}</div>
-                        <p className="text-xs text-muted-foreground">{t("Dashboard.products_desc")}</p>
-                    </CardContent>
-                </Card>
-                <Card className="hover:shadow-md transition-shadow border-t-4 border-t-purple-500">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t("Dashboard.total_sales")}</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-purple-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalSales}</div>
-                        <p className="text-xs text-muted-foreground">{t("Dashboard.sales_desc")}</p>
-                    </CardContent>
-                </Card>
-                <Card className="hover:shadow-md transition-shadow border-t-4 border-t-green-500">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t("Dashboard.total_revenue")}</CardTitle>
-                        <DollarSign className="h-4 w-4 text-green-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalRevenue.toLocaleString()} {t("Common.currency")}</div>
-                        <p className="text-xs text-muted-foreground">{t("Dashboard.revenue_desc")}</p>
-                    </CardContent>
-                </Card>
-                <Card className="hover:shadow-md transition-shadow border-t-4 border-t-orange-500">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t("Dashboard.total_warehouses")}</CardTitle>
-                        <Warehouse className="h-4 w-4 text-orange-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalWarehouses}</div>
-                        <p className="text-xs text-muted-foreground">{t("Dashboard.warehouses_desc")}</p>
-                    </CardContent>
-                </Card>
-            </div>
+            <Suspense fallback={<StatsSkeleton />}>
+                <StatsSection locale={locale} />
+            </Suspense>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t("Dashboard.quick_links")}</CardTitle>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden rounded-3xl">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-2xl font-bold">{t("Dashboard.quick_links")}</CardTitle>
                     <CardDescription>{t("Dashboard.quick_links_desc")}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         {quickLinks.map((link) => (
-                            <Link key={link.href} href={link.href}>
+                            <Link key={link.href} href={link.href} className="group">
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start gap-3 h-auto py-4 hover:bg-accent transition-colors"
+                                    className="w-full justify-start gap-4 h-auto py-5 px-6 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300 rounded-2xl group-hover:scale-[1.02]"
                                 >
-                                    <div className={`${link.color} p-2 rounded-lg`}>
-                                        <link.icon className="h-5 w-5 text-white" />
+                                    <div className={`${link.color} p-3 rounded-xl shadow-lg shadow-black/10 transition-transform group-hover:rotate-12`}>
+                                        <link.icon className="h-6 w-6 text-white" />
                                     </div>
-                                    <span className="font-medium">{link.label}</span>
+                                    <span className="font-bold text-lg">{link.label}</span>
                                 </Button>
                             </Link>
                         ))}
@@ -106,7 +66,7 @@ export default async function DashboardLandingPage({
                 </CardContent>
             </Card>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
                 <Suspense fallback={<DashboardCardSkeleton />}>
                     <StockAlertsSection locale={locale} />
                 </Suspense>
@@ -114,6 +74,74 @@ export default async function DashboardLandingPage({
                     <DemandForecastSection locale={locale} />
                 </Suspense>
             </div>
+        </div>
+    );
+}
+
+async function StatsSection({ locale }: { locale: string }) {
+    const stats = await getDashboardSummary();
+    const t = await getI18n(locale as Locale);
+
+    return (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_products")}</CardTitle>
+                    <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                        <Package className="h-5 w-5 text-blue-500 group-hover:text-white" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-3xl font-black tabular-nums">{stats.totalProducts}</div>
+                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.products_desc")}</p>
+                </CardContent>
+            </Card>
+            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_sales")}</CardTitle>
+                    <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                        <TrendingUp className="h-5 w-5 text-purple-500 group-hover:text-white" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-3xl font-black tabular-nums">{stats.totalSales}</div>
+                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.sales_desc")}</p>
+                </CardContent>
+            </Card>
+            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_revenue")}</CardTitle>
+                    <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
+                        <DollarSign className="h-5 w-5 text-green-500 group-hover:text-white" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-3xl font-black tabular-nums">{stats.totalRevenue.toLocaleString()} {t("Common.currency")}</div>
+                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.revenue_desc")}</p>
+                </CardContent>
+            </Card>
+            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_warehouses")}</CardTitle>
+                    <div className="p-2 bg-orange-500/10 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                        <Warehouse className="h-5 w-5 text-orange-500 group-hover:text-white" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-3xl font-black tabular-nums">{stats.totalWarehouses}</div>
+                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.warehouses_desc")}</p>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+function StatsSkeleton() {
+    return (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+            ))}
         </div>
     );
 }

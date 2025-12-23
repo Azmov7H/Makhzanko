@@ -9,12 +9,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function AuditListPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    return (
+        <Suspense fallback={<AuditListSkeleton />}>
+            <AuditListContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function AuditListContent({ locale }: { locale: string }) {
     const context = await getTenantContext();
     const t = await getI18n(locale as Locale);
 
@@ -25,7 +37,7 @@ export default async function AuditListPage({
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-start">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">{t("Inventory.audits")}</h1>
@@ -38,7 +50,7 @@ export default async function AuditListPage({
                 </Button>
             </div>
 
-            <Card>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                         <ClipboardCheck className="h-5 w-5 text-primary" />
@@ -46,14 +58,14 @@ export default async function AuditListPage({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    <div className="rounded-xl border overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                    <TableHead>{t("Inventory.date")}</TableHead>
-                                    <TableHead>{t("Inventory.location")}</TableHead>
-                                    <TableHead>{t("Inventory.status")}</TableHead>
-                                    <TableHead className="text-right">{t("Inventory.action")}</TableHead>
+                                    <TableHead className="text-right">{t("Inventory.date")}</TableHead>
+                                    <TableHead className="text-right">{t("Inventory.location")}</TableHead>
+                                    <TableHead className="text-right">{t("Inventory.status")}</TableHead>
+                                    <TableHead className="text-left">{t("Inventory.action")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -71,13 +83,13 @@ export default async function AuditListPage({
                                             <TableCell>
                                                 <Badge
                                                     variant={audit.status === "COMPLETED" ? "default" : "secondary"}
-                                                    className={audit.status === "COMPLETED" ? "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" : ""}
+                                                    className={audit.status === "COMPLETED" ? "bg-green-500/10 text-green-600 border-none px-2 py-0" : ""}
                                                 >
                                                     {audit.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                                            <TableCell className="text-left">
+                                                <Button asChild variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/10">
                                                     <Link href={`/${locale}/dashboard/inventory/audits/${audit.id}`}>
                                                         {audit.status === "COMPLETED" ? (
                                                             <span className="flex items-center gap-1.5"><History className="h-3.5 w-3.5" />{t("Inventory.view_results")}</span>
@@ -95,6 +107,18 @@ export default async function AuditListPage({
                     </div>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function AuditListSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-20 w-1/3 rounded-xl" />
+                <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-[500px] w-full rounded-2xl" />
         </div>
     );
 }

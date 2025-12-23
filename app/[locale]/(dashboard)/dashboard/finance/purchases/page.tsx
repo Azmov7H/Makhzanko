@@ -16,14 +16,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function PurchasesPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
-    const context = await getTenantContext();
 
+    return (
+        <Suspense fallback={<PurchasesSkeleton />}>
+            <PurchasesContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function PurchasesContent({ locale }: { locale: string }) {
+    const context = await getTenantContext();
     const t = await getI18n(locale as Locale);
 
     const purchases = await db.purchaseOrder.findMany({
@@ -33,7 +44,7 @@ export default async function PurchasesPage({
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-start">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("Purchases.title")}</h1>
@@ -46,7 +57,7 @@ export default async function PurchasesPage({
                 </Button>
             </div>
 
-            <Card>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                         <Truck className="h-5 w-5 text-primary" />
@@ -54,16 +65,16 @@ export default async function PurchasesPage({
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 sm:p-6">
-                    <div className="overflow-x-auto rounded-md border">
+                    <div className="overflow-x-auto rounded-xl border overflow-hidden">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                    <TableHead>{t("Purchases.po_no")}</TableHead>
-                                    <TableHead>{t("Purchases.date")}</TableHead>
-                                    <TableHead>{t("Purchases.supplier")}</TableHead>
-                                    <TableHead>{t("Purchases.warehouse")}</TableHead>
+                                    <TableHead className="text-right">{t("Purchases.po_no")}</TableHead>
+                                    <TableHead className="text-right">{t("Purchases.date")}</TableHead>
+                                    <TableHead className="text-right">{t("Purchases.supplier")}</TableHead>
+                                    <TableHead className="text-right">{t("Purchases.warehouse")}</TableHead>
                                     <TableHead className="text-right">{t("Purchases.total")}</TableHead>
-                                    <TableHead className="text-right">{t("Purchases.status")}</TableHead>
+                                    <TableHead className="text-left">{t("Purchases.status")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -79,14 +90,16 @@ export default async function PurchasesPage({
                                             <TableCell className="font-bold text-primary">#{po.number}</TableCell>
                                             <TableCell>{new Date(po.date).toLocaleDateString(locale)}</TableCell>
                                             <TableCell>{po.supplier || "-"}</TableCell>
-                                            <TableCell>{po.warehouse?.name}</TableCell>
-                                            <TableCell className="text-right font-semibold">
+                                            <TableCell>
+                                                <Badge variant="outline" className="rounded-lg">{po.warehouse?.name}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right font-bold text-primary">
                                                 {Number(po.total).toLocaleString()} {t("Common.currency")}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-left">
                                                 <Badge
                                                     variant={po.status === "RECEIVED" ? "default" : "secondary"}
-                                                    className={po.status === "RECEIVED" ? "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" : ""}
+                                                    className={po.status === "RECEIVED" ? "bg-green-500/10 text-green-600 border-none rounded-lg" : "rounded-lg"}
                                                 >
                                                     {po.status}
                                                 </Badge>
@@ -99,6 +112,18 @@ export default async function PurchasesPage({
                     </div>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function PurchasesSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-20 w-1/3 rounded-xl" />
+                <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-[500px] w-full rounded-2xl" />
         </div>
     );
 }

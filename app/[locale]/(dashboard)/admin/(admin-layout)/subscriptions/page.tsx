@@ -13,18 +13,29 @@ import { Badge } from "@/components/ui/badge";
 import { SubscriptionActions } from "./SubscriptionActions";
 import { CreditCard, Calendar, AlertCircle } from "lucide-react";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function OwnerSubscriptionsPage() {
+  return (
+    <Suspense fallback={<SubscriptionsSkeleton />}>
+      <SubscriptionsContent />
+    </Suspense>
+  );
+}
+
+async function SubscriptionsContent() {
   await requireOwner();
   const subscriptions = await getAllSubscriptions();
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up text-start">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">إدارة الاشتراكات</h1>
         <p className="text-muted-foreground mt-1">متابعة جميع الاشتراكات والحالات المالية للمشتركين</p>
       </div>
 
-      <Card className="hover:shadow-lg transition-shadow border-none shadow-md">
+      <Card className="hover:shadow-lg transition-shadow border-none shadow-md overflow-hidden">
         <CardHeader>
           <div className="flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
@@ -39,12 +50,12 @@ export default async function OwnerSubscriptionsPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead>المنظمة</TableHead>
-                  <TableHead>الباقة</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>معرف الدفع (Gateway ID)</TableHead>
-                  <TableHead>بداية الفترة</TableHead>
-                  <TableHead>نهاية الفترة</TableHead>
+                  <TableHead className="text-right">المنظمة</TableHead>
+                  <TableHead className="text-right">الباقة</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">معرف الدفع (Gateway ID)</TableHead>
+                  <TableHead className="text-right">بداية الفترة</TableHead>
+                  <TableHead className="text-right">نهاية الفترة</TableHead>
                   <TableHead className="text-left">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -90,7 +101,7 @@ export default async function OwnerSubscriptionsPage() {
                       {subscription.paymobTransactionId ? (
                         <div className="flex flex-col gap-1">
                           <span className="text-[10px] text-primary uppercase font-bold">Paymob</span>
-                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded select-all border border-blue-100">
+                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded select-all border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">
                             #{subscription.paymobOrderId}
                           </span>
                         </div>
@@ -128,6 +139,15 @@ export default async function OwnerSubscriptionsPage() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function SubscriptionsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-20 w-1/3 rounded-xl" />
+      <Skeleton className="h-[600px] w-full rounded-2xl" />
     </div>
   );
 }

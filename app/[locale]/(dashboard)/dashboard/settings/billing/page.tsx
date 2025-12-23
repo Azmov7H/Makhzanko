@@ -1,4 +1,5 @@
 import { getTenantContext } from "@/lib/auth";
+import { Separator } from "@/components/ui/separator";
 import { getCurrentSubscription, getPlans } from "@/actions/billing";
 import { createPaymobCheckoutSession } from "@/actions/paymob-billing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,13 +11,25 @@ import { redirect } from "next/navigation";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function BillingPage({
   searchParams,
 }: {
   searchParams: Promise<{ upgrade?: string; success?: string; canceled?: string }>;
 }) {
-  const context = await getTenantContext();
   const params = await searchParams;
+
+  return (
+    <Suspense fallback={<BillingSkeleton />}>
+      <BillingContent params={params} />
+    </Suspense>
+  );
+}
+
+async function BillingContent({ params }: { params: { upgrade?: string; success?: string; canceled?: string } }) {
+  const context = await getTenantContext();
 
   const [currentSubscription, plans] = await Promise.all([
     getCurrentSubscription(),
@@ -29,29 +42,34 @@ export default async function BillingPage({
     BUSINESS: "Business",
   };
 
-
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-start">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Billing & Subscription</h1>
-        <p className="text-muted-foreground">Manage your subscription and billing information.</p>
+        <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          Billing & Subscription
+        </h1>
+        <p className="text-muted-foreground mt-1">Manage your subscription and billing information.</p>
       </div>
 
       {params.success && (
-        <Card className="border-green-200 bg-green-50/50">
+        <Card className="border-green-500/20 bg-green-500/5 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-500">
           <CardContent className="pt-6">
-            <p className="text-sm text-green-800">
-              Payment successful! Your subscription has been activated.
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                <Check className="h-4 w-4 text-green-600" />
+              </div>
+              <p className="text-sm font-bold text-green-700">
+                Payment successful! Your subscription has been activated.
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
 
       {params.canceled && (
-        <Card className="border-yellow-200 bg-yellow-50/50">
+        <Card className="border-yellow-500/20 bg-yellow-500/5 backdrop-blur-xl">
           <CardContent className="pt-6">
-            <p className="text-sm text-yellow-800">
+            <p className="text-sm font-medium text-yellow-700">
               Payment was canceled. No changes were made to your account.
             </p>
           </CardContent>
@@ -59,26 +77,27 @@ export default async function BillingPage({
       )}
 
       {/* Current Plan */}
-      <Card>
+      <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Current Plan</CardTitle>
-              <CardDescription>
-                You are currently on the <strong>{planNameMap[context.plan]}</strong> plan.
+              <CardTitle className="text-xl font-bold">Current Plan</CardTitle>
+              <CardDescription className="text-lg">
+                You are currently on the <strong className="text-primary uppercase tracking-wider">{planNameMap[context.plan]}</strong> plan.
               </CardDescription>
             </div>
-            <Badge variant={context.plan === PlanType.FREE ? "secondary" : "default"}>
+            <Badge variant={context.plan === PlanType.FREE ? "secondary" : "default"} className="h-8 px-4 text-sm font-bold rounded-lg shadow-sm">
               {planNameMap[context.plan]}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {currentSubscription && (
-            <div className="space-y-2">
+            <div className="space-y-3 bg-muted/30 p-4 rounded-xl border border-primary/5">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Status:</span>
+                <span className="text-muted-foreground font-medium">Status:</span>
                 <Badge
+                  className="rounded-lg font-bold"
                   variant={
                     currentSubscription.status === "active"
                       ? "default"
@@ -87,18 +106,19 @@ export default async function BillingPage({
                         : "outline"
                   }
                 >
-                  {currentSubscription.status}
+                  {currentSubscription.status.toUpperCase()}
                 </Badge>
               </div>
+              <Separator className="bg-primary/5" />
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Current Period:</span>
-                <span>
+                <span className="text-muted-foreground font-medium">Current Period:</span>
+                <span className="font-bold">
                   {new Date(currentSubscription.currentPeriodStart).toLocaleDateString()} -{" "}
                   {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}
                 </span>
               </div>
               {currentSubscription.cancelAtPeriodEnd && (
-                <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+                <div className="rounded-xl bg-yellow-500/10 p-3 text-sm text-yellow-700 font-bold border border-yellow-500/20">
                   Your subscription will be canceled at the end of the current period.
                 </div>
               )}
@@ -106,9 +126,9 @@ export default async function BillingPage({
           )}
 
           {currentSubscription && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10 text-primary text-sm font-medium">
-              <ShieldCheck className="h-4 w-4" />
-              Your subscription is managed via Paymob.
+            <div className="flex items-center gap-2 p-4 rounded-xl bg-primary/5 border border-primary/10 text-primary text-sm font-bold shadow-sm">
+              <ShieldCheck className="h-5 w-5" />
+              Your subscription is managed securely via Paymob.
             </div>
           )}
         </CardContent>
@@ -118,9 +138,13 @@ export default async function BillingPage({
       <PromoCodeRedemption />
 
       {/* Available Plans */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Available Plans</h2>
-        <div className="grid gap-4 md:grid-cols-3">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight">{context.plan === PlanType.FREE ? "Ready to scale?" : "Change your plan"}</h2>
+          <p className="text-muted-foreground mt-1">Select the best plan for your growing business needs.</p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => {
             const isCurrentPlan = plan.type === context.plan;
             const features = (plan.features as { name: string }[]) || [];
@@ -130,28 +154,35 @@ export default async function BillingPage({
                 key={plan.id}
                 className={
                   isCurrentPlan
-                    ? "border-primary shadow-md"
-                    : "hover:shadow-md transition-shadow"
+                    ? "border-2 border-primary shadow-2xl relative scale-105 z-10 bg-card/80 backdrop-blur-xl rounded-3xl"
+                    : "hover:shadow-xl transition-all duration-300 border-none bg-card/40 backdrop-blur-xl rounded-3xl grayscale-[0.5] hover:grayscale-0"
                 }
               >
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{plan.name}</CardTitle>
-                    {isCurrentPlan && <Badge>Current</Badge>}
-                  </div>
+                {isCurrentPlan && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-6 py-1 rounded-full font-black tracking-widest bg-primary text-white shadow-lg">
+                    CURRENT
+                  </Badge>
+                )}
+                <CardHeader className="text-center pt-8">
+                  <CardTitle className="text-2xl font-black">{plan.name}</CardTitle>
                   <CardDescription>
-                    <span className="text-2xl font-bold">
-                      ${Number(plan.price).toFixed(2)}
-                    </span>
-                    <span className="text-muted-foreground">/month</span>
+                    <div className="flex items-baseline justify-center gap-1 mt-4 text-foreground">
+                      <span className="text-4xl font-black">
+                        ${Number(plan.price).toFixed(0)}
+                      </span>
+                      <span className="text-muted-foreground font-medium">/month</span>
+                    </div>
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <ul className="space-y-2">
+                <CardContent className="space-y-6 pb-8">
+                  <Separator className="bg-primary/5" />
+                  <ul className="space-y-3">
                     {features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>{feature.name}</span>
+                      <li key={idx} className="flex items-start gap-3 text-sm">
+                        <div className="h-5 w-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="h-3 w-3 text-green-600" />
+                        </div>
+                        <span className="font-medium text-muted-foreground">{feature.name}</span>
                       </li>
                     ))}
                   </ul>
@@ -161,12 +192,12 @@ export default async function BillingPage({
                       planName={plan.name}
                       price={Number(plan.price)}
                       disabled={isCurrentPlan}
-                      buttonText={context.plan === PlanType.FREE ? "Upgrade" : "Switch Plan"}
+                      buttonText={context.plan === PlanType.FREE ? "Upgrade Now" : "Switch Plan"}
                     />
                   )}
                   {isCurrentPlan && (
-                    <Button disabled className="w-full" variant="outline">
-                      Current Plan
+                    <Button disabled className="w-full h-12 rounded-2xl font-black text-lg" variant="secondary">
+                      Your Active Plan
                     </Button>
                   )}
                 </CardContent>
@@ -175,6 +206,19 @@ export default async function BillingPage({
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+function BillingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Skeleton className="h-10 w-1/3 rounded-xl" />
+        <Skeleton className="h-5 w-1/2 rounded-lg" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-3xl" />
+      <Skeleton className="h-[500px] w-full rounded-3xl" />
     </div>
   );
 }

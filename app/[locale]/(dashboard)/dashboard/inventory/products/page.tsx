@@ -24,12 +24,24 @@ import { Badge } from "@/components/ui/badge";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function ProductsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  return (
+    <Suspense fallback={<ProductsSkeleton />}>
+      <ProductsContent locale={locale} />
+    </Suspense>
+  );
+}
+
+async function ProductsContent({ locale }: { locale: string }) {
   const context = await getTenantContext();
   const t = await getI18n(locale as Locale);
 
@@ -51,7 +63,7 @@ export default async function ProductsPage({
   }, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-start">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("Products.title")}</h1>
@@ -68,7 +80,7 @@ export default async function ProductsPage({
       </div>
 
       {products.length === 0 ? (
-        <Card>
+        <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl">
           <CardContent className="p-0">
             <EmptyState
               icon={<Package className="h-8 w-8 text-muted-foreground" />}
@@ -83,8 +95,8 @@ export default async function ProductsPage({
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            <Card>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t("Products.total_products")}</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
@@ -93,7 +105,7 @@ export default async function ProductsPage({
                 <div className="text-2xl font-bold">{products.length}</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t("Products.total_stock")}</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
@@ -104,7 +116,7 @@ export default async function ProductsPage({
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl">
             <CardHeader>
               <CardTitle>{t("Products.list_title")}</CardTitle>
               <CardDescription>{t("Products.list_desc")}</CardDescription>
@@ -114,11 +126,11 @@ export default async function ProductsPage({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t("Products.product_name")}</TableHead>
-                      <TableHead>{t("Products.sku")}</TableHead>
-                      <TableHead>{t("Products.price")}</TableHead>
-                      <TableHead>{t("Products.cost")}</TableHead>
-                      <TableHead>{t("Products.stock")}</TableHead>
+                      <TableHead className="text-right">{t("Products.product_name")}</TableHead>
+                      <TableHead className="text-right">{t("Products.sku")}</TableHead>
+                      <TableHead className="text-right">{t("Products.price")}</TableHead>
+                      <TableHead className="text-right">{t("Products.cost")}</TableHead>
+                      <TableHead className="text-right">{t("Products.stock")}</TableHead>
                       <TableHead className="text-left">{t("Products.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -135,7 +147,7 @@ export default async function ProductsPage({
                             {product.name}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{product.sku}</Badge>
+                            <Badge variant="outline" className="font-mono">{product.sku}</Badge>
                           </TableCell>
                           <TableCell>
                             <span className="font-semibold">
@@ -148,6 +160,7 @@ export default async function ProductsPage({
                           <TableCell>
                             <Badge
                               variant={productStock > 0 ? "default" : "destructive"}
+                              className="rounded-lg"
                             >
                               {productStock}
                             </Badge>
@@ -155,13 +168,13 @@ export default async function ProductsPage({
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="w-[160px]">
                                 <DropdownMenuItem asChild>
-                                  <Link href={`/${locale}/dashboard/inventory/products/${product.id}/edit`}>
+                                  <Link href={`/${locale}/dashboard/inventory/products/${product.id}/edit`} className="flex gap-2">
                                     {t("Common.edit")}
                                   </Link>
                                 </DropdownMenuItem>
@@ -186,6 +199,22 @@ export default async function ProductsPage({
           </Card>
         </>
       )}
+    </div>
+  );
+}
+
+function ProductsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-20 w-1/2 rounded-xl" />
+        <Skeleton className="h-10 w-32 rounded-lg" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
+      </div>
+      <Skeleton className="h-[500px] w-full rounded-2xl" />
     </div>
   );
 }

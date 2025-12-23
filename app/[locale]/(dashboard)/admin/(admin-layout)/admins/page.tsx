@@ -29,18 +29,30 @@ import { Badge } from "@/components/ui/badge";
 import { AdminForm } from "./AdminForm";
 import { AdminList } from "./AdminList";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function AdminManagementPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    return (
+        <Suspense fallback={<AdminManagementSkeleton />}>
+            <AdminManagementContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function AdminManagementContent({ locale }: { locale: string }) {
     await requireOwner();
     const t = await getI18n(locale as Locale);
     const admins = await getPlatformAdminsAction();
 
     return (
-        <div className="space-y-8 p-6">
+        <div className="space-y-8 p-6 text-start">
             {/* Header */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
@@ -82,6 +94,18 @@ export default async function AdminManagementPage({
                         locale={locale}
                     />
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function AdminManagementSkeleton() {
+    return (
+        <div className="space-y-8 p-6">
+            <Skeleton className="h-20 w-3/4 rounded-xl" />
+            <div className="grid gap-8 lg:grid-cols-3">
+                <Skeleton className="h-[400px] w-full rounded-2xl" />
+                <Skeleton className="h-[400px] w-full rounded-2xl lg:col-span-2" />
             </div>
         </div>
     );
