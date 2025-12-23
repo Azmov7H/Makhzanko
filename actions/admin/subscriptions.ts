@@ -9,14 +9,12 @@ import { getRequestMetadata } from "@/lib/activity-logger";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-02-24.acacia",
-  typescript: true,
-});
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2025-02-24.acacia",
+    typescript: true,
+  })
+  : null;
 
 /**
  * Get all subscriptions across all tenants
@@ -32,6 +30,7 @@ export async function getAllSubscriptions() {
           name: true,
           plan: true,
           stripeCustomerId: true,
+          paymobCustomerId: true,
         },
       },
       plan: true,
@@ -60,8 +59,13 @@ export async function cancelSubscription(subscriptionId: string) {
   }
 
   try {
-    // Cancel in Stripe
-    await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
+    // Cancel in Stripe if applicable
+    if (subscription.stripeSubscriptionId && stripe) {
+      await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
+    }
+
+    // For Paymob, cancellation is typically handled via their portal or manually
+    // but we update our database status regardless
 
     // Update in database
     await db.subscription.update({
@@ -213,5 +217,21 @@ export async function extendSubscriptionPeriod(
 
   revalidatePath("/admin/subscriptions");
   return { success: true };
+}
+
+/**
+ * Get Paymob Integration IDs for Plans
+ * Useful for debugging or setting up
+ */
+export async function getPlanIntegrations() {
+  await requireOwner();
+  return db.plan.findMany({
+    select: {
+      id: true,
+      name: true,
+      stripePriceId: true,
+      paymobIntegrationId: true,
+    }
+  });
 }
 

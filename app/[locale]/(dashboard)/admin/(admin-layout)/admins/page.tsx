@@ -1,7 +1,12 @@
+
+
+//backend and server conaction commpnenets
 import { getPlatformAdminsAction } from "@/actions/admin/admin-management";
 import { requireOwner } from "@/lib/auth-role";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
+
+//icnos commpnenets
 import {
     ShieldAlert,
     UserPlus,
@@ -13,8 +18,14 @@ import {
     Trash2,
     Shield
 } from "lucide-react";
+
+
+//shadcn commponenets
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+
+//my commponentns
 import { AdminForm } from "./AdminForm";
 import { AdminList } from "./AdminList";
 
@@ -33,10 +44,10 @@ export default async function AdminManagementPage({
             {/* Header */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
+                    <div className="p-2.5 rounded-2xl bg-linear-to-br from-primary to-accent shadow-lg shadow-primary/20">
                         <ShieldAlert className="h-6 w-6 text-primary-foreground" />
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-black tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
                         إدارة مدراء المنصة (RBAC)
                     </h1>
                 </div>

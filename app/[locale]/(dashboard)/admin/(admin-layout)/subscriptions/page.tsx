@@ -42,7 +42,7 @@ export default async function OwnerSubscriptionsPage() {
                   <TableHead>المنظمة</TableHead>
                   <TableHead>الباقة</TableHead>
                   <TableHead>الحالة</TableHead>
-                  <TableHead>معرف Stripe</TableHead>
+                  <TableHead>معرف الدفع (Gateway ID)</TableHead>
                   <TableHead>بداية الفترة</TableHead>
                   <TableHead>نهاية الفترة</TableHead>
                   <TableHead className="text-left">الإجراءات</TableHead>
@@ -87,11 +87,21 @@ export default async function OwnerSubscriptionsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {subscription.stripeCustomerId ? (
-                        <span className="bg-muted px-2 py-1 rounded select-all">
-                          {subscription.stripeCustomerId.slice(0, 8)}...
-                        </span>
-                      ) : "—"}
+                      {subscription.paymobTransactionId ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] text-primary uppercase font-bold">Paymob</span>
+                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded select-all border border-blue-100">
+                            #{subscription.paymobOrderId}
+                          </span>
+                        </div>
+                      ) : subscription.stripeCustomerId ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] text-slate-500 uppercase font-bold">Stripe</span>
+                          <span className="bg-muted px-2 py-1 rounded select-all">
+                            {subscription.stripeCustomerId.slice(0, 10)}...
+                          </span>
+                        </div>
+                      ) : "ID غير متوفر"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">

@@ -3,6 +3,8 @@ import { locales, defaultLocale } from "./lib/i18n/config";
 import { jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || "");
+const COOKIE_NAME = "saas_token";
+const PUBLIC_PATHS = ["/login", "/register"];
 
 export default async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -21,11 +23,29 @@ export default async function middleware(request: NextRequest) {
         return NextResponse.redirect(request.nextUrl);
     }
 
-    // 2. Auth protection for owner panel
+    // 2. Extract locale and path without locale
     const segments = pathname.split("/");
     const currentLocale = segments[1];
+    const pathWithoutLocale = "/" + segments.slice(2).join("/");
 
-    // Check if it's an admin route (/[locale]/admin/...)
+    // 3. Dashboard auth protection
+    const isDashboard = pathWithoutLocale.startsWith("/dashboard");
+    const isPublicPath = PUBLIC_PATHS.some(p => pathWithoutLocale.startsWith(p));
+    const token = request.cookies.get(COOKIE_NAME)?.value;
+
+    // Redirect unauthenticated users from dashboard
+    if (!token && isDashboard) {
+        const loginUrl = new URL(`/${currentLocale}/login`, request.url);
+        loginUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(loginUrl);
+    }
+
+    // Redirect authenticated users from auth pages to dashboard
+    if (token && isPublicPath) {
+        return NextResponse.redirect(new URL(`/${currentLocale}/dashboard`, request.url));
+    }
+
+    // 4. Admin panel protection (/[locale]/admin/...)
     if (segments[2] === "admin") {
         // Protect /admin routes (except /[locale]/admin/login)
         if (segments[3] !== "login") {
@@ -46,7 +66,7 @@ export default async function middleware(request: NextRequest) {
         }
     }
 
-    // 3. Prepare response and add security headers
+    // 5. Prepare response and add security headers
     const response = NextResponse.next();
 
     response.headers.set("X-Frame-Options", "DENY");

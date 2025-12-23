@@ -34,12 +34,12 @@ export default async function PurchasesPage({
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t("Purchases.title")}</h1>
-                    <p className="text-muted-foreground mt-1">{t("Purchases.description")}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("Purchases.title")}</h1>
+                    <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("Purchases.description")}</p>
                 </div>
-                <Button asChild className="gap-2">
+                <Button asChild className="gap-2 w-full sm:w-auto">
                     <Link href={`/${locale}/dashboard/finance/purchases/new`}>
                         <Plus className="h-4 w-4" /> {t("Purchases.new_po")}
                     </Link>
@@ -53,8 +53,8 @@ export default async function PurchasesPage({
                         {t("Purchases.list_title")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border">
+                <CardContent className="p-0 sm:p-6">
+                    <div className="overflow-x-auto rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">

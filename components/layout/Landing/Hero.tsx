@@ -109,7 +109,7 @@ export default function Hero() {
                                 }}
                             >
                                 <Image
-                                    src="/dashboard-preview.png"
+                                    src="/og-image.png"
                                     alt="Makhzanko Dashboard"
                                     width={1200}
                                     height={800}

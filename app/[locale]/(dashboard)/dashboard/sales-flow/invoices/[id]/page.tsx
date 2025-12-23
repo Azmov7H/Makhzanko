@@ -3,8 +3,8 @@ import { getTenantContext } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { InvoiceDocument } from "./InvoiceDocument";
 
-export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
+export default async function InvoicePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+    const { id, locale } = await params;
     const context = await getTenantContext();
 
     const invoice = await db.invoice.findUnique({
@@ -18,7 +18,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     if (!invoice) notFound();
 
     const settings = invoice.tenant.invoiceSettings;
-    const jsonData = invoice.jsonSnapshot as any;
 
     // Build items with product names
     const items = invoice.sale.items.map(item => ({
@@ -29,6 +28,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     }));
 
     const invoiceData = {
+        id: invoice.id,
         token: invoice.token || `INV-${invoice.id.substring(0, 8)}`,
         customerName: invoice.customerName || undefined,
         date: invoice.sale.date.toISOString(),
@@ -44,6 +44,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         companyEmail: settings?.companyEmail || undefined,
         footerNotes: settings?.footerNotes || undefined,
         currency: invoice.tenant.currency || "EGP",
+        status: invoice.status,
+        locale,
     };
 
     return (
@@ -52,3 +54,4 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
     );
 }
+

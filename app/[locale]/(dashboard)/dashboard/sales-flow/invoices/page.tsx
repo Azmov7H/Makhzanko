@@ -34,19 +34,19 @@ export default async function InvoicesPage({
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t("Invoices.title")}</h1>
-                    <p className="text-muted-foreground mt-1">{t("Invoices.description")}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("Invoices.title")}</h1>
+                    <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("Invoices.description")}</p>
                 </div>
-                <div className="flex gap-3">
-                    <Button asChild variant="outline" className="gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <Button asChild variant="outline" className="gap-2 w-full sm:w-auto">
                         <Link href={`/${locale}/dashboard/sales-flow/invoices/design`}>
                             <Palette className="h-4 w-4" />
                             {t("Invoices.create_design")}
                         </Link>
                     </Button>
-                    <Button asChild className="gap-2">
+                    <Button asChild className="gap-2 w-full sm:w-auto">
                         <Link href={`/${locale}/dashboard/sales-flow/sales/new`}>
                             <FileText className="h-4 w-4" />
                             {t("Invoices.new_invoice")}
@@ -55,6 +55,7 @@ export default async function InvoicesPage({
                 </div>
             </div>
 
+
             <Card>
                 <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
@@ -62,8 +63,8 @@ export default async function InvoicesPage({
                         {t("Invoices.list_title")}
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border">
+                <CardContent className="p-0 sm:p-6">
+                    <div className="overflow-x-auto rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">

@@ -1,11 +1,12 @@
 import { db } from "./db";
+import { PlanType } from "@prisma/client";
 
 export const PLAN_LIMITS = {
     FREE: {
         users: 1,
         products: 50,
         warehouses: 1,
-        sales: 30, // Per month? total? Let's say per month strictly. 
+        sales: 30, // Per month
         reports: false,
         accounting: false,
         customInvoices: false,
@@ -33,14 +34,45 @@ export const PLAN_LIMITS = {
     }
 };
 
+/**
+ * Check if tenant has an active trial
+ */
+export function isTrialActive(trialEndsAt: Date | null): boolean {
+    if (!trialEndsAt) return false;
+    return new Date() < trialEndsAt;
+}
+
+/**
+ * Get effective plan considering trial status
+ */
+export function getEffectivePlan(plan: PlanType, trialEndsAt: Date | null): PlanType {
+    if (isTrialActive(trialEndsAt)) {
+        return PlanType.BUSINESS; // Full access during trial
+    }
+    return plan;
+}
+
+/**
+ * Get trial remaining days (returns 0 if expired or no trial)
+ */
+export function getTrialDaysRemaining(trialEndsAt: Date | null): number {
+    if (!trialEndsAt) return 0;
+    const now = new Date();
+    const diff = trialEndsAt.getTime() - now.getTime();
+    if (diff <= 0) return 0;
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
 export async function checkLimit(tenantId: string, resource: keyof typeof PLAN_LIMITS.FREE) {
     const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
     if (!tenant) throw new Error("Tenant not found");
 
-    const limit = PLAN_LIMITS[tenant.plan][resource];
+    // Get effective plan (considering trial)
+    const effectivePlan = getEffectivePlan(tenant.plan, tenant.trialEndsAt);
+    const limit = PLAN_LIMITS[effectivePlan][resource];
 
     if (limit === Infinity) return true;
-    if (limit === false) throw new Error(`Upgrade to ${tenant.plan === 'FREE' ? 'PRO' : 'BUSINESS'} to unlock ${resource}`);
+    if (limit === false) throw new Error(`Upgrade to ${effectivePlan === 'FREE' ? 'PRO' : 'BUSINESS'} to unlock ${resource}`);
 
     // Check Counts
     let count = 0;
@@ -70,3 +102,4 @@ export async function checkLimit(tenantId: string, resource: keyof typeof PLAN_L
 
     return true;
 }
+

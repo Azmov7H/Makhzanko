@@ -41,6 +41,7 @@ model Tenant {
   // Subscription & Trial
   plan              PlanType         @default(FREE)
   stripeCustomerId  String?          @unique
+  paymobCustomerId  String?          @unique
   trialEndsAt       DateTime?        // 14-day trial expiration
   
   // Branding & Settings
@@ -78,6 +79,7 @@ model Plan {
   price             Decimal
   stripeProductId   String?          @unique
   stripePriceId     String?          @unique
+  paymobIntegrationId String?        @unique
   features          Json             // Store feature list as JSON
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -92,8 +94,10 @@ model Subscription {
   planId                String
   plan                  Plan               @relation(fields: [planId], references: [id])
   
-  stripeSubscriptionId  String             @unique
-  stripeCustomerId      String
+  stripeSubscriptionId  String?            @unique
+  stripeCustomerId      String?
+  paymobOrderId         String?            @unique
+  paymobTransactionId   String?            @unique
   status                SubscriptionStatus @default(active)
   
   currentPeriodStart    DateTime
@@ -114,7 +118,8 @@ model Payment {
   subscriptionId    String
   subscription      Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   
-  stripePaymentId   String        @unique
+  stripePaymentId   String?       @unique
+  paymobTransactionId String?       @unique
   amount            Decimal
   currency          String        @default("usd")
   status            String        // succeeded, failed, pending

@@ -52,14 +52,14 @@ export default async function ProductsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("Products.title")}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("Products.title")}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             {t("Products.description")}
           </p>
         </div>
-        <Button asChild className="gap-2">
+        <Button asChild className="gap-2 w-full sm:w-auto">
           <Link href={`/${locale}/dashboard/inventory/products/new`}>
             <Plus className="h-4 w-4" />
             <span>{t("Products.add_product")}</span>
@@ -83,7 +83,7 @@ export default async function ProductsPage({
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t("Products.total_products")}</CardTitle>
@@ -109,77 +109,79 @@ export default async function ProductsPage({
               <CardTitle>{t("Products.list_title")}</CardTitle>
               <CardDescription>{t("Products.list_desc")}</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("Products.product_name")}</TableHead>
-                    <TableHead>{t("Products.sku")}</TableHead>
-                    <TableHead>{t("Products.price")}</TableHead>
-                    <TableHead>{t("Products.cost")}</TableHead>
-                    <TableHead>{t("Products.stock")}</TableHead>
-                    <TableHead className="text-left">{t("Products.actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => {
-                    const productStock = (product.stocks as any[]).reduce(
-                      (acc: number, s: any) => acc + s.quantity,
-                      0
-                    );
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("Products.product_name")}</TableHead>
+                      <TableHead>{t("Products.sku")}</TableHead>
+                      <TableHead>{t("Products.price")}</TableHead>
+                      <TableHead>{t("Products.cost")}</TableHead>
+                      <TableHead>{t("Products.stock")}</TableHead>
+                      <TableHead className="text-left">{t("Products.actions")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product) => {
+                      const productStock = (product.stocks as any[]).reduce(
+                        (acc: number, s: any) => acc + s.quantity,
+                        0
+                      );
 
-                    return (
-                      <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className="font-medium">
-                          {product.name}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.sku}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-semibold">
-                            {Number(product.price).toFixed(2)} {t("Common.currency")}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {Number(product.cost).toFixed(2)} {t("Common.currency")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={productStock > 0 ? "default" : "destructive"}
-                          >
-                            {productStock}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/${locale}/dashboard/inventory/products/${product.id}/edit`}>
-                                  {t("Common.edit")}
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                <form action={deleteProductAction} className="w-full">
-                                  <input type="hidden" name="id" value={product.id} />
-                                  <button type="submit" className="w-full text-right">
-                                    {t("Common.delete")}
-                                  </button>
-                                </form>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                      return (
+                        <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="font-medium">
+                            {product.name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{product.sku}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-semibold">
+                              {Number(product.price).toFixed(2)} {t("Common.currency")}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            {Number(product.cost).toFixed(2)} {t("Common.currency")}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={productStock > 0 ? "default" : "destructive"}
+                            >
+                              {productStock}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/${locale}/dashboard/inventory/products/${product.id}/edit`}>
+                                    {t("Common.edit")}
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive">
+                                  <form action={deleteProductAction} className="w-full">
+                                    <input type="hidden" name="id" value={product.id} />
+                                    <button type="submit" className="w-full text-right">
+                                      {t("Common.delete")}
+                                    </button>
+                                  </form>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </>

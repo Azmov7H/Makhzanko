@@ -1,12 +1,14 @@
 import { getTenantContext } from "@/lib/auth";
-import { getCurrentSubscription, getPlans, createCheckoutSession, createCustomerPortalSession } from "@/actions/billing";
+import { getCurrentSubscription, getPlans } from "@/actions/billing";
+import { createPaymobCheckoutSession } from "@/actions/paymob-billing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, CreditCard, ExternalLink } from "lucide-react";
+import { Check, CreditCard, ExternalLink, ShieldCheck } from "lucide-react";
 import { PlanType } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
+import { PaymentMethodSelector } from "./PaymentMethodSelector";
 
 export default async function BillingPage({
   searchParams,
@@ -27,15 +29,7 @@ export default async function BillingPage({
     BUSINESS: "Business",
   };
 
-  async function handleUpgrade(planId: string) {
-    "use server";
-    await createCheckoutSession(planId);
-  }
 
-  async function handleManageSubscription() {
-    "use server";
-    await createCustomerPortalSession();
-  }
 
   return (
     <div className="space-y-6">
@@ -112,12 +106,10 @@ export default async function BillingPage({
           )}
 
           {currentSubscription && (
-            <form action={handleManageSubscription}>
-              <Button type="submit" variant="outline" className="w-full sm:w-auto">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Manage Subscription
-              </Button>
-            </form>
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10 text-primary text-sm font-medium">
+              <ShieldCheck className="h-4 w-4" />
+              Your subscription is managed via Paymob.
+            </div>
           )}
         </CardContent>
       </Card>
@@ -164,12 +156,13 @@ export default async function BillingPage({
                     ))}
                   </ul>
                   {!isCurrentPlan && (
-                    <form action={handleUpgrade.bind(null, plan.id)}>
-                      <Button type="submit" className="w-full" disabled={isCurrentPlan}>
-                        {context.plan === PlanType.FREE ? "Upgrade" : "Switch Plan"}
-                        <ExternalLink className="ml-2 h-4 w-4" />
-                      </Button>
-                    </form>
+                    <PaymentMethodSelector
+                      planId={plan.id}
+                      planName={plan.name}
+                      price={Number(plan.price)}
+                      disabled={isCurrentPlan}
+                      buttonText={context.plan === PlanType.FREE ? "Upgrade" : "Switch Plan"}
+                    />
                   )}
                   {isCurrentPlan && (
                     <Button disabled className="w-full" variant="outline">

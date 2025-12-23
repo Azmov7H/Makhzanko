@@ -1,8 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer, RotateCcw } from "lucide-react";
+import Link from "next/link";
 
 interface InvoiceData {
+    id?: string;
     token: string;
     customerName?: string;
     date: string;
@@ -18,6 +20,8 @@ interface InvoiceData {
     companyEmail?: string;
     footerNotes?: string;
     currency: string;
+    status?: string;
+    locale?: string;
 }
 
 export function InvoiceDocument({ data }: { data: InvoiceData }) {
@@ -25,10 +29,25 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
         window.print();
     };
 
+    const canReturn = data.status !== "REFUNDED" && data.status !== "CANCELLED" && data.id;
+
     return (
         <>
             {/* Print Controls - Hidden when printing */}
             <div className="print:hidden fixed bottom-6 right-6 flex gap-2 z-50">
+                {canReturn && data.locale && (
+                    <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="shadow-lg gap-2 bg-white"
+                    >
+                        <Link href={`/${data.locale}/dashboard/sales-flow/returns/new?invoiceId=${data.id}`}>
+                            <RotateCcw className="h-5 w-5" />
+                            Create Return
+                        </Link>
+                    </Button>
+                )}
                 <Button
                     onClick={handlePrint}
                     size="lg"

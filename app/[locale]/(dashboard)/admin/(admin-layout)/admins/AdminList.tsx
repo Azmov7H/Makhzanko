@@ -76,7 +76,7 @@ export function AdminList({
                     <CardContent className="p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center bg-gradient-to-br ${item.role === 'SUPER' ? 'from-purple-500 to-indigo-500' :
+                                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center bg-linear-to-br ${item.role === 'SUPER' ? 'from-purple-500 to-indigo-500' :
                                         item.role === 'SUPPORT' ? 'from-blue-500 to-cyan-500' : 'from-emerald-500 to-teal-500'
                                     } shadow-lg shadow-primary/20`}>
                                     <UserCircle className="h-6 w-6 text-white" />
