@@ -11,6 +11,8 @@ export type TenantContext = {
   tenantId: string;
   role: Role;
   plan: PlanType;
+  email: string | null;
+  name: string | null;
 };
 
 /**
@@ -43,6 +45,8 @@ export async function getTenantContext(): Promise<TenantContext> {
       tenantId: true,
       isActive: true,
       deletedAt: true,
+      email: true,
+      name: true,
     },
   });
 
@@ -69,6 +73,8 @@ export async function getTenantContext(): Promise<TenantContext> {
     tenantId,
     role,
     plan: tenant.plan,
+    email: user.email,
+    name: user.name,
   };
 }
 

@@ -37,6 +37,15 @@ interface InvoiceData {
         showCustomerSection?: boolean;
         showItemCode?: boolean;
     };
+    financials?: {
+        itemsTotal: number;
+        discountAmount: number;
+        totalRefunded: number;
+        netRevenue: number;
+        totalCost: number;
+        netProfit: number;
+        profitMargin: number;
+    };
 }
 
 export function InvoiceDocument({ data }: { data: InvoiceData }) {
@@ -164,7 +173,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
                             </div>
                         )}
                         <div className="mt-6 flex justify-end">
-                            <Badge variant={data.status === "COMPLETED" ? "success" : "secondary"} className="uppercase tracking-widest px-3 py-1 font-bold">
+                            <Badge variant={data.status === "COMPLETED" ? "default" : "secondary"} className={`uppercase tracking-widest px-3 py-1 font-bold ${data.status === "COMPLETED" ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}>
                                 {data.status}
                             </Badge>
                         </div>

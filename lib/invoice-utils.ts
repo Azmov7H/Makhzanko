@@ -1,5 +1,3 @@
-"use server";
-
 /**
  * Invoice Utility Functions
  * - Token generation for invoices and returns
