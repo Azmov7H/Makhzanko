@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { getTenantContext } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { InvoiceDocument } from "./InvoiceDocument";
+import { getInvoiceFinancialSummary } from "@/actions/reports";
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
     const { id, locale } = await params;
@@ -18,6 +19,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     if (!invoice) notFound();
 
     const settings = invoice.tenant.invoiceSettings;
+    const financials = await getInvoiceFinancialSummary(invoice.id);
 
     // Build items with product names
     const items = invoice.sale.items.map(item => ({
@@ -25,6 +27,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         sku: item.product.sku,
         quantity: item.quantity,
         price: Number(item.price),
+        cost: Number(item.cost), // Added cost for warnings
     }));
 
     const invoiceData = {
@@ -46,7 +49,22 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         currency: invoice.tenant.currency || "EGP",
         status: invoice.status,
         locale,
+        settings: settings ? {
+            logoUrl: settings.logoUrl || undefined,
+            primaryColor: settings.primaryColor || undefined,
+            accentColor: settings.accentColor || undefined,
+            fontSize: (settings.fontSize as any) || "medium",
+            fontFamily: settings.fontFamily || undefined,
+            showTax: settings.showTax,
+            showDiscount: settings.showDiscount,
+            showSeller: settings.showSeller,
+            showWarehouse: settings.showWarehouse,
+            showCustomerSection: settings.showCustomerSection,
+            showItemCode: settings.showItemCode,
+        } : undefined,
+        financials: financials && !("error" in financials) ? financials : undefined,
     };
+
 
     return (
         <div className="min-h-screen bg-gray-100 print:bg-white py-8 print:py-0">

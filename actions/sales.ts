@@ -38,7 +38,14 @@ export async function createSaleAction(data: {
             });
             const nextNumber = (lastSale?.number || 0) + 1;
 
-            // 2. Calculate Subtotal, Discount, and Total
+            // 2. Fetch products to get current costs
+            const productIds = items.map(i => i.productId);
+            const products = await tx.product.findMany({
+                where: { id: { in: productIds } }
+            });
+            const productMap = new Map(products.map(p => [p.id, p]));
+
+            // 3. Calculate Subtotal, Discount, and Total
             const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             // Calculate discount amount
@@ -60,12 +67,15 @@ export async function createSaleAction(data: {
                     customerId: customerId,
                     status: "COMPLETED",
                     items: {
-                        create: items.map(item => ({
-                            productId: item.productId,
-                            quantity: item.quantity,
-                            price: item.price,
-                            cost: 0,
-                        }))
+                        create: items.map(item => {
+                            const product = productMap.get(item.productId);
+                            return {
+                                productId: item.productId,
+                                quantity: item.quantity,
+                                price: item.price,
+                                cost: Number(product?.cost || 0),
+                            };
+                        })
                     }
                 },
             });
@@ -130,12 +140,6 @@ export async function createSaleAction(data: {
             });
 
             // 5. GL Entries
-            const productIds = items.map(i => i.productId);
-            const products = await tx.product.findMany({
-                where: { id: { in: productIds } }
-            });
-            const productMap = new Map(products.map(p => [p.id, p]));
-
             const totalCost = items.reduce((sum, item) => {
                 const product = productMap.get(item.productId);
                 return sum + (Number(product?.cost || 0) * item.quantity);
