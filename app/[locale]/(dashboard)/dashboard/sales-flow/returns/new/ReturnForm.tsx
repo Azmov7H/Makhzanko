@@ -128,7 +128,7 @@ export default function ReturnForm({ invoiceId, locale, currency }: ReturnFormPr
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success(t("Returns.success_msg", { token: result.token }));
+                toast.success(t("Returns.success_msg", { token: result.token?? "", }));
                 router.push(`/${locale}/dashboard/sales-flow/returns`);
             }
         });
