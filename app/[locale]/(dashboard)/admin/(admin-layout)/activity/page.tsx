@@ -8,7 +8,8 @@ import {
   User,
   Building2,
 } from "lucide-react";
-import { Card, CardContent, Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from "@/components/ui";
+import { Card, CardContent } from "@/components/ui/card"
+import {, Table, TableBody, TableCell, TableHeader, TableHead, TableRow} from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
