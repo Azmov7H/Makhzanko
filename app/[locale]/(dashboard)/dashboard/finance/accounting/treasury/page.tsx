@@ -135,7 +135,7 @@ export default async function TreasuryPage({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={t.type === "DEBIT" ? "default" : "outline"} className={tx.type === "DEBIT" ? "bg-emerald-500 hover:bg-emerald-600" : "text-destructive border-destructive"}>
+                                            <Badge variant={tx.type === "DEBIT" ? "default" : "outline"} className={tx.type === "DEBIT" ? "bg-emerald-500 hover:bg-emerald-600" : "text-destructive border-destructive"}>
                                                 {tx.type === "DEBIT" ? t("Dashboard.inflow") : t("Dashboard.outflow")}
                                             </Badge>
                                         </TableCell>
