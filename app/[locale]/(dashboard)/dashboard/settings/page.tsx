@@ -100,7 +100,18 @@ async function SettingsContent({ locale }: { locale: string }) {
                 </TabsContent>
 
                 <TabsContent value="invoice" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
-                    <InvoiceSettings settings={invoiceSettings || {}} />
+                    <InvoiceSettings settings={ {primaryColor: invoiceSettings?.primaryColor ?? "#000000",
+    accentColor: invoiceSettings?.accentColor ?? "#ffffff",
+    fontFamily: invoiceSettings?.fontFamily ?? "Inter",
+    templateStyle: invoiceSettings?.templateStyle ?? "default",
+    showTax: invoiceSettings?.showTax ?? false,
+    showDiscount: invoiceSettings?.showDiscount ?? false,
+
+    companyAddress: invoiceSettings?.companyAddress ?? "",
+    companyPhone: invoiceSettings?.companyPhone ?? "",
+    companyEmail: invoiceSettings?.companyEmail ?? "",
+    
+    footerNotes: invoiceSettings?.footerNotes ?? "",}} />
                 </TabsContent>
 
                 <TabsContent value="team" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
