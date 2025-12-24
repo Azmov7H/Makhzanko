@@ -47,7 +47,7 @@ async function ProductsContent({ locale }: { locale: string }) {
       products={JSON.parse(JSON.stringify(products))}
       totalStock={totalStock}
       locale={locale}
-      locale={locale}
+ 
     />
   );
 }
