@@ -39,7 +39,7 @@ async function BillingContent({
   locale: string;
 }){
   const context = await getTenantContext();
-  const t = await getI18n(locale );
+  const t = await getI18n(locale as "en" | "ar" );
 
   const [currentSubscription, plans] = await Promise.all([
     getCurrentSubscription(),
