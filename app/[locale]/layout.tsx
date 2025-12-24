@@ -83,9 +83,11 @@ export default async function LocaleLayout({
                     disableTransitionOnChange={false}
                 >
                     <I18nProvider locale={locale as Locale} messages={messages}>
+                        <Suspense fallback={null}>
                         <PageTransition>
                             {children}
                         </PageTransition>
+                        </Suspense>
                     </I18nProvider>
                 </ThemeProvider>
             </body>
