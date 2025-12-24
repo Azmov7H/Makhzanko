@@ -7,7 +7,7 @@ import { Facebook, Twitter, Instagram, Github } from "lucide-react";
 
 export default function Footer() {
     const { t, locale } = useI18n();
-    const currentYear = new Date().getFullYear();
+    const currentYear = 2025;
 
     return (
         <footer className="w-full border-t bg-background pt-16 pb-8">

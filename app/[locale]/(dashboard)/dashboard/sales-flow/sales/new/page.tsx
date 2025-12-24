@@ -18,6 +18,12 @@ export default async function NewSalePage({
         orderBy: { name: "asc" }
     });
 
+    const serializedProducts = products.map(p => ({
+        ...p,
+        price: Number(p.price),
+        cost: Number(p.cost)
+    }));
+
     const warehouses = await db.warehouse.findMany({
         where: { tenantId: context.tenantId },
         orderBy: { name: "asc" }
@@ -29,7 +35,7 @@ export default async function NewSalePage({
                 <h1 className="text-3xl font-bold tracking-tight">{t("Sales.new_sale")}</h1>
                 <p className="text-muted-foreground mt-1">{t("Sales.new_sale_desc")}</p>
             </div>
-            <SalesForm products={products} warehouses={warehouses} />
+            <SalesForm products={serializedProducts} warehouses={warehouses} />
         </div>
     );
 }

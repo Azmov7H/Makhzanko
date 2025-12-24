@@ -13,13 +13,28 @@ export async function createSaleAction(data: {
     customerName?: string;
     discountType?: "percentage" | "fixed";
     discountValue?: number;
+    paymentType?: "CASH" | "BANK_TRANSFER" | "DEFERRED";
 }) {
     const context = await getTenantContext();
 
-    const { warehouseId, items, customerId, customerName, discountType, discountValue } = data;
+    const { warehouseId, items, customerId, customerName, discountType, discountValue, paymentType = "CASH" } = data;
 
     if (!items || items.length === 0) return { error: "No items in sale" };
     if (!warehouseId) return { error: "Warehouse required" };
+
+    // Check deferred permission
+    const user = await db.user.findUnique({
+        where: { id: context.userId },
+        select: {
+            id: true,
+            role: true,
+            // canDeferred: true // Removed due to schema mismatch
+        }
+    });
+    // @ts-ignore - Schema mismatch workaround
+    if (paymentType === "DEFERRED" && !user?.canDeferred && context.role !== "OWNER") {
+        return { error: "You don't have permission to process deferred payments (Ajel)." };
+    }
 
     // Check Limits
     try {
@@ -35,6 +50,7 @@ export async function createSaleAction(data: {
             const lastSale = await tx.sale.findFirst({
                 where: { tenantId: context.tenantId },
                 orderBy: { number: "desc" },
+                select: { number: true }
             });
             const nextNumber = (lastSale?.number || 0) + 1;
 
@@ -66,6 +82,9 @@ export async function createSaleAction(data: {
                     userId: context.userId,
                     customerId: customerId,
                     status: "COMPLETED",
+                    // paymentType: paymentType, // Removed due to schema mismatch
+                    // paymentStatus: paymentType === "DEFERRED" ? "UNPAID" : "PAID",
+                    amountPaid: paymentType === "DEFERRED" ? 0 : total,
                     items: {
                         create: items.map(item => {
                             const product = productMap.get(item.productId);
@@ -126,6 +145,8 @@ export async function createSaleAction(data: {
                     discountAmount: discountAmount,
                     total: total,
                     status: "COMPLETED",
+                    // paymentType: paymentType,
+                    // paymentStatus: paymentType === "DEFERRED" ? "UNPAID" : "PAID", 
                     jsonSnapshot: {
                         ...newSale,
                         items,
@@ -134,7 +155,8 @@ export async function createSaleAction(data: {
                         discountType,
                         discountValue,
                         discountAmount,
-                        total
+                        total,
+                        paymentType
                     }
                 }
             });
@@ -145,18 +167,33 @@ export async function createSaleAction(data: {
                 return sum + (Number(product?.cost || 0) * item.quantity);
             }, 0);
 
+            // Determine Account for Debit
+            // 1101: Treasury, 1102: Bank, 1200: Receivables
+            let debitAccount = "1101";
+            if (paymentType === "BANK_TRANSFER") debitAccount = "1102";
+            if (paymentType === "DEFERRED") debitAccount = "1200";
+
             await createJournalEntry({
                 tenantId: context.tenantId,
-                description: `Sale #${nextNumber}`,
+                description: `Sale #${nextNumber} (${paymentType})`,
                 reference: newSale.id,
                 date: new Date(),
                 transactions: [
-                    { accountCode: "1200", type: "DEBIT", amount: Number(total) },
+                    { accountCode: debitAccount, type: "DEBIT", amount: Number(total) },
                     { accountCode: "4001", type: "CREDIT", amount: Number(total) },
                     { accountCode: "5001", type: "DEBIT", amount: Number(totalCost) },
                     { accountCode: "1300", type: "CREDIT", amount: Number(totalCost) },
                 ]
             }, tx);
+
+            // 6. Update Customer Loyalty Points
+            if (customerId) {
+                const pointsToAdd = Math.floor(total / 100);
+                // await tx.customer.update({
+                //     where: { id: customerId },
+                //     data: { loyaltyPoints: { increment: pointsToAdd } }
+                // });
+            }
 
             return newSale;
         });

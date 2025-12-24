@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ShoppingCart, Trash2, CreditCard, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Trash2, CreditCard, Plus, Minus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
     const { t, locale } = useI18n();
     const [cart, setCart] = useState<any[]>([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(warehouses[0]?.id || "");
+    const [searchQuery, setSearchQuery] = useState("");
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
@@ -32,6 +33,11 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
     const [customerName, setCustomerName] = useState("");
     const [discountType, setDiscountType] = useState<"percentage" | "fixed" | "none">("none");
     const [discountValue, setDiscountValue] = useState(0);
+
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const addToCart = (productId: string) => {
         const product = products.find(p => p.id === productId);
@@ -99,12 +105,21 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 h-[calc(100vh-180px)] min-h-[600px]">
             {/* Product List */}
             <Card className="flex flex-col h-full overflow-hidden border-none shadow-sm bg-muted/30">
-                <CardHeader className="bg-background/50 border-b">
+                <CardHeader className="bg-background/50 border-b space-y-4">
                     <CardTitle className="text-xl">{t("Sales.products_list")}</CardTitle>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={t("Sales.search_placeholder") || "Search products..."}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9 bg-background"
+                        />
+                    </div>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto p-6">
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                        {products.map((product, idx) => (
+                        {filteredProducts.map((product, idx) => (
                             <motion.button
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}

@@ -2,14 +2,14 @@ import { getTenantContext } from "@/lib/auth";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Warehouse, ShoppingCart, FileText, TrendingUp, DollarSign } from "lucide-react";
+import { Package, Warehouse, ShoppingCart, FileText, TrendingUp, DollarSign, AlertTriangle, TrendingDown, Clock } from "lucide-react";
 import { getDashboardSummary, getInventoryAlerts } from "@/actions/reports";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
-import { AlertTriangle, TrendingDown, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LowStockAlert } from "./_components/LowStockAlert";
 
 export default async function DashboardLandingPage({
     params,
@@ -37,6 +37,8 @@ export default async function DashboardLandingPage({
                     {t("Dashboard.welcome_desc")}
                 </p>
             </div>
+
+            <LowStockAlert />
 
             <Suspense fallback={<StatsSkeleton />}>
                 <StatsSection locale={locale} />
@@ -66,13 +68,18 @@ export default async function DashboardLandingPage({
                 </CardContent>
             </Card>
 
-            <div className="grid gap-8 md:grid-cols-2">
-                <Suspense fallback={<DashboardCardSkeleton />}>
-                    <StockAlertsSection locale={locale} />
-                </Suspense>
-                <Suspense fallback={<DashboardCardSkeleton />}>
-                    <DemandForecastSection locale={locale} />
-                </Suspense>
+            {/* New grid structure */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+                <div className="md:col-span-4 space-y-6">
+                    <Suspense fallback={<DashboardCardSkeleton />}>
+                        <StockAlertsSection locale={locale} />
+                    </Suspense>
+                </div>
+                <div className="md:col-span-3 space-y-6">
+                    <Suspense fallback={<DashboardCardSkeleton />}>
+                        <DemandForecastSection locale={locale} />
+                    </Suspense>
+                </div>
             </div>
         </div>
     );
@@ -82,56 +89,30 @@ async function StatsSection({ locale }: { locale: string }) {
     const stats = await getDashboardSummary();
     const t = await getI18n(locale as Locale);
 
+    const statItems = [
+        { title: t("Dashboard.total_products"), value: stats.totalProducts, desc: t("Dashboard.products_desc"), icon: Package, color: "text-blue-500", bg: "bg-blue-500/10", glow: "shadow-blue-500/10" },
+        { title: t("Dashboard.total_sales"), value: stats.totalSales, desc: t("Dashboard.sales_desc"), icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10", glow: "shadow-purple-500/10" },
+        { title: t("Dashboard.total_revenue"), value: `${stats.totalRevenue.toLocaleString()} ${t("Common.currency")}`, desc: t("Dashboard.revenue_desc"), icon: DollarSign, color: "text-green-500", bg: "bg-green-500/10", glow: "shadow-green-500/10" },
+        { title: t("Dashboard.total_warehouses"), value: stats.totalWarehouses, desc: t("Dashboard.warehouses_desc"), icon: Warehouse, color: "text-orange-500", bg: "bg-orange-500/10", glow: "shadow-orange-500/10" },
+    ];
+
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_products")}</CardTitle>
-                    <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                        <Package className="h-5 w-5 text-blue-500 group-hover:text-white" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-black tabular-nums">{stats.totalProducts}</div>
-                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.products_desc")}</p>
-                </CardContent>
-            </Card>
-            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_sales")}</CardTitle>
-                    <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                        <TrendingUp className="h-5 w-5 text-purple-500 group-hover:text-white" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-black tabular-nums">{stats.totalSales}</div>
-                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.sales_desc")}</p>
-                </CardContent>
-            </Card>
-            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_revenue")}</CardTitle>
-                    <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
-                        <DollarSign className="h-5 w-5 text-green-500 group-hover:text-white" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-black tabular-nums">{stats.totalRevenue.toLocaleString()} {t("Common.currency")}</div>
-                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.revenue_desc")}</p>
-                </CardContent>
-            </Card>
-            <Card className="hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-3xl group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Dashboard.total_warehouses")}</CardTitle>
-                    <div className="p-2 bg-orange-500/10 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                        <Warehouse className="h-5 w-5 text-orange-500 group-hover:text-white" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-black tabular-nums">{stats.totalWarehouses}</div>
-                    <p className="text-xs text-muted-foreground mt-1 font-medium">{t("Dashboard.warehouses_desc")}</p>
-                </CardContent>
-            </Card>
+            {statItems.map((item, i) => (
+                <Card key={i} className={`hover:shadow-2xl transition-all duration-500 border-none bg-card/40 backdrop-blur-xl rounded-2xl group overflow-hidden relative ${item.glow}`}>
+                    <div className={`absolute top-0 right-0 w-24 h-24 ${item.bg} rounded-full -mr-12 -mt-12 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{item.title}</CardTitle>
+                        <div className={`p-2 ${item.bg} rounded-lg group-hover:${item.color.replace('text-', 'bg-')} group-hover:text-white transition-all duration-300 group-hover:rotate-12`}>
+                            <item.icon className={`h-5 w-5 ${item.color} group-hover:text-white`} />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="text-3xl font-black tabular-nums group-hover:scale-105 transition-transform origin-left duration-300">{item.value}</div>
+                        <p className="text-xs text-muted-foreground mt-1 font-medium">{item.desc}</p>
+                    </CardContent>
+                </Card>
+            ))}
         </div>
     );
 }
@@ -205,17 +186,17 @@ async function DemandForecastSection({ locale }: { locale: string }) {
                         </p>
                     ) : (
                         alerts.forecasts.map(f => (
-                            <div key={f.id} className="flex items-center justify-between p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10">
+                            <div key={f.id} className="flex items-center justify-between p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/20 group/item hover:bg-blue-100/50 transition-colors">
                                 <div>
-                                    <p className="font-bold text-sm">{f.name}</p>
+                                    <p className="font-bold text-sm group-hover/item:text-blue-600 transition-colors">{f.name}</p>
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                                         <Clock className="h-3 w-3" />
-                                        <span>{locale === "ar" ? `يكفي لـ ${f.daysLeft} أيام` : `Lasts for ${f.daysLeft} days`}</span>
+                                        <span>{t("Dashboard.alerts.lasts_for", { days: f.daysLeft })}</span>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                                        {locale === "ar" ? `${f.weeklySales} قطعة/أسبوع` : `${f.weeklySales} units/week`}
+                                        {t("Dashboard.alerts.units_per_week", { count: f.weeklySales })}
                                     </p>
                                 </div>
                             </div>
@@ -245,4 +226,3 @@ function DashboardCardSkeleton() {
         </Card>
     );
 }
-

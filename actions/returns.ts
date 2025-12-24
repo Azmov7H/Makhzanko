@@ -15,6 +15,7 @@ interface CreateReturnInput {
     items: { productId: string; quantity: number }[];
     reason: string;
     notes?: string;
+    paymentType?: "CASH" | "BANK_TRANSFER" | "DEFERRED";
 }
 
 /**
@@ -23,7 +24,7 @@ interface CreateReturnInput {
  */
 export async function createReturnAction(data: CreateReturnInput) {
     const context = await getTenantContext();
-    const { invoiceId, items, reason, notes } = data;
+    const { invoiceId, items, reason, notes, paymentType: refundPaymentType } = data;
 
     if (!items || items.length === 0) {
         return { error: "No items to return" };
@@ -135,6 +136,7 @@ export async function createReturnAction(data: CreateReturnInput) {
                     discountShare,
                     refundAmount,
                     status: "COMPLETED", // Auto-complete for simplicity
+                    paymentType: refundPaymentType || invoice.paymentType || "CASH",
                     processedAt: new Date(),
                     processedBy: context.userId,
                     items: {
@@ -175,16 +177,22 @@ export async function createReturnAction(data: CreateReturnInput) {
             }
 
             // 8. Create reversal journal entry
+            // Determine account to CREDIT (refund payout)
+            let creditAccount = "1101"; // Default Treasury
+            const effectivePaymentType = refundPaymentType || invoice.paymentType || "CASH";
+            if (effectivePaymentType === "BANK_TRANSFER") creditAccount = "1102";
+            if (effectivePaymentType === "DEFERRED") creditAccount = "1200";
+
             await createJournalEntry({
                 tenantId: context.tenantId,
-                description: `Return ${returnToken} for Invoice ${invoice.token}`,
+                description: `Return ${returnToken} for Invoice ${invoice.token} (${effectivePaymentType})`,
                 reference: newReturn.id,
                 date: new Date(),
                 transactions: [
                     // Reverse revenue (reduce sales)
                     { accountCode: "4001", type: "DEBIT", amount: refundAmount },
-                    // Reduce receivables
-                    { accountCode: "1200", type: "CREDIT", amount: refundAmount },
+                    // Reduce receivables or Treasury/Bank
+                    { accountCode: creditAccount, type: "CREDIT", amount: refundAmount },
                     // Restore inventory
                     { accountCode: "1300", type: "DEBIT", amount: itemsCost },
                     // Reverse COGS

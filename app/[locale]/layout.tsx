@@ -8,6 +8,8 @@ import { Metadata, Viewport } from "next";
 import StructuredData from "@/components/seo/StructuredData";
 import { generateOrganizationLD, generateWebSiteLD } from "@/lib/seo/structuredData";
 import { seoConfig } from "@/lib/seo/config";
+import { Suspense } from "react";
+import "../globals.css";
 
 const tajawal = Tajawal({
     subsets: ["arabic", "latin"],
@@ -45,6 +47,10 @@ export const metadata: Metadata = {
 
 import { PageTransition } from "@/components/layout/PageTransition";
 
+export function generateStaticParams() {
+    return locales.map((locale) => ({ locale }));
+}
+
 export default async function LocaleLayout({
     children,
     params,
@@ -55,6 +61,10 @@ export default async function LocaleLayout({
     const { locale } = await params;
 
     // Ensure that the incoming `locale` is valid
+    if (!locales.includes(locale as Locale)) {
+        notFound();
+    }
+
     const messages = await getMessages(locale as Locale);
     const direction = getDirection(locale as Locale);
 
@@ -64,10 +74,8 @@ export default async function LocaleLayout({
 
     return (
         <html lang={locale} dir={direction} suppressHydrationWarning>
-            <head>
-                <StructuredData data={[organizationLD, websiteLD]} />
-            </head>
             <body className={`${tajawal.variable} ${manrope.variable} antialiased font-sans`}>
+                <StructuredData data={[organizationLD, websiteLD]} />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="light"

@@ -13,16 +13,18 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Save, Image as ImageIcon, Smartphone, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function InvoiceDesigner({ settings, plan }: { settings: any, plan: string }) {
     const [config, setConfig] = useState(settings);
     const [isPending, startTransition] = useTransition();
+    const { t } = useI18n();
 
     const isLocked = plan === "FREE";
 
     const handleSave = () => {
         if (isLocked) {
-            toast.error("Upgrade to Pro to customize invoices.");
+            toast.error(t('Invoices.designer.upgrade_error'));
             return;
         }
 
@@ -31,7 +33,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success("Invoice settings saved");
+                toast.success(t('Invoices.designer.success_save'));
             }
         });
     };
@@ -52,24 +54,24 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
             <Card className="lg:col-span-4 h-full overflow-auto">
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                        <span>Customization</span>
-                        {isLocked && <Badge variant="secondary">LOCKED (FREE)</Badge>}
+                        <span>{t('Invoices.designer.title')}</span>
+                        {isLocked && <Badge variant="secondary">{t('Invoices.designer.locked')}</Badge>}
                     </CardTitle>
                     <CardDescription>
-                        Professionalize your brand appearance.
+                        {t('Invoices.designer.desc')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pb-20">
                     <div className="space-y-4">
-                        <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Branding</Label>
+                        <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('Invoices.designer.branding')}</Label>
 
                         <div className="space-y-2">
-                            <Label>Logo URL</Label>
+                            <Label>{t('Invoices.designer.logo_url')}</Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={config.logoUrl || ""}
                                     onChange={(e) => updateConfig("logoUrl", e.target.value)}
-                                    placeholder="https://example.com/logo.png"
+                                    placeholder={t('Invoices.designer.logo_placeholder')}
                                     disabled={isLocked}
                                 />
                                 <div className="h-10 w-10 border rounded flex items-center justify-center bg-gray-50 flex-shrink-0">
@@ -80,7 +82,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Primary Color</Label>
+                                <Label>{t('Invoices.designer.primary_color')}</Label>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="color"
@@ -93,7 +95,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label>Accent Color</Label>
+                                <Label>{t('Invoices.designer.accent_color')}</Label>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="color"
@@ -109,7 +111,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Font Family</Label>
+                                <Label>{t('Invoices.designer.font_family')}</Label>
                                 <Select value={config.fontFamily || "Inter"} onValueChange={(val) => updateConfig("fontFamily", val)} disabled={isLocked}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
@@ -121,7 +123,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Font Size</Label>
+                                <Label>{t('Invoices.designer.font_size')}</Label>
                                 <Select value={config.fontSize || "medium"} onValueChange={(val) => updateConfig("fontSize", val)} disabled={isLocked}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
@@ -137,32 +139,32 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                     <Separator />
 
                     <div className="space-y-4">
-                        <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Company Info</Label>
+                        <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('Invoices.designer.company_info')}</Label>
                         <div className="space-y-2">
-                            <Label>Company Address</Label>
+                            <Label>{t('Invoices.designer.address')}</Label>
                             <Input
                                 value={config.companyAddress || ""}
                                 onChange={(e) => updateConfig("companyAddress", e.target.value)}
-                                placeholder="123 Street Name, City"
+                                placeholder={t('Invoices.designer.address_placeholder')}
                                 disabled={isLocked}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Phone</Label>
+                                <Label>{t('Invoices.designer.phone')}</Label>
                                 <Input
                                     value={config.companyPhone || ""}
                                     onChange={(e) => updateConfig("companyPhone", e.target.value)}
-                                    placeholder="+1 234 567"
+                                    placeholder={t('Invoices.designer.phone_placeholder')}
                                     disabled={isLocked}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Email</Label>
+                                <Label>{t('Invoices.designer.email')}</Label>
                                 <Input
                                     value={config.companyEmail || ""}
                                     onChange={(e) => updateConfig("companyEmail", e.target.value)}
-                                    placeholder="billing@company.com"
+                                    placeholder={t('Invoices.designer.email_placeholder')}
                                     disabled={isLocked}
                                 />
                             </div>
@@ -172,30 +174,30 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                     <Separator />
 
                     <div className="space-y-4">
-                        <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Visibility Toggles</Label>
+                        <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('Invoices.designer.visibility')}</Label>
                         <div className="grid grid-cols-1 gap-4">
                             <div className="flex items-center justify-between">
-                                <Label>Show Tax</Label>
+                                <Label>{t('Invoices.designer.show_tax')}</Label>
                                 <Switch checked={config.showTax} onCheckedChange={(c) => updateConfig("showTax", c)} disabled={isLocked} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Discount</Label>
+                                <Label>{t('Invoices.designer.show_discount')}</Label>
                                 <Switch checked={config.showDiscount} onCheckedChange={(c) => updateConfig("showDiscount", c)} disabled={isLocked} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Seller Info</Label>
+                                <Label>{t('Invoices.designer.show_seller')}</Label>
                                 <Switch checked={config.showSeller} onCheckedChange={(c) => updateConfig("showSeller", c)} disabled={isLocked} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Customer Info</Label>
+                                <Label>{t('Invoices.designer.show_customer')}</Label>
                                 <Switch checked={config.showCustomerSection} onCheckedChange={(c) => updateConfig("showCustomerSection", c)} disabled={isLocked} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Item Sku/Code</Label>
+                                <Label>{t('Invoices.designer.show_sku')}</Label>
                                 <Switch checked={config.showItemCode} onCheckedChange={(c) => updateConfig("showItemCode", c)} disabled={isLocked} />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Warehouse</Label>
+                                <Label>{t('Invoices.designer.show_warehouse')}</Label>
                                 <Switch checked={config.showWarehouse} onCheckedChange={(c) => updateConfig("showWarehouse", c)} disabled={isLocked} />
                             </div>
                         </div>
@@ -204,11 +206,11 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                     <Separator />
 
                     <div className="space-y-2">
-                        <Label>Footer Notes</Label>
+                        <Label>{t('Invoices.designer.footer_notes')}</Label>
                         <Textarea
                             value={config.footerNotes || ""}
                             onChange={(e) => updateConfig("footerNotes", e.target.value)}
-                            placeholder="Thank you for your business!"
+                            placeholder={t('Invoices.designer.footer_placeholder')}
                             disabled={isLocked}
                             className="h-24 resize-none"
                         />
@@ -217,9 +219,9 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                     <div className="pt-4 sticky bottom-0 bg-white pb-4 z-10">
                         <Button onClick={handleSave} disabled={isPending || isLocked} className="w-full">
                             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            Save Changes
+                            {t('Invoices.designer.save')}
                         </Button>
-                        {isLocked && <p className="text-xs text-red-500 mt-2 text-center">Upgrade plan to unlock</p>}
+                        {isLocked && <p className="text-xs text-red-500 mt-2 text-center">{t('Invoices.designer.upgrade_notice')}</p>}
                     </div>
                 </CardContent>
             </Card>
@@ -227,7 +229,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
             {/* Preview */}
             <Card className="lg:col-span-8 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col h-full overflow-hidden">
                 <CardHeader className="border-b bg-white dark:bg-gray-950">
-                    <CardTitle>Live Preview</CardTitle>
+                    <CardTitle>{t('Invoices.designer.preview')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto p-8 flex justify-center">
                     <div
@@ -263,15 +265,15 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                         {config.showCustomerSection && (
                             <div className="mb-10 grid grid-cols-2 gap-8">
                                 <div className="p-4 rounded-xl border bg-gray-50/50">
-                                    <p className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mb-2">Bill To</p>
+                                    <p className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mb-2">{t('Invoices.designer.bill_to')}</p>
                                     <p className="font-bold text-lg">Acme Corporation</p>
                                     <p className="text-gray-600">Robert Johnson</p>
                                     <p className="text-gray-500">robert@acme.com</p>
                                 </div>
                                 <div className="p-4 rounded-xl border border-dashed text-right">
-                                    <p className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mb-2">Issue Date</p>
+                                    <p className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mb-2">{t('Invoices.designer.issue_date')}</p>
                                     <p className="font-bold">May 15, 2024</p>
-                                    <p className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mt-4 mb-2">Due Date</p>
+                                    <p className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mt-4 mb-2">{t('Invoices.designer.due_date')}</p>
                                     <p className="font-bold">May 30, 2024</p>
                                 </div>
                             </div>
@@ -282,10 +284,10 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-gray-100/50">
-                                        <th className="px-3 py-3 rounded-l-lg">Description</th>
-                                        <th className="px-3 py-3 text-right">Quantity</th>
-                                        <th className="px-3 py-3 text-right">Unit Price</th>
-                                        <th className="px-3 py-3 text-right rounded-r-lg">Amount</th>
+                                        <th className="px-3 py-3 rounded-l-lg">{t('Invoices.designer.description')}</th>
+                                        <th className="px-3 py-3 text-right">{t('Invoices.designer.quantity')}</th>
+                                        <th className="px-3 py-3 text-right">{t('Invoices.designer.unit_price')}</th>
+                                        <th className="px-3 py-3 text-right rounded-r-lg">{t('Invoices.designer.amount')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y">
@@ -315,7 +317,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                         <div className="mt-10 flex justify-end">
                             <div className="w-full max-w-[280px] space-y-3">
                                 <div className="flex justify-between items-center text-gray-600">
-                                    <span>Subtotal</span>
+                                    <span>{t('Invoices.designer.subtotal')}</span>
                                     <span className="font-bold">1,399.00 EGP</span>
                                 </div>
                                 {config.showDiscount && (
@@ -334,12 +336,12 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                     className="flex justify-between items-center p-3 rounded-xl text-white shadow-xl"
                                     style={{ backgroundColor: config.primaryColor }}
                                 >
-                                    <span className="font-bold uppercase tracking-wider text-xs">Total Amount</span>
+                                    <span className="font-bold uppercase tracking-wider text-xs">{t('Invoices.designer.total_amount')}</span>
                                     <span className="font-black text-xl">1,454.96 EGP</span>
                                 </div>
 
                                 <div className="text-[10px] text-gray-400 text-center italic mt-1">
-                                    Amount in words: One Thousand Four Hundred Fifty Four EGP
+                                    {t('Invoices.designer.amount_in_words')}: One Thousand Four Hundred Fifty Four EGP
                                 </div>
                             </div>
                         </div>
@@ -350,18 +352,18 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                 <div className="space-y-4">
                                     {config.footerNotes && (
                                         <div className="max-w-[400px]">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Notes</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{t('Invoices.designer.notes_label')}</p>
                                             <p className="text-gray-600 italic leading-relaxed">{config.footerNotes}</p>
                                         </div>
                                     )}
                                     {config.showWarehouse && (
                                         <p className="text-[10px] bg-gray-100 inline-block px-2 py-0.5 rounded text-gray-500">
-                                            Fulfilled by: <strong>Cairo Logistics Hub</strong>
+                                            {t('Invoices.designer.fulfilled_by')}: <strong>Cairo Logistics Hub</strong>
                                         </p>
                                     )}
                                 </div>
                                 <div className="text-center w-32 border-t pt-2 border-gray-100">
-                                    <p className="text-[9px] text-gray-400 uppercase tracking-tighter">Authorized Signature</p>
+                                    <p className="text-[9px] text-gray-400 uppercase tracking-tighter">{t('Invoices.designer.authorized_signature')}</p>
                                 </div>
                             </div>
 

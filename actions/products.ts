@@ -13,6 +13,7 @@ export async function createProductAction(prevState: any, formData: FormData) {
     const sku = formData.get("sku") as string;
     const price = parseFloat(formData.get("price") as string);
     const cost = parseFloat(formData.get("cost") as string);
+    const minStock = parseInt(formData.get("minStock") as string) || 0;
 
     if (!name || !sku) return { error: "Missing fields" };
 
@@ -31,6 +32,7 @@ export async function createProductAction(prevState: any, formData: FormData) {
                 sku,
                 price,
                 cost,
+                minStock,
                 tenantId: context.tenantId,
             },
         });
@@ -56,4 +58,19 @@ export async function deleteProductAction(formData: FormData) {
     });
 
     revalidatePath("/dashboard/inventory/products");
+}
+
+export async function checkProductExistsAction(field: "sku" | "name", value: string) {
+    const context = await getTenantContext();
+
+    if (!value) return false;
+
+    const count = await db.product.count({
+        where: {
+            tenantId: context.tenantId,
+            [field]: value
+        }
+    });
+
+    return count > 0;
 }

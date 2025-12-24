@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Users, Trash2, Shield, UserPlus, AlertCircle } from "lucide-react";
-import { addUserToTeam, deleteUserFromTeam } from "@/actions/settings";
+import { addUserToTeam, deleteUserFromTeam, toggleDeferredPaymentAction } from "@/actions/settings";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
     Table,
     TableBody,
@@ -31,6 +32,7 @@ interface User {
     email: string;
     name: string | null;
     role: Role;
+    canDeferred: boolean;
 }
 
 interface TeamSettingsProps {
@@ -70,17 +72,19 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
     }
 
     return (
-        <div className="space-y-6">
-            <Card className="border-primary/5 shadow-sm">
-                <CardHeader className="bg-muted/30 border-b flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
+        <div className="space-y-8 text-start">
+            <Card className="border-none shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b border-primary/5 py-8 px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <CardTitle className="flex items-center gap-3 text-2xl font-black">
+                            <div className="p-2 bg-primary/10 rounded-xl">
+                                <Users className="h-6 w-6 text-primary" />
+                            </div>
                             {t("Settings.team_members")}
                         </CardTitle>
-                        <CardDescription>{t("Settings.team_members_desc")}</CardDescription>
+                        <CardDescription className="text-base font-medium">{t("Settings.team_members_desc")}</CardDescription>
                     </div>
-                    <Badge variant="secondary" className="h-fit">
+                    <Badge variant="outline" className="h-fit px-4 py-1.5 rounded-full font-black text-sm border-primary/20 bg-primary/5 text-primary">
                         {t("Settings.users_count", {
                             count: users.length,
                             limit: limit.toString(),
@@ -88,56 +92,79 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
                     </Badge>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t("Settings.full_name")}</TableHead>
-                                <TableHead>{t("Settings.user_email")}</TableHead>
-                                <TableHead>{t("Settings.user_role")}</TableHead>
-                                <TableHead className="text-right">{t("Common.actions")}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium">
-                                        {user.name || "-"}
-                                        {user.id === currentUserId && (
-                                            <span className="ml-2 text-xs text-muted-foreground">(You)</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline">{user.role}</Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                            disabled={user.id === currentUserId}
-                                            onClick={() => handleDeleteUser(user.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-muted/10">
+                                <TableRow className="hover:bg-transparent border-primary/5">
+                                    <TableHead className="py-5 px-8 font-bold text-xs uppercase tracking-widest">{t("Settings.full_name")}</TableHead>
+                                    <TableHead className="py-5 px-8 font-bold text-xs uppercase tracking-widest">{t("Settings.user_email")}</TableHead>
+                                    <TableHead className="py-5 px-8 font-bold text-xs uppercase tracking-widest">{t("Settings.user_role")}</TableHead>
+                                    <TableHead className="py-5 px-8 font-bold text-xs uppercase tracking-widest">{t("Settings.ajel_permission")}</TableHead>
+                                    <TableHead className="py-5 px-8 text-right font-bold text-xs uppercase tracking-widest">{t("Common.actions")}</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                    <TableRow key={user.id} className="group hover:bg-primary/5 transition-all duration-300 border-primary/5">
+                                        <TableCell className="font-bold py-5 px-8">
+                                            <div className="flex items-center gap-2">
+                                                {user.name || "-"}
+                                                {user.id === currentUserId && (
+                                                    <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-tighter">
+                                                        {t("Common.you") || "You"}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="py-5 px-8 font-medium text-muted-foreground">{user.email}</TableCell>
+                                        <TableCell className="py-5 px-8">
+                                            <Badge variant="outline" className="font-black text-[10px] uppercase tracking-wider rounded-lg border-primary/20 bg-primary/5 text-primary">
+                                                {user.role}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="py-5 px-8">
+                                            <Switch
+                                                checked={user.canDeferred}
+                                                onCheckedChange={async (val) => {
+                                                    const res = await toggleDeferredPaymentAction(user.id, val);
+                                                    if (res.success) toast.success(t("Common.success"));
+                                                    else toast.error(res.error || t("Common.error"));
+                                                }}
+                                                disabled={user.role === Role.OWNER}
+                                                className="data-[state=checked]:bg-emerald-500"
+                                            />
+                                        </TableCell>
+                                        <TableCell className="py-5 px-8 text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
+                                                disabled={user.id === currentUserId}
+                                                onClick={() => handleDeleteUser(user.id)}
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
 
-            <Card className="border-primary/5 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <UserPlus className="h-5 w-5 text-primary" />
+            <Card className="border-none shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+                <CardHeader className="bg-accent/5 border-b border-primary/5 py-8 px-8">
+                    <CardTitle className="text-xl font-black flex items-center gap-3">
+                        <div className="p-2 bg-accent/10 rounded-xl">
+                            <UserPlus className="h-6 w-6 text-accent" />
+                        </div>
                         {t("Settings.add_user")}
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-base font-medium">
                         {isLimitReached ? (
-                            <span className="flex items-center gap-1 text-destructive">
-                                <AlertCircle className="h-4 w-4" />
+                            <span className="flex items-center gap-2 text-destructive font-bold">
+                                <AlertCircle className="h-5 w-5" />
                                 {t("Settings.plan_limit_reached")}. {t("Settings.upgrade_plan")}
                             </span>
                         ) : (
@@ -145,10 +172,10 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
                         )}
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <form action={handleAddUser} className="grid sm:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">{t("Settings.user_email")}</Label>
+                <CardContent className="p-8">
+                    <form action={handleAddUser} className="grid sm:grid-cols-4 gap-6">
+                        <div className="space-y-3">
+                            <Label htmlFor="email" className="font-bold text-sm tracking-tight">{t("Settings.user_email")}</Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -156,10 +183,11 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
                                 placeholder="name@example.com"
                                 disabled={isLimitReached}
                                 required
+                                className="h-12 rounded-2xl bg-muted/50 border-primary/10"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">{t("Auth.password")}</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="password" className="font-bold text-sm tracking-tight">{t("Auth.password")}</Label>
                             <Input
                                 id="password"
                                 name="password"
@@ -167,15 +195,16 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
                                 placeholder="***"
                                 disabled={isLimitReached}
                                 required
+                                className="h-12 rounded-2xl bg-muted/50 border-primary/10"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="role">{t("Settings.user_role")}</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="role" className="font-bold text-sm tracking-tight">{t("Settings.user_role")}</Label>
                             <Select name="role" defaultValue={Role.STAFF} disabled={isLimitReached}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-12 rounded-2xl bg-muted/50 border-primary/10 font-bold">
                                     <SelectValue placeholder="Select role" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-2xl border-primary/10">
                                     <SelectItem value={Role.ADMIN}>Admin</SelectItem>
                                     <SelectItem value={Role.MANAGER}>Manager</SelectItem>
                                     <SelectItem value={Role.STAFF}>Staff</SelectItem>
@@ -185,10 +214,10 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
                         <div className="flex items-end">
                             <Button
                                 type="submit"
-                                className="w-full gap-2"
+                                className="w-full h-12 gap-2 rounded-2xl font-black shadow-xl shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
                                 disabled={isLimitReached}
                             >
-                                <UserPlus className="h-4 w-4" />
+                                <UserPlus className="h-5 w-5" />
                                 {t("Settings.add_user")}
                             </Button>
                         </div>

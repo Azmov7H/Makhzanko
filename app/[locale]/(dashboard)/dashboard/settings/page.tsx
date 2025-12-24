@@ -5,12 +5,13 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
-import { Store, CreditCard, Users, User } from "lucide-react";
+import { Store, CreditCard, Users, User, FileText } from "lucide-react";
 import { db } from "@/lib/db";
 import { GeneralSettings } from "./_components/GeneralSettings";
 import { TeamSettings } from "./_components/TeamSettings";
 import { Button } from "@/components/ui/button"
 import { ProfileSettings } from "./_components/ProfileSettings";
+import { InvoiceSettings } from "./_components/InvoiceSettings";
 
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,19 +35,22 @@ async function SettingsContent({ locale }: { locale: string }) {
     const t = await getI18n(locale as Locale);
 
     // Fetch data for settings
-    const [tenant, users, currentUser] = await Promise.all([
+    const [tenant, users, currentUser, invoiceSettings] = await Promise.all([
         db.tenant.findUnique({
             where: { id: context.tenantId },
             select: { name: true, plan: true }
         }),
         db.user.findMany({
             where: { tenantId: context.tenantId },
-            select: { id: true, email: true, name: true, role: true },
+            select: { id: true, email: true, name: true, role: true, canDeferred: true },
             orderBy: { createdAt: "asc" }
         }),
         db.user.findUnique({
             where: { id: context.userId },
             select: { name: true, email: true, role: true }
+        }),
+        db.invoiceSettings.findUnique({
+            where: { tenantId: context.tenantId }
         })
     ]);
 
@@ -67,10 +71,14 @@ async function SettingsContent({ locale }: { locale: string }) {
 
             <Tabs defaultValue="general" className="w-full">
                 <div className="overflow-x-auto pb-2 mb-2 scrollbar-none">
-                    <TabsList className="flex h-auto w-auto min-w-full sm:min-w-[400px] sm:grid sm:grid-cols-4 bg-muted/30 p-1 rounded-xl border border-primary/5 shadow-inner">
+                    <TabsList className="flex h-auto w-auto min-w-full sm:min-w-[500px] sm:grid sm:grid-cols-5 bg-muted/30 p-1 rounded-xl border border-primary/5 shadow-inner scrollbar-none">
                         <TabsTrigger value="general" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
                             <Store className="h-4 w-4 mr-2" />
                             {t("Settings.general")}
+                        </TabsTrigger>
+                        <TabsTrigger value="invoice" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Invoice
                         </TabsTrigger>
                         <TabsTrigger value="team" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
                             <Users className="h-4 w-4 mr-2" />
@@ -89,6 +97,10 @@ async function SettingsContent({ locale }: { locale: string }) {
 
                 <TabsContent value="general" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
                     <GeneralSettings initialName={tenant.name} />
+                </TabsContent>
+
+                <TabsContent value="invoice" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
+                    <InvoiceSettings settings={invoiceSettings || {}} />
                 </TabsContent>
 
                 <TabsContent value="team" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
