@@ -25,12 +25,19 @@ export default async function BillingPage({
 
   return (
     <Suspense fallback={<BillingSkeleton />}>
-      <BillingContent params={params} locale={locale} />
-    </Suspense>
+  <BillingContent params={params} locale={locale} />
+</Suspense>
+
   );
 }
 
-async function BillingContent({ params }: { params: { upgrade?: string; success?: string; canceled?: string } }) {
+async function BillingContent({
+  params,
+  locale,
+}: {
+  params: { upgrade?: string; success?: string; canceled?: string };
+  locale: string;
+}){
   const context = await getTenantContext();
   const t = await getI18n();
 
