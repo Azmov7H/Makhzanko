@@ -1,38 +1,51 @@
+"use client"; // إذا كنت تستخدم client-side interactivity مثل Input search
+
 import { requireOwner } from "@/lib/auth-role";
 import { getActivityLogs } from "@/actions/admin/activity";
 import {
   Search,
-  Filter,
   History,
   User,
   Building2,
-  Activity as ActivityIcon,
-  AlertCircle,
-  Info,
-  Calendar
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card, CardContent, Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function AuditLogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; type?: string }>;
-}) {
-  const { q, type } = await searchParams;
+// -------------------- Types --------------------
+interface UserType {
+  id: string;
+  name?: string | null;
+  email: string;
+}
+
+interface TenantType {
+  id: string;
+  name: string;
+}
+
+interface ActivityLog {
+  id: string;
+  createdAt: string;
+  user: UserType;
+  tenant: TenantType;
+  action: string;
+  resource?: string;
+  ip?: string;
+}
+
+interface ActivityContentProps {
+  q?: string;
+  type?: string;
+}
+
+// -------------------- Page --------------------
+export default function AuditLogPage({ searchParams }: { searchParams: { q?: string; type?: string } }) {
+  const { q, type } = searchParams;
 
   return (
     <div className="space-y-8 p-6">
@@ -51,15 +64,11 @@ export default async function AuditLogPage({
         </p>
       </div>
 
-      {/* Filters (Partially Static) */}
+      {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="البحث عن مستخدم أو منظمة..."
-            className="pr-10 rounded-xl"
-            defaultValue={q}
-          />
+          <Input placeholder="البحث عن مستخدم أو منظمة..." className="pr-10 rounded-xl" defaultValue={q} />
         </div>
         <div className="flex gap-2">
           <Badge variant="secondary" className="px-3 py-1 cursor-pointer">الكل</Badge>
@@ -69,6 +78,7 @@ export default async function AuditLogPage({
         </div>
       </div>
 
+      {/* Activity Table */}
       <Suspense fallback={<ActivitySkeleton />}>
         <ActivityContent q={q} type={type} />
       </Suspense>
@@ -76,9 +86,22 @@ export default async function AuditLogPage({
   );
 }
 
-async function ActivityContent({ q, type }: { q?: string; type?: string }) {
-  await requireOwner();
-  const { logs } = await getActivityLogs({ limit: 100 });
+// -------------------- Activity Content --------------------
+function ActivityContent({ q, type }: ActivityContentProps) {
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLogs() {
+      await requireOwner();
+      const { logs } = await getActivityLogs({ limit: 100 });
+      setLogs(logs);
+      setLoading(false);
+    }
+    fetchLogs();
+  }, []);
+
+  if (loading) return <ActivitySkeleton />;
 
   const filteredLogs = logs.filter(log => {
     if (q && !log.user.email.toLowerCase().includes(q.toLowerCase()) && !log.tenant.name.toLowerCase().includes(q.toLowerCase())) return false;
@@ -128,7 +151,7 @@ async function ActivityContent({ q, type }: { q?: string; type?: string }) {
               <TableCell>
                 <Badge variant={
                   log.action.includes("DELETE") ? "destructive" :
-                    log.action.includes("UPDATE") ? "outline" : "secondary"
+                  log.action.includes("UPDATE") ? "outline" : "secondary"
                 } className="rounded-lg px-2 py-0">
                   {translateAction(log.action)}
                 </Badge>
@@ -156,6 +179,7 @@ async function ActivityContent({ q, type }: { q?: string; type?: string }) {
   );
 }
 
+// -------------------- Skeleton --------------------
 function ActivitySkeleton() {
   return (
     <div className="space-y-4">
@@ -166,6 +190,7 @@ function ActivitySkeleton() {
   );
 }
 
+// -------------------- Helpers --------------------
 function translateAction(action: string) {
   const map: Record<string, string> = {
     "LOGIN": "تسجيل دخول",
