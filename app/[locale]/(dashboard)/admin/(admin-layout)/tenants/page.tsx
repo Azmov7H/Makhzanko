@@ -12,7 +12,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, ShoppingCart, Calendar } from "lucide-react";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function OwnerTenantsPage() {
+  return (
+    <Suspense fallback={<TenantsSkeleton />}>
+      <TenantsContent />
+    </Suspense>
+  );
+}
+
+async function TenantsContent() {
   await requireOwner();
   const tenants = await getAllTenants();
 
@@ -23,13 +34,13 @@ export default async function OwnerTenantsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 animate-fade-in-up text-start">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">إدارة المنظمات</h1>
         <p className="text-muted-foreground mt-1">عرض وإدارة جميع المنظمات المسجلة</p>
       </div>
 
-      <Card className="hover:shadow-lg transition-shadow border-none shadow-md">
+      <Card className="hover:shadow-lg transition-shadow border-none shadow-md overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -46,14 +57,14 @@ export default async function OwnerTenantsPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableHead>اسم المنظمة</TableHead>
-                  <TableHead>الخطة الحالية</TableHead>
+                  <TableHead className="text-right">اسم المنظمة</TableHead>
+                  <TableHead className="text-right">الخطة الحالية</TableHead>
                   <TableHead className="text-center">المستخدمين</TableHead>
                   <TableHead className="text-center">المنتجات</TableHead>
                   <TableHead className="text-center">المبيعات</TableHead>
-                  <TableHead>حالة الاشتراك</TableHead>
-                  <TableHead>فترة التجربة</TableHead>
-                  <TableHead>تاريخ التسجيل</TableHead>
+                  <TableHead className="text-right">حالة الاشتراك</TableHead>
+                  <TableHead className="text-right">فترة التجربة</TableHead>
+                  <TableHead className="text-right">تاريخ التسجيل</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,6 +135,15 @@ export default async function OwnerTenantsPage() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function TenantsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-20 w-1/3 rounded-xl" />
+      <Skeleton className="h-[600px] w-full rounded-2xl" />
     </div>
   );
 }

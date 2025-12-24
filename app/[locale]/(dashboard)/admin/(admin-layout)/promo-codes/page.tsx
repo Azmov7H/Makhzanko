@@ -15,7 +15,18 @@ import { GeneratePromoCodeButton } from "./GeneratePromoCodeButton";
 import { PlanType } from "@prisma/client";
 import { Ticket } from "lucide-react";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function PromoCodesPage() {
+    return (
+        <Suspense fallback={<PromoCodesSkeleton />}>
+            <PromoCodesContent />
+        </Suspense>
+    );
+}
+
+async function PromoCodesContent() {
     await requireOwner();
     const promoCodes = await getAllPromoCodes();
 
@@ -32,7 +43,7 @@ export default async function PromoCodesPage() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in-up">
+        <div className="space-y-6 animate-fade-in-up text-start">
             <div className="flex items-center justify-between">
                 <div>
                     <div className="flex items-center gap-3">
@@ -40,13 +51,13 @@ export default async function PromoCodesPage() {
                         <h1 className="text-3xl font-bold tracking-tight">إدارة أكواد الترويج</h1>
                     </div>
                     <p className="text-muted-foreground mt-1">
-                        إنشاء وإدارة أكواد الترقية للخطط المدفوعة
+                        إنشاء وإدارة أكواد الترقي للخطط المدفوعة
                     </p>
                 </div>
                 <GeneratePromoCodeButton />
             </div>
 
-            <Card>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl">
                 <CardHeader>
                     <CardTitle>جميع الأكواد ({promoCodes.length})</CardTitle>
                     <CardDescription>قائمة بجميع أكواد الترويج المُنشأة</CardDescription>
@@ -62,12 +73,12 @@ export default async function PromoCodesPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>الكود</TableHead>
-                                        <TableHead>الخطة</TableHead>
-                                        <TableHead>الحالة</TableHead>
-                                        <TableHead>الاستخدامات</TableHead>
-                                        <TableHead>ينتهي في</TableHead>
-                                        <TableHead>تم الإنشاء</TableHead>
+                                        <TableHead className="text-right">الكود</TableHead>
+                                        <TableHead className="text-right">الخطة</TableHead>
+                                        <TableHead className="text-right">الحالة</TableHead>
+                                        <TableHead className="text-right">الاستخدامات</TableHead>
+                                        <TableHead className="text-right">ينتهي في</TableHead>
+                                        <TableHead className="text-right">تم الإنشاء</TableHead>
                                         <TableHead className="text-left">الإجراءات</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -114,6 +125,18 @@ export default async function PromoCodesPage() {
                     )}
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function PromoCodesSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-20 w-1/2 rounded-xl" />
+                <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-[500px] w-full rounded-2xl" />
         </div>
     );
 }

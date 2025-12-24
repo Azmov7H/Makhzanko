@@ -1,13 +1,11 @@
 import { db } from "@/lib/db";
 import { getTenantContext } from "@/lib/auth";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus, ClipboardCheck, History } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getI18n } from "@/lib/i18n/server";
 import { Locale } from "@/lib/i18n/config";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AuditsClient } from "./AuditsClient";
+import { Card, CardHeader } from "@/components/ui/card";
 
 export default async function AuditListPage({
     params,
@@ -15,6 +13,15 @@ export default async function AuditListPage({
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    return (
+        <Suspense fallback={<AuditListSkeleton />}>
+            <AuditListContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function AuditListContent({ locale }: { locale: string }) {
     const context = await getTenantContext();
     const t = await getI18n(locale as Locale);
 
@@ -25,75 +32,34 @@ export default async function AuditListPage({
     });
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t("Inventory.audits")}</h1>
-                    <p className="text-muted-foreground mt-1">{t("Inventory.description")}</p>
-                </div>
-                <Button asChild className="gap-2">
-                    <Link href={`/${locale}/dashboard/inventory/audits/new`}>
-                        <Plus className="h-4 w-4" /> {t("Inventory.new_audit")}
-                    </Link>
-                </Button>
-            </div>
+        <AuditsClient
+            audits={JSON.parse(JSON.stringify(audits))}
+            locale={locale}
+            t={t}
+        />
+    );
+}
 
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                        <ClipboardCheck className="h-5 w-5 text-primary" />
-                        {t("Inventory.audit_details")}
-                    </CardTitle>
+function AuditListSkeleton() {
+    return (
+        <div className="space-y-8 text-start">
+            <div className="flex justify-between items-center gap-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-12 w-64 rounded-xl" />
+                    <Skeleton className="h-6 w-96 rounded-lg" />
+                </div>
+                <Skeleton className="h-12 w-48 rounded-2xl" />
+            </div>
+            <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl">
+                <CardHeader className="p-8">
+                    <Skeleton className="h-8 w-48 rounded-xl mb-2" />
+                    <Skeleton className="h-4 w-64 rounded-lg" />
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/50">
-                                    <TableHead>{t("Inventory.date")}</TableHead>
-                                    <TableHead>{t("Inventory.location")}</TableHead>
-                                    <TableHead>{t("Inventory.status")}</TableHead>
-                                    <TableHead className="text-right">{t("Inventory.action")}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {audits.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                                            {t("Inventory.no_audits")}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    audits.map(audit => (
-                                        <TableRow key={audit.id} className="hover:bg-muted/30 transition-colors">
-                                            <TableCell className="font-medium">{new Date(audit.date).toLocaleDateString(locale)}</TableCell>
-                                            <TableCell>{audit.warehouse.name}</TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant={audit.status === "COMPLETED" ? "default" : "secondary"}
-                                                    className={audit.status === "COMPLETED" ? "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" : ""}
-                                                >
-                                                    {audit.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button asChild variant="ghost" size="sm" className="gap-1.5">
-                                                    <Link href={`/${locale}/dashboard/inventory/audits/${audit.id}`}>
-                                                        {audit.status === "COMPLETED" ? (
-                                                            <span className="flex items-center gap-1.5"><History className="h-3.5 w-3.5" />{t("Inventory.view_results")}</span>
-                                                        ) : (
-                                                            <span className="text-primary font-bold">{t("Inventory.continue_count")}</span>
-                                                        )}
-                                                    </Link>
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
+                <div className="px-8 pb-8 space-y-4">
+                    <Skeleton className="h-16 w-full rounded-2xl" />
+                    <Skeleton className="h-16 w-full rounded-2xl" />
+                    <Skeleton className="h-16 w-full rounded-2xl" />
+                </div>
             </Card>
         </div>
     );

@@ -42,92 +42,96 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     }
 
     return (
-        <Card className="border-primary/5 shadow-sm overflow-hidden">
-            <CardHeader className="bg-muted/30 border-b">
-                <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-primary" />
+        <Card className="border-none shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden text-start">
+            <CardHeader className="bg-primary/5 border-b border-primary/5 py-8 px-8">
+                <CardTitle className="flex items-center gap-3 text-2xl font-black">
+                    <div className="p-2 bg-primary/10 rounded-xl">
+                        <User className="h-6 w-6 text-primary" />
+                    </div>
                     {t("Settings.profile_info")}
                 </CardTitle>
-                <CardDescription>{t("Settings.profile_desc")}</CardDescription>
+                <CardDescription className="text-base font-medium">{t("Settings.profile_desc")}</CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
-                <form action={handleProfileUpdate} className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="profile-name" className="text-sm font-bold">
+            <CardContent className="p-8 space-y-8">
+                <form action={handleProfileUpdate} className="space-y-8">
+                    <div className="grid sm:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                            <Label htmlFor="profile-name" className="text-sm font-bold tracking-tight">
                                 {t("Settings.full_name")}
                             </Label>
                             <Input
                                 id="profile-name"
                                 name="name"
                                 defaultValue={user.name || ""}
-                                className="h-11 rounded-lg border-primary/10"
+                                className="h-12 rounded-2xl bg-muted/50 border-primary/10 font-medium"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="profile-email" className="text-sm font-bold">
+                        <div className="space-y-3">
+                            <Label htmlFor="profile-email" className="text-sm font-bold tracking-tight">
                                 {t("Settings.email_address")}
                             </Label>
                             <Input
                                 id="profile-email"
                                 defaultValue={user.email}
-                                className="h-11 rounded-lg border-primary/10 bg-muted/50"
+                                className="h-12 rounded-2xl border-primary/10 bg-muted/30 opacity-70"
                                 disabled
                             />
-                            <p className="text-[10px] text-muted-foreground">
-                                Email cannot be changed directly. Contact support for help.
+                            <p className="text-[10px] text-muted-foreground font-medium px-2">
+                                {t("Settings.profile.email_warning")}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg w-fit border border-primary/5">
-                        <Shield className="h-4 w-4 text-primary" />
+                    <div className="flex items-center gap-3 text-sm text-primary/80 bg-primary/5 p-4 rounded-2xl w-fit border border-primary/10 font-bold">
+                        <Shield className="h-5 w-5 text-primary" />
                         <span>{t("Settings.user_role")}: </span>
-                        <span className="font-bold text-foreground capitalize">{user.role.toLowerCase()}</span>
+                        <span className="text-foreground uppercase tracking-wider">{user.role}</span>
                     </div>
 
                     <Button
                         type="submit"
-                        className="gap-2 h-11 px-8 rounded-lg shadow-lg shadow-primary/20"
+                        className="gap-2 h-12 px-10 rounded-2xl font-black shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
                     >
-                        <Save className="h-4 w-4" />
+                        <Save className="h-5 w-5" />
                         {t("Settings.save_changes")}
                     </Button>
                 </form>
 
-                <div className="my-8 h-px bg-primary/5 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]" />
+                <div className="h-px bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
 
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary/80">
-                        <Shield className="h-5 w-5" />
-                        <h3 className="font-bold">{t("Settings.security") || "Security & Password"}</h3>
+                <div className="space-y-6">
+                    <div className="flex items-center gap-3 text-primary">
+                        <div className="p-2 bg-primary/10 rounded-xl">
+                            <Shield className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-xl font-black uppercase tracking-tight">{t("Settings.profile.security_title")}</h3>
                     </div>
 
-                    <form action={handlePasswordChange} className="space-y-4 p-4 border rounded-lg bg-background/50">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="currentPassword">{t("Settings.current_password") || "Current Password"}</Label>
+                    <form action={handlePasswordChange} className="space-y-6 p-8 border border-primary/5 rounded-3xl bg-muted/20 backdrop-blur-sm">
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="space-y-3">
+                                <Label htmlFor="currentPassword" className="font-bold">{t("Settings.profile.current_password")}</Label>
                                 <Input
                                     id="currentPassword"
                                     name="currentPassword"
                                     type="password"
                                     required
-                                    className="bg-background"
+                                    className="h-12 rounded-2xl bg-muted/50 border-primary/10"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="newPassword">{t("Settings.new_password") || "New Password"}</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="newPassword" className="font-bold">{t("Settings.profile.new_password")}</Label>
                                 <Input
                                     id="newPassword"
                                     name="newPassword"
                                     type="password"
                                     required
-                                    className="bg-background"
+                                    className="h-12 rounded-2xl bg-muted/50 border-primary/10"
                                 />
                             </div>
                         </div>
-                        <Button variant="outline" type="submit" className="w-full sm:w-auto">
-                            {t("Settings.change_password") || "Change Password"}
+                        <Button variant="outline" type="submit" className="h-12 px-8 rounded-2xl font-black border-primary/10 hover:bg-primary/5 transition-all">
+                            {t("Settings.profile.change_password")}
                         </Button>
                     </form>
                 </div>

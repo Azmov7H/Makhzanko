@@ -226,3 +226,61 @@ export async function getInventoryAlerts() {
 
     return { lowStock, forecasts };
 }
+export async function getInvoiceFinancialSummary(invoiceId: string) {
+    const context = await getTenantContext();
+
+    const invoice = await db.invoice.findUnique({
+        where: { id: invoiceId, tenantId: context.tenantId },
+        include: {
+            sale: {
+                include: {
+                    items: { include: { product: true } }
+                }
+            },
+            returns: {
+                include: { items: true }
+            }
+        }
+    });
+
+    if (!invoice) return { error: "Invoice not found" };
+
+    const itemsTotal = Number(invoice.subtotal);
+    const discountAmount = Number(invoice.discountAmount);
+
+    // Calculate actual cost of items sold (COGS)
+    // Note: Items returned should be deducted from the cost
+    const returnedItemsMap = new Map();
+    invoice.returns.forEach(ret => {
+        if (ret.status === "COMPLETED") {
+            ret.items.forEach(item => {
+                const current = returnedItemsMap.get(item.productId) || 0;
+                returnedItemsMap.set(item.productId, current + item.quantity);
+            });
+        }
+    });
+
+    let totalCost = 0;
+    invoice.sale.items.forEach(item => {
+        const returnedQty = returnedItemsMap.get(item.productId) || 0;
+        const soldQty = Math.max(0, item.quantity - returnedQty);
+        totalCost += (soldQty * Number(item.cost || item.product.cost));
+    });
+
+    const totalRefunded = invoice.returns
+        .filter(r => r.status === "COMPLETED")
+        .reduce((sum, r) => sum + Number(r.refundAmount), 0);
+
+    const netRevenue = Number(invoice.total) - totalRefunded;
+    const netProfit = netRevenue - totalCost;
+
+    return {
+        itemsTotal,
+        discountAmount,
+        totalRefunded,
+        netRevenue,
+        totalCost,
+        netProfit,
+        profitMargin: netRevenue > 0 ? (netProfit / netRevenue) * 100 : 0
+    };
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { createProductAction } from "@/actions/products";
+import { createProductAction, checkProductExistsAction } from "@/actions/products";
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getProductSchema } from "@/lib/validation";
-import { Package, Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Package, Save, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 export default function NewProductPage() {
@@ -23,6 +23,7 @@ export default function NewProductPage() {
         register,
         handleSubmit,
         formState: { errors },
+        setValue,
         reset
     } = useForm({
         resolver: zodResolver(schema),
@@ -30,7 +31,8 @@ export default function NewProductPage() {
             name: "",
             sku: "",
             price: 0,
-            cost: 0
+            cost: 0,
+            minStock: 5
         }
     });
     const onSubmit = async (data: any) => {
@@ -46,6 +48,28 @@ export default function NewProductPage() {
                 reset();
             }
         });
+    };
+
+    // Duplicate Check Logic
+    const [nameExists, setNameExists] = useState(false);
+    const [skuExists, setSkuExists] = useState(false);
+    const [isChecking, setIsChecking] = useState(false);
+
+    const checkDuplicate = async (field: "sku" | "name", value: string) => {
+        if (!value) return;
+        setIsChecking(true);
+        const exists = await checkProductExistsAction(field, value);
+        if (field === "name") setNameExists(exists);
+        if (field === "sku") setSkuExists(exists);
+        setIsChecking(false);
+    };
+
+    const generateSKU = () => {
+        const randomInfo = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        const timestamp = Date.now().toString().slice(-4);
+        const newSku = `PRD-${timestamp}-${randomInfo}`;
+        setValue("sku", newSku);
+        checkDuplicate("sku", newSku);
     };
 
     return (
@@ -71,24 +95,53 @@ export default function NewProductPage() {
                         <div className="grid gap-8 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="name" className="text-sm font-bold ml-1">{t("Products.product_name")}</Label>
-                                <Input
-                                    {...register("name")}
-                                    id="name"
-                                    placeholder={t("Products.name_placeholder")}
-                                    className={`h-12 rounded-xl border-primary/10 focus:ring-primary/20 transition-all ${errors.name ? 'border-red-500 bg-red-50/30' : ''}`}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        {...register("name")}
+                                        id="name"
+                                        onBlur={(e) => checkDuplicate("name", e.target.value)}
+                                        placeholder={t("Products.name_placeholder")}
+                                        className={`h-12 rounded-xl border-primary/10 focus:ring-primary/20 transition-all ${errors.name || nameExists ? 'border-red-500 bg-red-50/30' : ''}`}
+                                    />
+                                    {nameExists && (
+                                        <div className="absolute right-3 top-3 text-red-500 animate-pulse">
+                                            <AlertCircle className="h-5 w-5" />
+                                        </div>
+                                    )}
+                                </div>
                                 {errors.name && <p className="text-xs text-red-500 font-medium mt-1 ml-1">{errors.name.message as string}</p>}
+                                {nameExists && <p className="text-xs text-red-500 font-medium mt-1 ml-1">{t("Products.name_exists")}</p>}
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="sku" className="text-sm font-bold ml-1">{t("Products.sku")}</Label>
-                                <Input
-                                    {...register("sku")}
-                                    id="sku"
-                                    placeholder={t("Products.sku_placeholder")}
-                                    className={`h-12 rounded-xl border-primary/10 focus:ring-primary/20 transition-all ${errors.sku ? 'border-red-500 bg-red-50/30' : ''}`}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Input
+                                            {...register("sku")}
+                                            id="sku"
+                                            onBlur={(e) => checkDuplicate("sku", e.target.value)}
+                                            placeholder={t("Products.sku_placeholder")}
+                                            className={`h-12 rounded-xl border-primary/10 focus:ring-primary/20 transition-all ${errors.sku || skuExists ? 'border-red-500 bg-red-50/30' : ''}`}
+                                        />
+                                        {skuExists && (
+                                            <div className="absolute right-3 top-3 text-red-500 animate-pulse">
+                                                <AlertCircle className="h-5 w-5" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={generateSKU}
+                                        className="h-12 px-4 rounded-xl border-primary/10 hover:bg-primary/5 hover:text-primary transition-colors"
+                                        title={t("Products.generate_sku")}
+                                    >
+                                        <RefreshCw className="h-4 w-4" />
+                                    </Button>
+                                </div>
                                 {errors.sku && <p className="text-xs text-red-500 font-medium mt-1 ml-1">{errors.sku.message as string}</p>}
+                                {skuExists && <p className="text-xs text-red-500 font-medium mt-1 ml-1">{t("Products.sku_exists")}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -115,6 +168,18 @@ export default function NewProductPage() {
                                     className={`h-12 rounded-xl border-primary/10 focus:ring-primary/20 transition-all ${errors.cost ? 'border-red-500 bg-red-50/30' : ''}`}
                                 />
                                 {errors.cost && <p className="text-xs text-red-500 font-medium mt-1 ml-1">{errors.cost.message as string}</p>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="minStock" className="text-sm font-bold ml-1">{t("Products.min_stock")}</Label>
+                                <Input
+                                    {...register("minStock")}
+                                    id="minStock"
+                                    type="number"
+                                    placeholder="5"
+                                    className={`h-12 rounded-xl border-primary/10 focus:ring-primary/20 transition-all ${errors.minStock ? 'border-red-500 bg-red-50/30' : ''}`}
+                                />
+                                {errors.minStock && <p className="text-xs text-red-500 font-medium mt-1 ml-1">{errors.minStock.message as string}</p>}
                             </div>
                         </div>
 

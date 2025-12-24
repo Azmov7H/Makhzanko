@@ -21,10 +21,10 @@ export default async function AdminSettingsPage({
             {/* Header */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
+                    <div className="p-2.5 rounded-2xl bg-linear-to-br from-primary to-accent shadow-lg shadow-primary/20">
                         <Settings className="h-6 w-6 text-primary-foreground" />
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    <h1 className="text-3xl font-black tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
                         إعدادات المنصة العامة
                     </h1>
                 </div>

@@ -17,20 +17,31 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default async function AdminSupportPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    return (
+        <Suspense fallback={<SupportSkeleton />}>
+            <SupportContent locale={locale} />
+        </Suspense>
+    );
+}
+
+async function SupportContent({ locale }: { locale: string }) {
     await requireOwner();
     const t = await getI18n(locale as Locale);
     const sessions = await getAdminChatSessions();
-
     const dateLocale = locale === "ar" ? ar : enUS;
 
     return (
-        <div className="space-y-8 p-6">
+        <div className="space-y-8 p-6 text-start">
             {/* Header */}
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
@@ -112,6 +123,19 @@ export default async function AdminSupportPage({
                         ))}
                     </div>
                 )}
+            </div>
+        </div>
+    );
+}
+
+function SupportSkeleton() {
+    return (
+        <div className="space-y-8 p-6">
+            <Skeleton className="h-20 w-3/4 rounded-xl" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-[250px] w-full rounded-2xl" />
+                ))}
             </div>
         </div>
     );

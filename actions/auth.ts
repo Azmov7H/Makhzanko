@@ -108,7 +108,19 @@ export async function loginAction(prevState: any, formData: FormData) {
 
     const user = await db.user.findUnique({
         where: { email },
-        include: { tenant: true }
+        select: {
+            id: true,
+            email: true,
+            passwordHash: true,
+            role: true,
+            tenantId: true,
+            tenant: {
+                select: {
+                    id: true,
+                    plan: true
+                }
+            }
+        }
     });
 
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {

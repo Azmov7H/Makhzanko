@@ -149,3 +149,18 @@ export async function updateProfile(formData: FormData) {
     revalidatePath("/dashboard/settings");
     return { success: true };
 }
+export async function toggleDeferredPaymentAction(userId: string, enabled: boolean) {
+    const context = await getTenantContext();
+
+    if (context.role !== Role.OWNER && context.role !== Role.ADMIN) {
+        return { error: "Unauthorized" };
+    }
+
+    await db.user.update({
+        where: { id: userId, tenantId: context.tenantId },
+        data: { canDeferred: enabled },
+    });
+
+    revalidatePath("/dashboard/settings");
+    return { success: true };
+}

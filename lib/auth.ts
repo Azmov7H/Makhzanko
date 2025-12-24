@@ -11,6 +11,8 @@ export type TenantContext = {
   tenantId: string;
   role: Role;
   plan: PlanType;
+  email: string | null;
+  name: string | null;
 };
 
 /**
@@ -27,7 +29,7 @@ export async function getTenantContext(): Promise<TenantContext> {
   }
 
   const payload = await verifyToken(token);
-  
+
   if (!payload || typeof payload !== "object" || !("tenantId" in payload)) {
     redirect("/login");
   }
@@ -36,24 +38,26 @@ export async function getTenantContext(): Promise<TenantContext> {
   const userId = payload.userId as string;
   const role = payload.role as Role;
 
-  // Fetch current plan from database and verify user is active
+  // Fetch user with active status and verify tenant
   const user = await db.user.findUnique({
     where: { id: userId },
     select: {
       tenantId: true,
-      // Note: isActive and deletedAt will be available after migration
-      // For now, we'll check tenantId only
+      isActive: true,
+      deletedAt: true,
+      email: true,
+      name: true,
     },
   });
 
   if (!user || user.tenantId !== tenantId) {
     redirect("/login");
   }
-  
-  // TODO: Uncomment after migration
-  // if (!user.isActive || user.deletedAt) {
-  //   redirect("/login");
-  // }
+
+  // Check if user is active and not deleted
+  if (!user.isActive || user.deletedAt) {
+    redirect("/login");
+  }
 
   const tenant = await db.tenant.findUnique({
     where: { id: tenantId },
@@ -69,6 +73,8 @@ export async function getTenantContext(): Promise<TenantContext> {
     tenantId,
     role,
     plan: tenant.plan,
+    email: user.email,
+    name: user.name,
   };
 }
 

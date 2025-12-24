@@ -29,6 +29,19 @@ enum SubscriptionStatus {
   canceled
 }
 
+enum PaymentType {
+  CASH
+  BANK_TRANSFER
+  DEFERRED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  PARTIAL
+  REFUNDED
+}
+
 // --- Tenant & Subscription ---
 
 model Tenant {
@@ -41,6 +54,7 @@ model Tenant {
   // Subscription & Trial
   plan              PlanType         @default(FREE)
   stripeCustomerId  String?          @unique
+  paymobCustomerId  String?          @unique
   trialEndsAt       DateTime?        // 14-day trial expiration
   
   // Branding & Settings
@@ -66,6 +80,7 @@ model Tenant {
   redemptions       Redemption[]
   returns           Return[]
   chatSessions      ChatSession[]
+  customerPayments  CustomerPayment[]
 
   @@index([slug])
   @@index([stripeCustomerId])
@@ -78,6 +93,7 @@ model Plan {
   price             Decimal
   stripeProductId   String?          @unique
   stripePriceId     String?          @unique
+  paymobIntegrationId String?        @unique
   features          Json             // Store feature list as JSON
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -92,8 +108,10 @@ model Subscription {
   planId                String
   plan                  Plan               @relation(fields: [planId], references: [id])
   
-  stripeSubscriptionId  String             @unique
-  stripeCustomerId      String
+  stripeSubscriptionId  String?            @unique
+  stripeCustomerId      String?
+  paymobOrderId         String?            @unique
+  paymobTransactionId   String?            @unique
   status                SubscriptionStatus @default(active)
   
   currentPeriodStart    DateTime
@@ -114,7 +132,8 @@ model Payment {
   subscriptionId    String
   subscription      Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   
-  stripePaymentId   String        @unique
+  stripePaymentId   String?       @unique
+  paymobTransactionId String?       @unique
   amount            Decimal
   currency          String        @default("usd")
   status            String        // succeeded, failed, pending
@@ -142,14 +161,18 @@ model InvoiceSettings {
   showTax        Boolean @default(true)
   showDiscount   Boolean @default(true)
   showSeller     Boolean @default(true)
-  showWarehouse  Boolean @default(false)
+  // showWarehouse  Boolean @default(false)
   showCustomerSection Boolean @default(true)
-  showItemCode   Boolean @default(true)
+  // showItemCode   Boolean @default(true)
+  // showHeader     Boolean @default(true)
+  // showFooter     Boolean @default(true)
+  // showPaymentInfo Boolean @default(true)
   
   // Company info
   companyAddress String?
   companyPhone   String?
   companyEmail   String?
+  // companyTaxId   String?
   footerNotes    String?
 }
 
@@ -161,6 +184,9 @@ model User {
   role           Role     @default(STAFF)
   isActive       Boolean  @default(true)
   deletedAt      DateTime?
+  
+  // Permissions
+  canDeferred    Boolean  @default(false) // Ability to process deferred payments (Ajel)
   
   tenantId       String
   tenant         Tenant   @relation(fields: [tenantId], references: [id])
@@ -177,11 +203,33 @@ model Customer {
   name           String
   phone          String?
   email          String?
+  // loyaltyPoints  Int     @default(0) // Feature: Loyalty Program
   
   tenantId       String
   tenant         Tenant  @relation(fields: [tenantId], references: [id])
   
   sales          Sale[]
+  payments       CustomerPayment[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CustomerPayment {
+  id             String  @id @default(cuid())
+  amount         Decimal
+  date           DateTime @default(now())
+  // method         PaymentType @default(CASH)
+  reference      String?
+  
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id])
+  
+  tenantId       String
+  tenant         Tenant  @relation(fields: [tenantId], references: [id])
+  
+  @@index([customerId])
+  @@index([tenantId])
 }
 
 // --- Inventory & Products ---
@@ -245,6 +293,9 @@ model Sale {
   number         Int        // Atomic sequential number
   total          Decimal
   status         String     @default("COMPLETED")
+  // paymentType    PaymentType @default(CASH)
+  // paymentStatus  PaymentStatus @default(PAID)
+  amountPaid     Decimal    @default(0)
   date           DateTime   @default(now())
 
   userId         String
@@ -263,6 +314,7 @@ model Sale {
   @@index([userId])
   @@index([customerId])
   @@index([status])
+  // @@index([paymentType])
 }
 
 model SaleItem {
@@ -292,7 +344,9 @@ model Invoice {
   total           Decimal   @default(0) // Final total
   
   // Status & metadata
-  status          String    @default("COMPLETED") // DRAFT, PENDING, COMPLETED, PARTIAL_REFUND, REFUNDED, CANCELLED
+  status          String       @default("COMPLETED") // DRAFT, PENDING, COMPLETED, PARTIAL_REFUND, REFUNDED, CANCELLED
+  // paymentType     PaymentType  @default(CASH)
+  // paymentStatus   PaymentStatus @default(PAID)
   notes           String?             // Invoice notes
   jsonSnapshot    Json                // Snapshot of sale data
   pdfUrl          String?
@@ -333,6 +387,7 @@ model Return {
   refundAmount    Decimal   // Final refund = itemsTotal - discountShare
   
   status          String    @default("PENDING") // PENDING, APPROVED, COMPLETED, REJECTED
+  paymentType     PaymentType @default(CASH) // How the refund was paid (usually same as original or Cash)
   processedAt     DateTime?
   processedBy     String?
   
@@ -411,6 +466,7 @@ model Account {
   code           String   
   name           String   
   type           String   // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  // isTreasury     Boolean  @default(false) // Flag for cash-in-hand accounts
 
   tenantId       String
   tenant         Tenant   @relation(fields: [tenantId], references: [id])
