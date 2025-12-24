@@ -12,13 +12,29 @@ export default async function AdvancedAnalyticsPage({
     const performance = await getEmployeePerformance();
 
     // Fetch some top products
-    const topProducts = await db.saleItem.groupBy({
-        by: ['productId'],
-        where: { sale: { tenantId: context.tenantId, status: "COMPLETED" } },
-        _sum: { quantity: true, total: true },
-        orderBy: { _sum: { total: "desc" } },
-        take: 5
-    });
+ const topProducts = await db.saleItem.groupBy({
+    by: ['productId'],
+    where: {
+        sale: { tenantId: context.tenantId, status: "COMPLETED" },
+    },
+    _sum: {
+        quantity: true,  
+        price: true       // Assuming 'price' is the field representing the amount
+    },
+    orderBy: {
+        _sum: {
+            price: 'desc',  // Order by total amount descending
+        },
+    },
+    take: 5,
+});
+
+
+const topProductsWithTotal = topProducts.map(p => ({
+    productId: p.productId,
+    totalQuantity: p._sum.quantity ?? 0,
+    totalAmount: (p._sum.quantity ?? 0) * (p._sum.price ?? 0),
+}));
 
     const productDetails = await db.product.findMany({
         where: { id: { in: topProducts.map(p => p.productId) } }
