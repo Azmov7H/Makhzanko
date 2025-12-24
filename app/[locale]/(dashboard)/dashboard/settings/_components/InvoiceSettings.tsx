@@ -19,7 +19,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "sonner";
+import { toast } from "sonner";
+
 import { updateInvoiceSettingsAction } from "@/actions/invoice-settings";
 import { Save, Eye } from "lucide-react";
 
@@ -51,7 +52,7 @@ export function InvoiceSettings({
     settings: initialSettings,
 }: InvoiceSettingsProps) {
     const { t } = useI18n();
-    const toast = useToast();
+    
 
     const [settings, setSettings] =
         useState<InvoiceSettingsState>(initialSettings);
@@ -59,21 +60,22 @@ export function InvoiceSettings({
     const [loading, setLoading] = useState(false);
 
     const handleSave = async () => {
-        setLoading(true);
+    setLoading(true);
 
-        const result = await updateInvoiceSettingsAction({
-            ...settings,
-            fontFamily: settings.fontFamily ?? undefined,
-        });
+    const result = await updateInvoiceSettingsAction({
+        ...settings,
+        fontFamily: settings.fontFamily ?? undefined,
+    });
 
-        setLoading(false);
+    setLoading(false);
 
-        if (result?.success) {
-            toast.success(t("Settings.invoice.updated_success"));
-        } else {
-            toast.error(result?.error ?? t("Common.error"));
-        }
-    };
+    if (result?.success) {
+        toast.success(t("Settings.invoice.updated_success"));
+    } else {
+        toast.error(result?.error ?? t("Common.error"));
+    }
+};
+
 
     return (
         <div className="grid gap-8 lg:grid-cols-2 text-start">
