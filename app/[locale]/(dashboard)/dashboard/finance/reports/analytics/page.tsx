@@ -2,12 +2,11 @@ import { db } from "@/lib/db";
 import { getTenantContext } from "@/lib/auth";
 import { getEmployeePerformance } from "@/actions/advanced-features";
 import AdvancedAnalyticsClient from "./AdvancedAnalyticsClient";
-import { Decimal } from "@prisma/client/runtime";
 
 export default async function AdvancedAnalyticsPage({
   params,
 }: {
-  params: { locale: string }; // اصلاح type
+  params: { locale: string };
 }) {
   const context = await getTenantContext();
   const performance = await getEmployeePerformance();
@@ -20,7 +19,7 @@ export default async function AdvancedAnalyticsPage({
     },
     _sum: {
       quantity: true,
-      price: true, // افترض أن هذا حقل رقمي موجود
+      price: true, // حقل رقمي موجود في schema
     },
     orderBy: {
       _sum: { price: "desc" },
@@ -28,10 +27,14 @@ export default async function AdvancedAnalyticsPage({
     take: 5,
   });
 
-  // Compute totalAmount (convert Decimal to number)
+  // Compute totalAmount (convert Decimal to number if necessary)
   const topProductsWithTotal = topProducts.map((p) => {
     const quantity = p._sum.quantity ?? 0;
-    const price = p._sum.price instanceof Decimal ? p._sum.price.toNumber() : p._sum.price ?? 0;
+    // Prisma يعيد Decimal objects في بعض الحقول المالية، حولها باستخدام toNumber()
+    const price =
+      typeof p._sum.price === "object" && p._sum.price !== null && "toNumber" in p._sum.price
+        ? (p._sum.price as any).toNumber()
+        : p._sum.price ?? 0;
     return {
       productId: p.productId,
       totalQuantity: quantity,
