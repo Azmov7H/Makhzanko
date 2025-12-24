@@ -58,21 +58,38 @@ async function SettingsContent({ locale }: { locale: string }) {
     return <div className="p-12 text-center text-destructive font-bold">Error loading settings</div>;
   }
 
-  const invoiceSettingsState = {
-    primaryColor: invoiceSettings?.primaryColor ?? "#000000",
-    accentColor: invoiceSettings?.accentColor ?? "#ffffff",
-    fontFamily: invoiceSettings?.fontFamily ?? "Inter",
-    templateStyle: invoiceSettings?.templateStyle ?? "default",
-    showTax: invoiceSettings?.showTax ?? false,
-    showDiscount: invoiceSettings?.showDiscount ?? false,
-    showHeader: invoiceSettings?.showHeader ?? true,
-    showFooter: invoiceSettings?.showFooter ?? true,
-    companyAddress: invoiceSettings?.companyAddress ?? "",
-    companyPhone: invoiceSettings?.companyPhone ?? "",
-    companyEmail: invoiceSettings?.companyEmail ?? "",
-    companyTaxId: invoiceSettings?.companyTaxId ?? "",
-    footerNotes: invoiceSettings?.footerNotes ?? "",
-  };
+  interface InvoiceSettingsState {
+  primaryColor: string;
+  accentColor: string;
+  fontFamily: string;
+  templateStyle: string;
+  showTax: boolean;
+  showDiscount: boolean;
+  showHeader: boolean;
+  showFooter: boolean;
+  companyAddress: string;
+  companyPhone: string;
+  companyEmail: string;
+  companyTaxId: string;
+  footerNotes: string;
+}
+
+const invoiceSettingsState: InvoiceSettingsState = {
+  primaryColor: invoiceSettings?.primaryColor ?? "#000000",
+  accentColor: invoiceSettings?.accentColor ?? "#ffffff",
+  fontFamily: invoiceSettings?.fontFamily ?? "Inter",
+  templateStyle: invoiceSettings?.templateStyle ?? "default",
+  showTax: invoiceSettings?.showTax ?? false,
+  showDiscount: invoiceSettings?.showDiscount ?? false,
+  showHeader: true,
+  showFooter: true,
+  companyAddress: invoiceSettings?.companyAddress ?? "",
+  companyPhone: invoiceSettings?.companyPhone ?? "",
+  companyEmail: invoiceSettings?.companyEmail ?? "",
+  companyTaxId: "",
+  footerNotes: invoiceSettings?.footerNotes ?? "",
+};
+
 
   return (
     <div className="space-y-6 px-4 md:px-0 max-w-6xl mx-auto text-start">
