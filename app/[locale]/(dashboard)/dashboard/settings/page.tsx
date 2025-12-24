@@ -133,7 +133,7 @@ const invoiceSettingsState: InvoiceSettingsState = {
         </TabsContent>
 
         <TabsContent value="invoice" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
-          <InvoiceSettings settings={invoiceSettingsState} />
+          <InvoiceSettings settings={invoiceSettingsState} locale={locale} />
         </TabsContent>
 
         <TabsContent value="team" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
