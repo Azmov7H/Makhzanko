@@ -58,7 +58,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             showTax: settings.showTax,
             showDiscount: settings.showDiscount,
             showSeller: settings.showSeller,
-            showWarehouse: settings.showWarehouse,
             showCustomerSection: settings.showCustomerSection,
             showItemCode: settings.showItemCode,
         } : undefined,
