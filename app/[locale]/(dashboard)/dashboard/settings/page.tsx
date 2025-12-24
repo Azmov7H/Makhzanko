@@ -106,11 +106,12 @@ async function SettingsContent({ locale }: { locale: string }) {
     templateStyle: invoiceSettings?.templateStyle ?? "default",
     showTax: invoiceSettings?.showTax ?? false,
     showDiscount: invoiceSettings?.showDiscount ?? false,
-
+    showHeader: invoiceSettings?.showHeader ?? true,
+    showFooter: invoiceSettings?.showFooter ?? true, 
     companyAddress: invoiceSettings?.companyAddress ?? "",
     companyPhone: invoiceSettings?.companyPhone ?? "",
     companyEmail: invoiceSettings?.companyEmail ?? "",
-    
+    companyTaxId: invoiceSettings?.companyTaxId ?? "",
     footerNotes: invoiceSettings?.footerNotes ?? "",}} />
                 </TabsContent>
 
