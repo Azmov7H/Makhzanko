@@ -15,21 +15,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default async function BillingPage({
   searchParams,
+  params: routeParams,
 }: {
   searchParams: Promise<{ upgrade?: string; success?: string; canceled?: string }>;
+  params: Promise<{ locale: string }>;
 }) {
   const params = await searchParams;
+  const { locale } = await routeParams;
 
   return (
     <Suspense fallback={<BillingSkeleton />}>
-      <BillingContent params={params} />
+      <BillingContent params={params} locale={locale} />
     </Suspense>
   );
 }
 
 async function BillingContent({ params }: { params: { upgrade?: string; success?: string; canceled?: string } }) {
   const context = await getTenantContext();
-  const { t } = await getI18n();
+  const t = await getI18n();
 
   const [currentSubscription, plans] = await Promise.all([
     getCurrentSubscription(),
