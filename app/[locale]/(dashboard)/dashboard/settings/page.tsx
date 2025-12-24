@@ -21,7 +21,7 @@ type Params = {
 };
 
 export default async function SettingsPage({ params }: { params: Params }) {
-  const { locale } = params;
+  const { locale } = await params;
 
   return (
     <Suspense fallback={<SettingsSkeleton />}>
@@ -111,7 +111,7 @@ const invoiceSettingsState: InvoiceSettingsState = {
             </TabsTrigger>
             <TabsTrigger value="invoice" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
               <FileText className="h-4 w-4 mr-2" />
-              Invoice
+              {t("Settings.Invoice")}
             </TabsTrigger>
             <TabsTrigger value="team" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
               <Users className="h-4 w-4 mr-2" />
@@ -133,7 +133,7 @@ const invoiceSettingsState: InvoiceSettingsState = {
         </TabsContent>
 
         <TabsContent value="invoice" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
-          <InvoiceSettings settings={invoiceSettingsState} />
+          <InvoiceSettings settings={invoiceSettingsState} locale={locale} />
         </TabsContent>
 
         <TabsContent value="team" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">

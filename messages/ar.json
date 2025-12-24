@@ -504,6 +504,7 @@
   },
   "Settings": {
     "title": "الإعدادات",
+    "Invoice" :"الفاتورة",
     "description": "إدارة إعدادات حسابك وتفضيلاتك.",
     "general": "عام",
     "billing_plans": "الفواتير والخطط",
@@ -527,6 +528,7 @@
     "full_name": "الاسم الكامل",
     "email_address": "البريد الإلكتروني",
     "user_limit": "حد المستخدمين",
+    "profile":"المستخدم",
     "users_count": "{count} من {limit} مستخدمين",
     "unlimited": "غير محدود",
     "add_user": "إضافة مستخدم",
