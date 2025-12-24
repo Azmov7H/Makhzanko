@@ -30,7 +30,6 @@ interface ProductsClientProps {
     products: any[];
     totalStock: number;
     locale: string;
-    locale: string;
 }
 
 export function ProductsClient({ products, totalStock, locale }: ProductsClientProps) {
