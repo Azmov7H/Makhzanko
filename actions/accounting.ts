@@ -194,8 +194,8 @@ export async function createTreasuryTransactionAction(data: { type: "DEPOSIT" | 
     // DEPOSIT: Debit Treasury (Asset +), Credit Equity (Equity +)
     // WITHDRAW: Debit Expense (Expense +), Credit Treasury (Asset -)
 
-    const debitAccount = type === "DEPOSIT" ? treasury.id : contraAccount.id;
-    const creditAccount = type === "DEPOSIT" ? contraAccount.id : treasury.id;
+    const debitAccount = type === "DEPOSIT" ? treasury?.id : contraAccount.id;
+    const creditAccount = type === "DEPOSIT" ? contraAccount.id : treasury?.id;
 
     await db.transaction.createMany({
         data: [
