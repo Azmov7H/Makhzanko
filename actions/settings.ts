@@ -1,9 +1,10 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { Role, PlanType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const PLAN_LIMITS = {
     [PlanType.FREE]: 2,
@@ -17,7 +18,7 @@ export async function updateStoreName(formData: FormData) {
 
     if (!name) return { error: "Name is required" };
 
-    await db.tenant.update({
+    await prisma.tenant.update({
         where: { id: context.tenantId },
         data: { name },
     });
@@ -25,10 +26,6 @@ export async function updateStoreName(formData: FormData) {
     revalidatePath("/dashboard/settings");
     return { success: true };
 }
-
-import bcrypt from "bcryptjs";
-
-// ... existing imports
 
 export async function addUserToTeam(formData: FormData) {
     const context = await getTenantContext();
@@ -44,7 +41,7 @@ export async function addUserToTeam(formData: FormData) {
     if (!email || !role || !password) return { error: "Missing fields" };
 
     // Check plan limits
-    const userCount = await db.user.count({
+    const userCount = await prisma.user.count({
         where: { tenantId: context.tenantId },
     });
 
@@ -54,7 +51,7 @@ export async function addUserToTeam(formData: FormData) {
     }
 
     // Check if user already exists
-    const existingUser = await db.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
         where: { email },
     });
 
@@ -64,7 +61,7 @@ export async function addUserToTeam(formData: FormData) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.user.create({
+    await prisma.user.create({
         data: {
             email,
             name: email.split("@")[0],
@@ -87,7 +84,7 @@ export async function changePassword(formData: FormData) {
         return { error: "Missing fields" };
     }
 
-    const user = await db.user.findUnique({
+    const user = await prisma.user.findUnique({
         where: { id: context.userId },
     });
 
@@ -100,7 +97,7 @@ export async function changePassword(formData: FormData) {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await db.user.update({
+    await prisma.user.update({
         where: { id: context.userId },
         data: { passwordHash: hashedPassword },
     });
@@ -119,7 +116,7 @@ export async function deleteUserFromTeam(userId: string) {
         return { error: "Cannot delete yourself" };
     }
 
-    const userToDelete = await db.user.findUnique({
+    const userToDelete = await prisma.user.findUnique({
         where: { id: userId },
     });
 
@@ -127,7 +124,7 @@ export async function deleteUserFromTeam(userId: string) {
         return { error: "User not found" };
     }
 
-    await db.user.delete({
+    await prisma.user.delete({
         where: { id: userId },
     });
 
@@ -141,7 +138,7 @@ export async function updateProfile(formData: FormData) {
 
     if (!name) return { error: "Name is required" };
 
-    await db.user.update({
+    await prisma.user.update({
         where: { id: context.userId },
         data: { name },
     });
@@ -149,6 +146,7 @@ export async function updateProfile(formData: FormData) {
     revalidatePath("/dashboard/settings");
     return { success: true };
 }
+
 export async function toggleDeferredPaymentAction(userId: string, enabled: boolean) {
     const context = await getTenantContext();
 
@@ -156,7 +154,7 @@ export async function toggleDeferredPaymentAction(userId: string, enabled: boole
         return { error: "Unauthorized" };
     }
 
-    await db.user.update({
+    await prisma.user.update({
         where: { id: userId, tenantId: context.tenantId },
         data: { canDeferred: enabled },
     });

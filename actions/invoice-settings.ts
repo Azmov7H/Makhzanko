@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { checkLimit } from "@/lib/limits";
 import { revalidatePath } from "next/cache";
@@ -34,7 +34,7 @@ interface InvoiceSettingsData {
 export async function getInvoiceSettingsAction() {
     const context = await getTenantContext();
 
-    const settings = await db.invoiceSettings.findUnique({
+    const settings = await prisma.invoiceSettings.findUnique({
         where: { tenantId: context.tenantId },
         select: {
             logoUrl: true,
@@ -111,13 +111,13 @@ export async function updateInvoiceSettingsAction(data: InvoiceSettingsData) {
         footerNotes
     } = data;
 
-    const existingSettings = await db.invoiceSettings.findUnique({
+    const existingSettings = await prisma.invoiceSettings.findUnique({
         where: { tenantId: context.tenantId },
         select: { id: true }
     });
 
     if (existingSettings) {
-        await db.invoiceSettings.update({
+        await prisma.invoiceSettings.update({
             where: { tenantId: context.tenantId },
             data: {
                 logoUrl,
@@ -138,7 +138,7 @@ export async function updateInvoiceSettingsAction(data: InvoiceSettingsData) {
             select: { id: true }
         });
     } else {
-        await db.invoiceSettings.create({
+        await prisma.invoiceSettings.create({
             data: {
                 tenantId: context.tenantId,
                 logoUrl,
@@ -161,8 +161,8 @@ export async function updateInvoiceSettingsAction(data: InvoiceSettingsData) {
     }
 
     revalidatePath("/dashboard/settings");
-    revalidatePath("/dashboard/sales-flow/invoices/design");
-    revalidatePath("/dashboard/sales-flow/invoices");
+    revalidatePath("/dashboard/sales/invoices/design");
+    revalidatePath("/dashboard/sales/invoices");
     return { success: true };
 }
 

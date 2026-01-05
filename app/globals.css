@@ -5,7 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-tajawal: var(--font-tajawal);
+  --font-cairo: var(--font-cairo);
+  --font-inter: var(--font-inter);
+  --font-ibm-arabic: "IBM Plex Sans Arabic", sans-serif;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -56,88 +58,104 @@
 }
 
 :root {
-  --background: 120 20% 97%;
-  /* #f6f8f6 */
-  --foreground: 124 93% 31%;
-  /* #079d11 */
+  --background: 210 40% 98%;
+  /* #F8FAFC */
+  --foreground: 220 39% 11%;
+  /* #111827 */
 
   --card: 0 0% 100%;
-  --card-foreground: 124 93% 31%;
+  --card-foreground: 220 39% 11%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 124 93% 31%;
+  --popover-foreground: 220 39% 11%;
 
-  --primary: 106 88% 50%;
-  /* #46ec13 */
-  --primary-foreground: 108 36% 10%;
-  /* #142210 */
+  --primary: 224 64% 33%;
+  /* #1E3A8A Deep Blue */
+  --primary-foreground: 210 40% 98%;
 
-  --secondary: 120 15% 90%;
-  --secondary-foreground: 108 36% 10%;
+  --secondary: 217 91% 60%;
+  /* #3B82F6 Light Blue */
+  --secondary-foreground: 224 64% 33%;
 
-  --muted: 120 15% 94%;
-  --muted-foreground: 124 20% 45%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
 
-  --accent: 106 88% 50%;
-  --accent-foreground: 108 36% 10%;
+  --accent: 224 64% 33%;
+  --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 84.2% 60.2%;
+  --destructive: 0 72% 51%;
+  /* #DC2626 Red */
   --destructive-foreground: 210 40% 98%;
 
-  --border: 120 15% 85%;
-  --input: 120 15% 85%;
-  --ring: 106 88% 50%;
+  --success: 142 76% 36%;
+  /* #16A34A Green */
+  --success-foreground: 210 40% 98%;
 
-  --sidebar-background: 120 20% 98%;
-  --sidebar-foreground: 124 93% 31%;
-  --sidebar-primary: 106 88% 50%;
-  --sidebar-primary-foreground: 108 36% 10%;
-  --sidebar-accent: 120 15% 92%;
-  --sidebar-accent-foreground: 124 93% 31%;
-  --sidebar-border: 120 15% 85%;
-  --sidebar-ring: 106 88% 50%;
+  --warning: 38 92% 50%;
+  /* #F59E0B Amber */
+  --warning-foreground: 220 39% 11%;
 
-  --radius: 1rem;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 224 64% 33%;
+
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 220 39% 11%;
+  --sidebar-primary: 224 64% 33%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 210 40% 96%;
+  --sidebar-accent-foreground: 224 64% 33%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 224 64% 33%;
+
+  --radius: 0.75rem;
+  /* 12px */
 }
 
 .dark {
-  --background: 108 36% 10%;
-  /* #142210 */
-  --foreground: 120 20% 97%;
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
 
-  --card: 108 36% 12%;
-  --card-foreground: 120 20% 97%;
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
 
-  --popover: 108 36% 12%;
-  --popover-foreground: 120 20% 97%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
 
-  --primary: 106 88% 50%;
-  --primary-foreground: 108 36% 10%;
+  --primary: 217 91% 60%;
+  /* Light Blue for Dark Mode */
+  --primary-foreground: 222 47% 11%;
 
-  --secondary: 108 36% 15%;
-  --secondary-foreground: 120 20% 97%;
+  --secondary: 217 19% 27%;
+  --secondary-foreground: 210 40% 98%;
 
-  --muted: 108 36% 15%;
-  --muted-foreground: 124 20% 65%;
+  --muted: 217 19% 27%;
+  --muted-foreground: 215 20% 65%;
 
-  --accent: 106 88% 50%;
-  --accent-foreground: 108 36% 10%;
+  --accent: 217 19% 27%;
+  --accent-foreground: 210 40% 98%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 108 36% 20%;
-  --input: 108 36% 20%;
-  --ring: 106 88% 50%;
+  --success: 142 70% 29%;
+  --success-foreground: 210 40% 98%;
 
-  --sidebar-background: 108 36% 12%;
-  --sidebar-foreground: 120 20% 97%;
-  --sidebar-primary: 106 88% 50%;
-  --sidebar-primary-foreground: 108 36% 10%;
-  --sidebar-accent: 108 36% 15%;
-  --sidebar-accent-foreground: 120 20% 97%;
-  --sidebar-border: 108 36% 20%;
-  --sidebar-ring: 106 88% 50%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 222 47% 11%;
+
+  --border: 217 19% 27%;
+  --input: 217 19% 27%;
+  --ring: 217 91% 60%;
+
+  --sidebar-background: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 222 47% 11%;
+  --sidebar-accent: 217 19% 27%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 217 19% 27%;
+  --sidebar-ring: 217 91% 60%;
 }
 
 @layer base {
@@ -146,8 +164,13 @@
   }
 
   body {
-    @apply bg-background text-foreground font-tajawal;
+    @apply bg-background text-foreground font-cairo;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  button,
+  a {
+    touch-action: manipulation;
   }
 }
 

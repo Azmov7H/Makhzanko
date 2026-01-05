@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { PlanType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -17,7 +17,7 @@ export async function redeemPromoCode(code: string) {
     }
 
     // Find promo code
-    const promoCode = await db.promoCode.findUnique({
+    const promoCode = await prisma.promoCode.findUnique({
         where: { code: code.trim().toUpperCase() },
         include: {
             redemptions: true,
@@ -53,7 +53,7 @@ export async function redeemPromoCode(code: string) {
     }
 
     // Get current tenant
-    const tenant = await db.tenant.findUnique({
+    const tenant = await prisma.tenant.findUnique({
         where: { id: context.tenantId },
         select: { plan: true },
     });
@@ -74,7 +74,7 @@ export async function redeemPromoCode(code: string) {
     }
 
     // Redeem the code
-    await db.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
         // Create redemption record
         await tx.redemption.create({
             data: {

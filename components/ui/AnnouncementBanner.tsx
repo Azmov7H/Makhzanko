@@ -79,7 +79,7 @@ export function AnnouncementBanner({
                                 onClick={handleClose}
                                 className="-mr-1 flex p-2 rounded-md hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2 transition-colors"
                             >
-                                <span className="sr-only">Dismiss</span>
+                                <span className="sr-only">Close</span>
                                 <X className="h-5 w-5" aria-hidden="true" />
                             </button>
                         </div>

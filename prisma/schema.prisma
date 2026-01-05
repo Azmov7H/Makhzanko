@@ -9,6 +9,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
 enum Role {
   OWNER
   ADMIN
@@ -27,12 +40,14 @@ enum SubscriptionStatus {
   trialing
   past_due
   canceled
+  pending
 }
 
 enum PaymentType {
   CASH
   BANK_TRANSFER
   DEFERRED
+  ONLINE
 }
 
 enum PaymentStatus {
@@ -89,7 +104,7 @@ model Tenant {
 model Plan {
   id                String           @id @default(cuid())
   name              String           @unique
-  type              PlanType         @unique
+  type              PlanType         
   price             Decimal
   stripeProductId   String?          @unique
   stripePriceId     String?          @unique
@@ -293,7 +308,8 @@ model Sale {
   number         Int        // Atomic sequential number
   total          Decimal
   status         String     @default("COMPLETED")
-  // paymentType    PaymentType @default(CASH)
+  paymentType    PaymentType @default(CASH)
+  paymobOrderId  String?    @unique
   // paymentStatus  PaymentStatus @default(PAID)
   amountPaid     Decimal    @default(0)
   date           DateTime   @default(now())
@@ -465,7 +481,7 @@ model Account {
   id             String   @id @default(cuid())
   code           String   
   name           String   
-  type           String   // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  type           AccountType
   // isTreasury     Boolean  @default(false) // Flag for cash-in-hand accounts
 
   tenantId       String
@@ -491,7 +507,7 @@ model JournalEntry {
 
 model Transaction {
   id             String       @id @default(cuid())
-  type           String       // DEBIT, CREDIT
+  type           TransactionType
   amount         Decimal      
   
   accountId      String
@@ -638,6 +654,9 @@ model Announcement {
   type      String   @default("INFO") // INFO, WARNING, CRITICAL
   target    String   @default("ALL")  // ALL, FREE, PRO, BUSINESS
   isActive  Boolean  @default(true)
+  link      String?
+  linkText  String?
+  expiresAt DateTime?
   createdBy String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

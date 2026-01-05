@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
@@ -21,7 +21,7 @@ export async function createCheckoutSession(planId: string) {
   const context = await getTenantContext();
 
   // Get plan from database
-  const plan = await db.plan.findUnique({
+  const plan = await prisma.plan.findUnique({
     where: { id: planId },
   });
 
@@ -32,7 +32,7 @@ export async function createCheckoutSession(planId: string) {
   // Get or create Stripe customer
   let stripeCustomerId = context.tenantId;
 
-  const tenant = await db.tenant.findUnique({
+  const tenant = await prisma.tenant.findUnique({
     where: { id: context.tenantId },
     select: { stripeCustomerId: true },
   });
@@ -50,7 +50,7 @@ export async function createCheckoutSession(planId: string) {
     stripeCustomerId = customer.id;
 
     // Save customer ID to tenant
-    await db.tenant.update({
+    await prisma.tenant.update({
       where: { id: context.tenantId },
       data: { stripeCustomerId: customer.id },
     });
@@ -88,7 +88,7 @@ export async function createCheckoutSession(planId: string) {
 export async function createCustomerPortalSession() {
   const context = await getTenantContext();
 
-  const tenant = await db.tenant.findUnique({
+  const tenant = await prisma.tenant.findUnique({
     where: { id: context.tenantId },
     select: { stripeCustomerId: true },
   });
@@ -115,7 +115,7 @@ export async function createCustomerPortalSession() {
 export async function getCurrentSubscription() {
   const context = await getTenantContext();
 
-  const subscription = await db.subscription.findFirst({
+  const subscription = await prisma.subscription.findFirst({
     where: {
       tenantId: context.tenantId,
       status: {
@@ -137,7 +137,7 @@ export async function getCurrentSubscription() {
  * Get all available plans
  */
 export async function getPlans() {
-  const plans = await db.plan.findMany({
+  const plans = await prisma.plan.findMany({
     orderBy: {
       price: "asc",
     },

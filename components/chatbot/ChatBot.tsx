@@ -78,7 +78,7 @@ export function ChatBot({ locale = "en" }: { locale?: string }) {
             : "Thanks for your message! For direct assistance, please contact our support team at info@makhzanko.com";
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim()) return;
 
         const userMessage: Message = {
@@ -91,16 +91,54 @@ export function ChatBot({ locale = "en" }: { locale?: string }) {
         setMessages(prev => [...prev, userMessage]);
         setInput("");
 
-        // Simulate typing delay
-        setTimeout(() => {
-            const botMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: findResponse(input),
-                sender: "bot",
-                timestamp: new Date()
-            };
-            setMessages(prev => [...prev, botMessage]);
-        }, 500);
+        // Create a placeholder for the bot message
+        const botMessageId = (Date.now() + 1).toString();
+        const botMessage: Message = {
+            id: botMessageId,
+            text: "",
+            sender: "bot",
+            timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMessage]);
+
+        try {
+            const response = await fetch("/api/ai/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    messages: messages.concat(userMessage).map(m => ({
+                        role: m.sender === "user" ? "user" : "assistant",
+                        content: m.text
+                    }))
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to get AI response");
+
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+            let fullText = "";
+
+            if (reader) {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    // Assuming SSE or raw text stream. For simplicity with raw text:
+                    fullText += chunk;
+
+                    setMessages(prev => prev.map(msg =>
+                        msg.id === botMessageId ? { ...msg, text: fullText } : msg
+                    ));
+                }
+            }
+        } catch (error) {
+            console.error("Chat Error:", error);
+            setMessages(prev => prev.map(msg =>
+                msg.id === botMessageId ? { ...msg, text: "Sorry, I'm having trouble connecting to the AI server. Please try again later." } : msg
+            ));
+        }
     };
 
     return (

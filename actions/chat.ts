@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { requireOwner } from "@/lib/auth-role";
 import { revalidatePath } from "next/cache";
@@ -13,7 +13,7 @@ export async function startChatSessionAction() {
     const context = await getTenantContext();
 
     // Check if there's already an active session
-    const existingSession = await db.chatSession.findFirst({
+    const existingSession = await prisma.chatSession.findFirst({
         where: {
             tenantId: context.tenantId,
             status: "ACTIVE",
@@ -28,7 +28,7 @@ export async function startChatSessionAction() {
     const startedAt = new Date();
     const endsAt = new Date(startedAt.getTime() + 15 * 60 * 1000); // 15 minutes
 
-    const session = await db.chatSession.create({
+    const session = await prisma.chatSession.create({
         data: {
             tenantId: context.tenantId,
             status: "ACTIVE",
@@ -51,7 +51,7 @@ export async function sendChatMessageAction(data: {
 }) {
     const context = await getTenantContext();
 
-    const session = await db.chatSession.findUnique({
+    const session = await prisma.chatSession.findUnique({
         where: { id: data.sessionId }
     });
 
@@ -61,7 +61,7 @@ export async function sendChatMessageAction(data: {
     if (now > session.endsAt || session.status !== "ACTIVE") {
         // Mark as expired if it wasn't already
         if (session.status === "ACTIVE") {
-            await db.chatSession.update({
+            await prisma.chatSession.update({
                 where: { id: data.sessionId },
                 data: { status: "EXPIRED" }
             });
@@ -69,7 +69,7 @@ export async function sendChatMessageAction(data: {
         return { error: "Session has expired" };
     }
 
-    const message = await db.chatMessage.create({
+    const message = await prisma.chatMessage.create({
         data: {
             sessionId: data.sessionId,
             sender: data.sender,
@@ -90,7 +90,7 @@ export async function sendChatMessageAction(data: {
 export async function getAdminChatSessions() {
     await requireOwner();
 
-    return await db.chatSession.findMany({
+    return await prisma.chatSession.findMany({
         include: {
             tenant: {
                 select: {
@@ -114,7 +114,7 @@ export async function getAdminChatSessions() {
 export async function getChatMessagesAction(sessionId: string) {
     await requireOwner();
 
-    return await db.chatMessage.findMany({
+    return await prisma.chatMessage.findMany({
         where: { sessionId },
         orderBy: { createdAt: "asc" }
     });
@@ -126,7 +126,7 @@ export async function getChatMessagesAction(sessionId: string) {
 export async function endChatSessionAction(sessionId: string) {
     await requireOwner();
 
-    await db.chatSession.update({
+    await prisma.chatSession.update({
         where: { id: sessionId },
         data: {
             status: "ENDED",

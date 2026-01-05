@@ -107,20 +107,20 @@ export default function Features() {
                         return (
                             <motion.div key={index} variants={itemVariants}>
                                 <Card
-                                    className="group h-full relative border border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50 hover:shadow-2xl transition-all duration-500 overflow-hidden"
+                                    className="group h-full relative border border-border/50 bg-card hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden rounded-2xl"
                                 >
-                                    <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full ${feature.bgColor} opacity-0 group-hover:opacity-100 transition-opacity blur-2xl`} />
+                                    <div className={`absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full ${feature.bgColor} opacity-0 group-hover:opacity-20 transition-opacity blur-3xl`} />
 
-                                    <CardHeader className="relative z-10">
-                                        <div className={`w-14 h-14 rounded-2xl ${feature.bgColor} flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
-                                            <Icon className={`h-7 w-7 ${feature.color}`} />
+                                    <CardHeader className="relative z-10 pb-2">
+                                        <div className={`w-12 h-12 rounded-xl ${feature.bgColor} flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform duration-500`}>
+                                            <Icon className={`h-6 w-6 ${feature.color}`} />
                                         </div>
-                                        <CardTitle className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                                        <CardTitle className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
                                             {feature.title}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="relative z-10">
-                                        <CardDescription className="text-base leading-relaxed text-muted-foreground">
+                                        <CardDescription className="text-sm leading-relaxed text-muted-foreground font-medium">
                                             {feature.description}
                                         </CardDescription>
                                     </CardContent>

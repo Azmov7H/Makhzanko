@@ -30,7 +30,7 @@ export async function createPaymobCheckoutSession(planId: string) {
         const authToken = await getPaymobAuthToken();
 
         // 3. Create Order
-        const merchantOrderId = `${context.tenantId}-${Date.now()}`;
+        const merchantOrderId = `SUB-${context.tenantId}-${Date.now()}`;
         const paymobOrderId = await createPaymobOrder(
             authToken,
             amountCents,
@@ -38,7 +38,19 @@ export async function createPaymobCheckoutSession(planId: string) {
             "EGP" // Paymob standard for Egypt
         );
 
-        // 4. Get Payment Key
+        // 4. Create Pending Subscription record
+        await db.subscription.create({
+            data: {
+                tenantId: context.tenantId,
+                planId: plan.id,
+                paymobOrderId: String(paymobOrderId),
+                status: "pending" as any,
+                currentPeriodStart: new Date(),
+                currentPeriodEnd: new Date(), // Will be updated on fulfillment
+            }
+        });
+
+        // 5. Get Payment Key
         // Minimal billing data required by Paymob
         const billingData = {
             apartment: "NA",
@@ -64,7 +76,7 @@ export async function createPaymobCheckoutSession(planId: string) {
             "EGP"
         );
 
-        // 5. Build Redirect URL
+        // 6. Build Redirect URL
         const iframeId = process.env.PAYMOB_IFRAME_ID;
         if (!iframeId) throw new Error("PAYMOB_IFRAME_ID is not set");
 
@@ -102,7 +114,7 @@ export async function initiatePaymobWalletPayment(planId: string, phoneNumber: s
         const authToken = await getPaymobAuthToken();
 
         // 3. Create Order
-        const merchantOrderId = `${context.tenantId}-${Date.now()}`;
+        const merchantOrderId = `SUB-${context.tenantId}-${Date.now()}`;
         const paymobOrderId = await createPaymobOrder(
             authToken,
             amountCents,
@@ -110,7 +122,19 @@ export async function initiatePaymobWalletPayment(planId: string, phoneNumber: s
             "EGP"
         );
 
-        // 4. Get Payment Key (using the configured Wallet Integration ID from env)
+        // 4. Create Pending Subscription record
+        await db.subscription.create({
+            data: {
+                tenantId: context.tenantId,
+                planId: plan.id,
+                paymobOrderId: String(paymobOrderId),
+                status: "pending",
+                currentPeriodStart: new Date(),
+                currentPeriodEnd: new Date(),
+            }
+        });
+
+        // 5. Get Payment Key (using the configured Wallet Integration ID from env)
         const billingData = {
             apartment: "NA",
             email: context.email || "customer@example.com",
@@ -135,7 +159,7 @@ export async function initiatePaymobWalletPayment(planId: string, phoneNumber: s
             "EGP"
         );
 
-        // 5. Pay with Wallet
+        // 6. Pay with Wallet
         const { payWithMobileWallet } = await import("@/lib/paymob");
         redirectUrl = await payWithMobileWallet(paymentKey, phoneNumber);
 

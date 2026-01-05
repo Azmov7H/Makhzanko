@@ -25,7 +25,7 @@ export const seoConfig = {
     organization: {
         name: "Makhzanko",
         legalName: "Makhzanko ERP Solutions",
-        foundingDate: "2024",
+        foundingDate: "2025",
         email: "info@makhzanko.com",
         phone: "+20 123 456 7890",
         address: {
