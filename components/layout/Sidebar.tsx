@@ -23,6 +23,7 @@ import {
     Undo2,
     ChevronDown,
     ChevronRight,
+    ChevronLeft,
     User
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,9 +63,9 @@ const NAV_SECTIONS = (t: any, role: string): NavSection[] => [
     {
         title: t("Dashboard.sales"),
         items: [
-            { label: t("Dashboard.sales"), href: "/dashboard/sales/sales", icon: ShoppingCart, roles: ["OWNER", "STAFF", "MANAGER"], minPlan: "FREE" },
-            { label: t("Dashboard.invoices"), href: "/dashboard/sales/invoices", icon: FileText, roles: ["OWNER", "STAFF", "MANAGER"], minPlan: "FREE" },
-            { label: t("Dashboard.returns"), href: "/dashboard/sales/returns", icon: Undo2, roles: ["OWNER", "MANAGER", "STAFF"], minPlan: "PRO" },
+            { label: t("Dashboard.sales"), href: "/dashboard/sales-flow/sales", icon: ShoppingCart, roles: ["OWNER", "STAFF", "MANAGER"], minPlan: "FREE" },
+            { label: t("Dashboard.invoices"), href: "/dashboard/sales-flow/invoices", icon: FileText, roles: ["OWNER", "STAFF", "MANAGER"], minPlan: "FREE" },
+            { label: t("Dashboard.returns"), href: "/dashboard/sales-flow/returns", icon: Undo2, roles: ["OWNER", "MANAGER", "STAFF"], minPlan: "PRO" },
         ]
     },
     {
@@ -99,43 +100,84 @@ const PLAN_LEVELS: Record<string, number> = {
     "BUSINESS": 2
 };
 
+import { useSidebar } from "./SidebarContext";
+
 export function Sidebar({ role, plan }: { role: string; plan: string }) {
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
+    const { isCollapsed, toggleSidebar } = useSidebar();
     const sections = NAV_SECTIONS(t, role);
 
     return (
-        <aside className="hidden lg:flex flex-col w-[280px] bg-card border-e fixed inset-y-0 start-0 z-50 shadow-sm transition-all duration-300">
-            <div className="flex h-16 items-center px-6 border-b">
+        <aside className={cn(
+            "hidden lg:flex flex-col bg-card border-e fixed inset-y-0 start-0 z-50 shadow-sm transition-all duration-300",
+            isCollapsed ? "w-[80px]" : "w-[280px]"
+        )}>
+            <div className={cn("flex h-16 items-center px-6 border-b justify-between", isCollapsed && "px-4 justify-center")}>
                 <Link className="flex items-center gap-3 font-bold text-xl group" href="/dashboard">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm group-hover:scale-105 transition-transform">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm group-hover:scale-105 transition-transform shrink-0">
                         <Package className="h-5 w-5" />
                     </div>
-                    <span className="font-cairo font-bold tracking-tight text-foreground">
-                        {t("Dashboard.brand_name")}
-                    </span>
+                    {!isCollapsed && (
+                        <motion.span
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="font-cairo font-bold tracking-tight text-foreground truncate"
+                        >
+                            {t("Dashboard.brand_name")}
+                        </motion.span>
+                    )}
                 </Link>
+
+                {!isCollapsed && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleSidebar}
+                        className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg"
+                    >
+                        {locale === "ar" ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                    </Button>
+                )}
             </div>
+
+            {isCollapsed && (
+                <div className="flex justify-center py-4 border-b">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleSidebar}
+                        className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg"
+                    >
+                        {locale === "ar" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
+                </div>
+            )}
 
             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-6 scrollbar-none">
                 {sections.map((section, index) => (
-                    <NavSection key={index} section={section} plan={plan} role={role} />
+                    <NavSection key={index} section={section} plan={plan} role={role} isCollapsed={isCollapsed} />
                 ))}
             </div>
 
             <div className="p-4 border-t bg-muted/20">
-                <div className="flex items-center gap-3 px-3 py-3 mb-4 rounded-xl bg-background border border-border/50">
-                    <Avatar className="h-10 w-10 border border-primary/10">
+                <div className={cn(
+                    "flex items-center gap-3 px-3 py-3 mb-4 rounded-xl bg-background border border-border/50",
+                    isCollapsed && "px-0 justify-center border-none bg-transparent"
+                )}>
+                    <Avatar className="h-10 w-10 border border-primary/10 shrink-0">
                         <AvatarFallback className="bg-primary/5 text-primary font-bold">
                             <User className="h-5 w-5" />
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col text-start overflow-hidden">
-                        <span className="text-sm font-bold text-foreground truncate">{t("Common.user_label")}</span>
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{role}</span>
-                    </div>
+                    {!isCollapsed && (
+                        <div className="flex flex-col text-start overflow-hidden">
+                            <span className="text-sm font-bold text-foreground truncate">{t("Common.user_label")}</span>
+                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t(`Dashboard.roles.${role}` as any)}</span>
+                        </div>
+                    )}
                 </div>
-                <div className="px-1">
-                    <ThemeToggle />
+                <div className="px-1 focus-within:ring-0">
+                    <ThemeToggle hideLabel={isCollapsed} />
                 </div>
             </div>
         </aside>
@@ -188,7 +230,7 @@ export function MobileSidebar({ role, plan }: { role: string; plan: string }) {
     );
 }
 
-function NavSection({ section, plan, role, mobile, onLinkClick }: { section: NavSection, plan: string, role: string, mobile?: boolean, onLinkClick?: () => void }) {
+function NavSection({ section, plan, role, mobile, onLinkClick, isCollapsed }: { section: NavSection, plan: string, role: string, mobile?: boolean, onLinkClick?: () => void, isCollapsed?: boolean }) {
     const [isOpen, setIsOpen] = useState(true);
     const hasTitle = !!section.title;
 
@@ -198,7 +240,7 @@ function NavSection({ section, plan, role, mobile, onLinkClick }: { section: Nav
 
     return (
         <div className="space-y-1">
-            {hasTitle && (
+            {hasTitle && !isCollapsed && (
                 <div
                     className="flex items-center justify-between px-3 py-2 text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider cursor-pointer hover:text-primary transition-colors select-none"
                     onClick={() => setIsOpen(!isOpen)}
@@ -206,6 +248,9 @@ function NavSection({ section, plan, role, mobile, onLinkClick }: { section: Nav
                     <span>{section.title}</span>
                     <ChevronDown className={cn("h-3 w-3 transition-transform", !isOpen && "transform -rotate-90 rtl:rotate-90")} />
                 </div>
+            )}
+            {hasTitle && isCollapsed && (
+                <div className="h-px bg-sidebar-border/50 my-4 mx-2" />
             )}
 
             <AnimatePresence initial={false}>
@@ -218,7 +263,7 @@ function NavSection({ section, plan, role, mobile, onLinkClick }: { section: Nav
                         className="space-y-0.5"
                     >
                         {visibleItems.map(item => (
-                            <NavItemLink key={item.href} item={item} plan={plan} onClick={onLinkClick} />
+                            <NavItemLink key={item.href} item={item} plan={plan} onClick={onLinkClick} isCollapsed={isCollapsed} />
                         ))}
                     </motion.div>
                 )}
@@ -227,7 +272,7 @@ function NavSection({ section, plan, role, mobile, onLinkClick }: { section: Nav
     );
 }
 
-function NavItemLink({ item, plan, onClick }: { item: NavItem, plan: string, onClick?: () => void }) {
+function NavItemLink({ item, plan, onClick, isCollapsed }: { item: NavItem, plan: string, onClick?: () => void, isCollapsed?: boolean }) {
     const pathname = usePathname();
     const currentPlanLevel = PLAN_LEVELS[plan] || 0;
     const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
@@ -246,10 +291,13 @@ function NavItemLink({ item, plan, onClick }: { item: NavItem, plan: string, onC
             )}
         >
             <item.icon className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground")} />
-            <span className="flex-1 truncate">{item.label}</span>
-            {isLocked && <Lock className="h-3 w-3 opacity-50 ml-auto" />}
+            {!isCollapsed && <span className="flex-1 truncate">{item.label}</span>}
+            {isLocked && !isCollapsed && <Lock className="h-3 w-3 opacity-50 ml-auto" />}
             {isActive && (
-                <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-primary rounded-r-full rtl:rounded-r-none rtl:rounded-l-full rtl:left-auto rtl:right-0" />
+                <div className={cn(
+                    "absolute top-1.5 bottom-1.5 w-1 bg-primary rounded-r-full rtl:rounded-r-none rtl:rounded-l-full",
+                    isCollapsed ? "left-0 rtl:right-0" : "left-0 rtl:right-0"
+                )} />
             )}
         </Link>
     );

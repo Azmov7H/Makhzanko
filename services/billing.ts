@@ -18,7 +18,7 @@ export class BillingService {
             throw new Error(`Subscription not found for Paymob Order: ${paymobOrderId}`);
         }
 
-        if (subscription.status === "active" as SubscriptionStatus) {
+        if (subscription.status as string === "active") {
             console.log(`Subscription ${subscription.id} is already active.`);
             return subscription;
         }
@@ -34,7 +34,7 @@ export class BillingService {
             const updatedSubscription = await tx.subscription.update({
                 where: { id: subscription.id },
                 data: {
-                    status: "active" as SubscriptionStatus,
+                    status: "active" as any,
                     paymobTransactionId,
                     currentPeriodStart: now,
                     currentPeriodEnd: nextMonth,

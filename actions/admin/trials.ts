@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth-role";
-import { PlanType } from "@prisma/client";
+import { PlanType, SubscriptionStatus } from "@prisma/client";
 import { logActivity } from "@/lib/activity-logger";
 import { headers } from "next/headers";
 import { getRequestMetadata } from "@/lib/activity-logger";
@@ -56,7 +56,7 @@ export async function createTrialOverride(
     where: {
       tenantId,
       status: {
-        in: ["active", "trialing"],
+        in: ["active", "trialing"] as any,
       },
     },
   });
@@ -65,7 +65,7 @@ export async function createTrialOverride(
     await db.subscription.update({
       where: { id: activeSubscription.id },
       data: {
-        status: "canceled",
+        status: "canceled" as any,
         cancelAtPeriodEnd: false,
       },
     });

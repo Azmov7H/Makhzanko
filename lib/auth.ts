@@ -38,7 +38,7 @@ export async function getTenantContext(): Promise<TenantContext> {
   const userId = payload.userId as string;
   const role = payload.role as Role;
 
-  // Fetch user with active status and verify tenant
+  // Fetch user with active status and verify tenant with single query
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -47,19 +47,15 @@ export async function getTenantContext(): Promise<TenantContext> {
       deletedAt: true,
       email: true,
       name: true,
+      tenant: {
+        select: {
+          plan: true,
+        },
+      },
     },
   });
 
-  if (!user || user.tenantId !== tenantId || !user.isActive || user.deletedAt) {
-    redirect("/login");
-  }
-
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: tenantId },
-    select: { plan: true },
-  });
-
-  if (!tenant) {
+  if (!user || user.tenantId !== tenantId || !user.isActive || user.deletedAt || !user.tenant) {
     redirect("/login");
   }
 
@@ -67,7 +63,7 @@ export async function getTenantContext(): Promise<TenantContext> {
     userId,
     tenantId,
     role,
-    plan: tenant.plan,
+    plan: user.tenant.plan,
     email: user.email,
     name: user.name,
   };
@@ -88,23 +84,28 @@ export async function getSession(): Promise<TenantContext | null> {
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId as string },
-      select: { tenantId: true, isActive: true, deletedAt: true, email: true, name: true, role: true }
+      select: {
+        tenantId: true,
+        isActive: true,
+        deletedAt: true,
+        email: true,
+        name: true,
+        role: true,
+        tenant: {
+          select: {
+            plan: true
+          }
+        }
+      }
     });
 
-    if (!user || user.tenantId !== payload.tenantId || !user.isActive || user.deletedAt) return null;
-
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: user.tenantId },
-      select: { plan: true }
-    });
-
-    if (!tenant) return null;
+    if (!user || user.tenantId !== payload.tenantId || !user.isActive || user.deletedAt || !user.tenant) return null;
 
     return {
       userId: payload.userId as string,
       tenantId: user.tenantId,
       role: user.role,
-      plan: tenant.plan,
+      plan: user.tenant.plan,
       email: user.email,
       name: user.name,
     };

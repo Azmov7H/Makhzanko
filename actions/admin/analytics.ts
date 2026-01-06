@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth-role";
+import { SubscriptionStatus } from "@prisma/client";
 
 /**
  * Get dashboard analytics for owner
@@ -24,7 +25,7 @@ export async function getOwnerAnalytics() {
   const activeSubscriptions = await db.subscription.count({
     where: {
       status: {
-        in: ["active", "trialing"],
+        in: ["active", "trialing"] as any,
       },
     },
   });
@@ -46,7 +47,7 @@ export async function getOwnerAnalytics() {
   const convertedTrials = await db.subscription.count({
     where: {
       status: {
-        in: ["active"],
+        in: ["active"] as any,
       },
     },
   });

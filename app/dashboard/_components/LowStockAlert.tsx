@@ -6,8 +6,10 @@ import { AlertTriangle, ArrowRight, Package } from "lucide-react";
 import { getLowStockProducts } from "@/actions/advanced-features";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/context";
 
 export function LowStockAlert() {
+    const { t } = useI18n();
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -26,9 +28,9 @@ export function LowStockAlert() {
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-destructive">
                     <AlertTriangle className="h-5 w-5" />
-                    Low Stock Alert
+                    {t("Dashboard.alerts.low_stock_title")}
                 </CardTitle>
-                <CardDescription>The following products are below their minimum stock level.</CardDescription>
+                <CardDescription>{t("Dashboard.alerts.low_stock_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid gap-2">
@@ -45,17 +47,17 @@ export function LowStockAlert() {
                             </div>
                             <div className="text-right">
                                 <span className="text-destructive font-black text-sm">{p.totalStock}</span>
-                                <span className="text-[10px] text-muted-foreground block">Min: {p.minStock}</span>
+                                <span className="text-[10px] text-muted-foreground block">{t("Products.min_stock")}: {p.minStock}</span>
                             </div>
                         </div>
                     ))}
                     {products.length > 3 && (
-                        <p className="text-xs text-muted-foreground text-center">And {products.length - 3} more products...</p>
+                        <p className="text-xs text-muted-foreground text-center">{t("Dashboard.alerts.and_more", { count: products.length - 3 })}</p>
                     )}
                 </div>
                 <Button variant="outline" className="w-full border-destructive/20 text-destructive hover:bg-destructive hover:text-white transition-all gap-2" asChild>
                     <Link href="/dashboard/inventory/products">
-                        Manage Inventory <ArrowRight className="h-4 w-4" />
+                        {t("Dashboard.alerts.manage_inventory")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                     </Link>
                 </Button>
             </CardContent>

@@ -38,7 +38,7 @@ async function BillingContent({
   const t = await getI18n(locale);
 
   const [currentSubscription, plans] = await Promise.all([
-    getCurrentSubscription(),
+    getCurrentSubscription(context.tenantId),
     getPlans(),
   ]);
 
@@ -49,15 +49,21 @@ async function BillingContent({
 
   // Logic to find the specific plan for the selected cycle
   const displayPlans = [PlanType.PRO, PlanType.BUSINESS].map(type => {
+    // Find plans of this type
+    const plansOfType = basePlans.filter(p => p.type === type);
+
     let plan;
     if (selectedCycle === "annual") {
-      plan = basePlans.find(p => p.type === type && p.name.includes("Annual"));
+      plan = plansOfType.find(p => p.name.toLowerCase().includes("annual") || p.name.toLowerCase().includes("yearly"));
     } else if (selectedCycle === "quarterly") {
-      plan = basePlans.find(p => p.type === type && p.name.includes("3-Months"));
+      plan = plansOfType.find(p => p.name.toLowerCase().includes("3-month") || p.name.toLowerCase().includes("quarterly"));
     } else {
-      plan = basePlans.find(p => p.type === type && !p.name.includes("Annual") && !p.name.includes("3-Months"));
+      // Monthly or default
+      plan = plansOfType.find(p => !p.name.toLowerCase().includes("annual") && !p.name.toLowerCase().includes("yearly") && !p.name.toLowerCase().includes("3-month") && !p.name.toLowerCase().includes("quarterly"));
     }
-    return plan;
+
+    // Fallback: If no specific matching plan for cycle, just take the first one of that type
+    return plan || plansOfType[0];
   }).filter(Boolean);
 
   const planIcons: Record<PlanType, any> = {

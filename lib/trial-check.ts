@@ -18,34 +18,38 @@ export interface TrialStatus {
 export async function getTrialStatus(tenantId: string): Promise<TrialStatus> {
     const tenant = await db.tenant.findUnique({
         where: { id: tenantId },
-        select: { plan: true, trialEndsAt: true }
+        select: { plan: true, trialEndsAt: true, createdAt: true }
     });
 
     if (!tenant) {
         return { isInTrial: false, trialEndsAt: null, daysRemaining: 0, isExpired: true };
     }
 
+    console.log(`[Trial Debug] Tenant: ${tenantId}, Plan: ${tenant.plan}, trialEndsAt: ${tenant.trialEndsAt}, createdAt: ${tenant.createdAt}`);
+
     // If user has paid plan, no trial restrictions
     if (tenant.plan !== "FREE") {
         return { isInTrial: false, trialEndsAt: null, daysRemaining: 0, isExpired: false };
     }
 
-    // If no trial end date set, assume trial is active (for legacy users)
-    if (!tenant.trialEndsAt) {
-        return { isInTrial: true, trialEndsAt: null, daysRemaining: 14, isExpired: false };
+    const now = new Date();
+    const TRIAL_DAYS = 90; // 3 month trial
+    const msPerDay = 24 * 60 * 60 * 1000;
+
+    // Use trialEndsAt if set, otherwise fallback to createdAt + 90 days
+    let trialEnd: Date;
+    if (tenant.trialEndsAt) {
+        trialEnd = new Date(tenant.trialEndsAt);
+    } else {
+        trialEnd = new Date(tenant.createdAt.getTime() + (TRIAL_DAYS * msPerDay));
     }
 
-    const now = new Date();
-    const trialEnd = new Date(tenant.trialEndsAt);
     const isExpired = now > trialEnd;
-
-    // Calculate days remaining
-    const msPerDay = 24 * 60 * 60 * 1000;
     const daysRemaining = isExpired ? 0 : Math.ceil((trialEnd.getTime() - now.getTime()) / msPerDay);
 
     return {
         isInTrial: !isExpired,
-        trialEndsAt: tenant.trialEndsAt,
+        trialEndsAt: trialEnd,
         daysRemaining,
         isExpired
     };

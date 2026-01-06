@@ -42,10 +42,10 @@
       "avg_order_value": "متوسط قيمة الطلب",
       "inventory_value": "قيمة المخزون",
       "items_in_stock": "الأصناف في المخزن",
-      "revenue_analytics": "تحليلات الإيرادات",
-      "revenue_analytics_desc": "نظرة تفصيلية على نمو الإيرادات",
-      "top_products": "أفضل المنتجات",
-      "units_sold": "الكمية المباعة"
+      "revenue_analytics": "تحليل الإيرادات",
+      "revenue_analytics_desc": "نظرة مفصلة على نمو الأرباح",
+      "top_products": "أكثر المنتجات مبيعاً",
+      "units_sold": "الكميات المباعة"
     },
     "features": {
       "title": "مميزات مخزنكو",
@@ -161,8 +161,15 @@
     "treasury": "الخزينة",
     "treasury_desc": "إدارة الخزينة والسيولة النقدية",
     "current_balance": "الرصيد الحالي",
-    "cash_in_hand": "إجمالي النقود في الخزينة",
-    "account_info": "معلومات الحساب",
+    "cash_in_hand": "إجمالي النقدية بالخزينة",
+    "account_info": "بيانات الحساب",
+    "search_placeholder": "بحث في النظام...",
+    "inventory": "المخزون",
+    "finance": "المالية",
+    "advanced_analytics": "التحليلات المتقدمة",
+    "system": "النظام",
+    "users": "المستخدمون",
+    "returns": "المرتجعات",
     "quick_actions": "إجراءات سريعة",
     "deposit": "إيداع",
     "withdraw": "سحب",
@@ -190,13 +197,13 @@
     "welcome": "مرحباً بك في مخزنكو",
     "welcome_desc": "نظام إدارة شامل للمخازن والمحاسبة والمبيعات",
     "total_products": "إجمالي المنتجات",
-    "products_desc": "منتج مسجل في النظام",
-    "total_sales": "المبيعات",
-    "sales_desc": "عملية بيع مكتملة",
-    "total_revenue": "الإيرادات",
-    "revenue_desc": "إجمالي مبيعات المنتجات",
-    "total_warehouses": "المخازن",
-    "warehouses_desc": "مستودع مفعل حالياً",
+    "products_desc": "منتجات مسجلة في النظام",
+    "total_sales": "إجمالي المبيعات",
+    "sales_desc": "عمليات بيع مكتملة",
+    "total_revenue": "إجمالي الإيرادات",
+    "revenue_desc": "صافي قيمة المبيعات",
+    "total_warehouses": "إجمالي المخازن",
+    "warehouses_desc": "مستودعات مفعلة حالياً",
     "quick_links": "روابط سريعة",
     "quick_links_desc": "الوصول السريع إلى الأقسام الرئيسية",
     "login": "تسجيل الدخول",
@@ -224,12 +231,14 @@
       "no_alerts": "جميع المنتجات لديها مخزون كافٍ",
       "no_forecasts": "لا توجد بيانات كافية للتوقعات بعد",
       "lasts_for": "يكفي لـ {days} أيام",
-      "units_per_week": "{count} قطعة/أسبوع"
+      "units_per_week": "{count} قطعة/أسبوع",
+      "and_more": "و {count} منتجات أخرى...",
+      "manage_inventory": "إدارة المخزون"
     },
     "trial": {
       "expired_title": "انتهت الفترة التجريبية",
       "ending_soon_title": "اقترب موعد انتهاء التجربة",
-      "expired_desc": "لقد انتهت فترة الـ 14 يوماً. يرجى الترقية لمتابعة استخدام النظام.",
+      "expired_desc": "لقد انتهت فترة الـ 3 أشهر التجريبية. يرجى الترقية لمتابعة استخدام النظام.",
       "ending_soon_desc": "يتبقى لك {days} أيام فقط في الفترة التجريبية.",
       "upgrade_now": "ترقية الآن"
     },
@@ -259,6 +268,12 @@
     },
     "nav": {
       "returns": "المرتجعات والرديات"
+    },
+    "loading_dashboard": "جاري تحميل لوحة التحكم...",
+    "roles": {
+      "OWNER": "المالك",
+      "MANAGER": "مدير",
+      "STAFF": "موظف"
     }
   },
   "Analytics": {
@@ -511,12 +526,18 @@
   },
   "Warehouses": {
     "title": "المخازن",
-    "description": "إدارة مواقع التخزين الفعلية.",
-    "add_warehouse": "إضافة مخزن",
+    "description": "إدارة مواقع التخزين الفعلية ومتابعة المخزون.",
+    "add_warehouse": "إضافة مخزن جديد",
+    "new_warehouse": "مخزن جديد",
+    "name_label": "اسم المخزن",
+    "name_min": "اسم المخزن يجب أن يكون حرفين على الأقل",
+    "name_placeholder": "مثال: مخزن القاهرة الرئيسي",
+    "location_label": "الموقع / العنوان",
+    "location_placeholder": "مثال: المنطقة الصناعية، العبور",
     "no_location": "لم يتم تحديد موقع",
     "items_in_stock": "{count} أصناف في المخزن",
     "no_warehouses": "لم يتم العثور على مخازن",
-    "empty_desc": "ابدأ بإنشاء مخزنك الأول.",
+    "empty_desc": "ابدأ بإنشاء مخزنك الأول لإدارة مخزون منتجاتك.",
     "delete": "حذف",
     "items_in_stock_label": "المخزون الحالي"
   },
@@ -701,9 +722,9 @@
     "new": "جديد",
     "learn_more": "معرفة المزيد",
     "user_label": "مستخدم",
-    "new": "جديد",
-    "learn_more": "معرفة المزيد",
-    "user_label": "مستخدم"
+    "theme_toggle": "تبديل المظهر الرسمي",
+    "light_mode": "الوضع المضيء",
+    "dark_mode": "الوضع الليلي"
   },
   "Admin": {
     "title": "لوحة المدير",

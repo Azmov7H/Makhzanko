@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth-role";
-import { Role } from "@prisma/client";
+import { Role, SubscriptionStatus } from "@prisma/client";
 import { logActivity } from "@/lib/activity-logger";
 import { headers } from "next/headers";
 import { getRequestMetadata } from "@/lib/activity-logger";
@@ -39,7 +39,7 @@ export async function getAllUsers() {
         where: {
           tenantId: user.tenantId,
           status: {
-            in: ["active", "trialing"],
+            in: ["active", "trialing"] as any,
           },
         },
         include: {

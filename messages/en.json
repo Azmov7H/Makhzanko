@@ -163,6 +163,13 @@
         "current_balance": "Current Balance",
         "cash_in_hand": "Total cash in hand",
         "account_info": "Account Info",
+        "search_placeholder": "Search system...",
+        "inventory": "Inventory",
+        "finance": "Finance",
+        "advanced_analytics": "Advanced Analytics",
+        "system": "System",
+        "users": "Users",
+        "returns": "Returns",
         "quick_actions": "Quick Actions",
         "deposit": "Deposit",
         "withdraw": "Withdraw",
@@ -224,12 +231,14 @@
             "no_alerts": "All products have sufficient stock",
             "no_forecasts": "Not enough data for forecasts yet",
             "lasts_for": "Lasts for {days} days",
-            "units_per_week": "{count} units/week"
+            "units_per_week": "{count} units/week",
+            "and_more": "And {count} more products...",
+            "manage_inventory": "Manage Inventory"
         },
         "trial": {
             "expired_title": "Trial Expired",
             "ending_soon_title": "Trial Ending Soon",
-            "expired_desc": "Your 14-day trial has ended. Please upgrade to continue using the system.",
+            "expired_desc": "Your 3-month trial has ended. Please upgrade to continue using the system.",
             "ending_soon_desc": "You have only {days} days left in your trial period.",
             "upgrade_now": "Upgrade Now"
         },
@@ -259,6 +268,12 @@
         },
         "nav": {
             "returns": "Returns & Refunds"
+        },
+        "loading_dashboard": "Loading Dashboard...",
+        "roles": {
+            "OWNER": "Owner",
+            "MANAGER": "Manager",
+            "STAFF": "Staff"
         }
     },
     "Analytics": {
@@ -511,12 +526,18 @@
     },
     "Warehouses": {
         "title": "Warehouses",
-        "description": "Manage physical storage locations.",
-        "add_warehouse": "Add Warehouse",
+        "description": "Manage physical storage locations and track inventory.",
+        "add_warehouse": "Add New Warehouse",
+        "new_warehouse": "New Warehouse",
+        "name_label": "Warehouse Name",
+        "name_min": "Warehouse name must be at least 2 characters",
+        "name_placeholder": "e.g., Main Cairo Warehouse",
+        "location_label": "Location / Address",
+        "location_placeholder": "e.g., Industrial Zone, Obour",
         "no_location": "No location specified",
         "items_in_stock": "{count} items in stock",
         "no_warehouses": "No warehouses found",
-        "empty_desc": "Get started by creating your first warehouse.",
+        "empty_desc": "Get started by creating your first warehouse to manage your product stock.",
         "delete": "Delete",
         "items_in_stock_label": "Current Stock"
     },
@@ -699,7 +720,13 @@
         "actions": "Actions",
         "no_data": "No data available",
         "currency": "EGP",
-        "currency_egp": "EGP"
+        "currency_egp": "EGP",
+        "new": "New",
+        "learn_more": "Learn More",
+        "user_label": "User",
+        "theme_toggle": "Toggle Theme",
+        "light_mode": "Light Mode",
+        "dark_mode": "Dark Mode"
     },
     "Admin": {
         "title": "Admin Dashboard",

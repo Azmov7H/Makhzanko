@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
-import { PlanType } from "@prisma/client";
+import { PlanType, SubscriptionStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -106,11 +106,11 @@ export async function redeemPromoCode(code: string) {
             where: {
                 tenantId: context.tenantId,
                 status: {
-                    in: ["active", "trialing"],
+                    in: ["active", "trialing"] as any,
                 },
             },
             data: {
-                status: "canceled",
+                status: "canceled" as any,
             },
         });
     });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AIService } from "@/services/ai/gpt";
+import { InternalModelService } from "@/services/ai/internal_model";
 import { getTenantContext } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
             ...messages
         ];
 
-        const { stream } = await AIService.generateStreamingResponse(augmentedMessages);
+        const { stream } = await InternalModelService.generateStreamingResponse(messages, context.tenantId);
 
         return new NextResponse(stream, {
             headers: {

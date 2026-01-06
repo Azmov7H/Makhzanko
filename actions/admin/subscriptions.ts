@@ -7,14 +7,7 @@ import { logActivity } from "@/lib/activity-logger";
 import { headers } from "next/headers";
 import { getRequestMetadata } from "@/lib/activity-logger";
 import { revalidatePath } from "next/cache";
-import Stripe from "stripe";
 
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-02-24.acacia",
-    typescript: true,
-  })
-  : null;
 
 /**
  * Get all subscriptions across all tenants
@@ -29,7 +22,6 @@ export async function getAllSubscriptions() {
           id: true,
           name: true,
           plan: true,
-          stripeCustomerId: true,
           paymobCustomerId: true,
         },
       },
@@ -59,10 +51,7 @@ export async function cancelSubscription(subscriptionId: string) {
   }
 
   try {
-    // Cancel in Stripe if applicable
-    if (subscription.stripeSubscriptionId && stripe) {
-      await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
-    }
+
 
     // For Paymob, cancellation is typically handled via their portal or manually
     // but we update our database status regardless
@@ -71,7 +60,7 @@ export async function cancelSubscription(subscriptionId: string) {
     await db.subscription.update({
       where: { id: subscriptionId },
       data: {
-        status: SubscriptionStatus.canceled,
+        status: "canceled" as any,
         cancelAtPeriodEnd: false,
       },
     });
@@ -124,11 +113,11 @@ export async function forceChangePlan(tenantId: string, plan: PlanType) {
     where: {
       tenantId,
       status: {
-        in: ["active", "trialing"],
+        in: ["active", "trialing"] as any,
       },
     },
     data: {
-      status: SubscriptionStatus.canceled,
+      status: "canceled" as any,
     },
   });
 
@@ -195,8 +184,7 @@ export async function extendSubscriptionPeriod(
     },
   });
 
-  // Note: In Stripe, you'd need to update the subscription
-  // For now, we'll just update our database
+
 
   // Log activity
   const headersList = await headers();
@@ -229,7 +217,6 @@ export async function getPlanIntegrations() {
     select: {
       id: true,
       name: true,
-      stripePriceId: true,
       paymobIntegrationId: true,
     }
   });

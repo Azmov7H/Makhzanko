@@ -2,122 +2,33 @@
 
 import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
+import { SubscriptionStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
-import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-02-24.acacia",
-  typescript: true,
-});
 
 /**
- * Create Stripe Checkout Session for subscription
+ * Create Checkout Session (Stripe Removed)
  */
 export async function createCheckoutSession(planId: string) {
-  const context = await getTenantContext();
-
-  // Get plan from database
-  const plan = await prisma.plan.findUnique({
-    where: { id: planId },
-  });
-
-  if (!plan || !plan.stripePriceId) {
-    return { error: "Plan not found or not configured" };
-  }
-
-  // Get or create Stripe customer
-  let stripeCustomerId = context.tenantId;
-
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: context.tenantId },
-    select: { stripeCustomerId: true },
-  });
-
-  if (tenant?.stripeCustomerId) {
-    stripeCustomerId = tenant.stripeCustomerId;
-  } else {
-    // Create new Stripe customer
-    const customer = await stripe.customers.create({
-      metadata: {
-        tenantId: context.tenantId,
-      },
-    });
-
-    stripeCustomerId = customer.id;
-
-    // Save customer ID to tenant
-    await prisma.tenant.update({
-      where: { id: context.tenantId },
-      data: { stripeCustomerId: customer.id },
-    });
-  }
-
-  // Create checkout session
-  const session = await stripe.checkout.sessions.create({
-    customer: stripeCustomerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: plan.stripePriceId,
-        quantity: 1,
-      },
-    ],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/settings/billing?success=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/settings/billing?canceled=true`,
-    metadata: {
-      tenantId: context.tenantId,
-      planId: plan.id,
-    },
-  });
-
-  if (!session.url) {
-    return { error: "Failed to create checkout session" };
-  }
-
-  redirect(session.url);
+  throw new Error("Stripe integration has been removed.");
 }
 
 /**
- * Create Stripe Customer Portal session for managing subscription
+ * Create Customer Portal Session (Stripe Removed)
  */
 export async function createCustomerPortalSession() {
-  const context = await getTenantContext();
-
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: context.tenantId },
-    select: { stripeCustomerId: true },
-  });
-
-  if (!tenant?.stripeCustomerId) {
-    return { error: "No active subscription found" };
-  }
-
-  const session = await stripe.billingPortal.sessions.create({
-    customer: tenant.stripeCustomerId,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/settings/billing`,
-  });
-
-  if (!session.url) {
-    return { error: "Failed to create portal session" };
-  }
-
-  redirect(session.url);
+  throw new Error("Stripe integration has been removed.");
 }
 
 /**
  * Get current subscription details
  */
-export async function getCurrentSubscription() {
-  const context = await getTenantContext();
+export async function getCurrentSubscription(tenantId?: string) {
+  const targetTenantId = tenantId || (await getTenantContext()).tenantId;
 
   const subscription = await prisma.subscription.findFirst({
     where: {
-      tenantId: context.tenantId,
+      tenantId: targetTenantId,
       status: {
         in: ["active", "trialing"],
       },
