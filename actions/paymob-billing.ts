@@ -44,7 +44,7 @@ export async function createPaymobCheckoutSession(planId: string) {
                 tenantId: context.tenantId,
                 planId: plan.id,
                 paymobOrderId: String(paymobOrderId),
-                status: "PENDING" as any,
+                status: "pending",
                 currentPeriodStart: new Date(),
                 currentPeriodEnd: new Date(), // Will be updated on fulfillment
             }
@@ -128,7 +128,7 @@ export async function initiatePaymobWalletPayment(planId: string, phoneNumber: s
                 tenantId: context.tenantId,
                 planId: plan.id,
                 paymobOrderId: String(paymobOrderId),
-                status: "PENDING",
+                status: "pending",
                 currentPeriodStart: new Date(),
                 currentPeriodEnd: new Date(),
             }

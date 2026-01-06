@@ -25,8 +25,6 @@ export async function getTrialStatus(tenantId: string): Promise<TrialStatus> {
         return { isInTrial: false, trialEndsAt: null, daysRemaining: 0, isExpired: true };
     }
 
-    console.log(`[Trial Debug] Tenant: ${tenantId}, Plan: ${tenant.plan}, trialEndsAt: ${tenant.trialEndsAt}, createdAt: ${tenant.createdAt}`);
-
     // If user has paid plan, no trial restrictions
     if (tenant.plan !== "FREE") {
         return { isInTrial: false, trialEndsAt: null, daysRemaining: 0, isExpired: false };
@@ -36,12 +34,16 @@ export async function getTrialStatus(tenantId: string): Promise<TrialStatus> {
     const TRIAL_DAYS = 90; // 3 month trial
     const msPerDay = 24 * 60 * 60 * 1000;
 
-    // Use trialEndsAt if set, otherwise fallback to createdAt + 90 days
+    // Ensure at least 90 days from creation
+    const fallbackTrialEnd = new Date(tenant.createdAt.getTime() + (TRIAL_DAYS * msPerDay));
+
     let trialEnd: Date;
     if (tenant.trialEndsAt) {
-        trialEnd = new Date(tenant.trialEndsAt);
+        const explicitEnd = new Date(tenant.trialEndsAt);
+        // Use the later date to honor manual extensions while ensuring minimum 90 days
+        trialEnd = explicitEnd > fallbackTrialEnd ? explicitEnd : fallbackTrialEnd;
     } else {
-        trialEnd = new Date(tenant.createdAt.getTime() + (TRIAL_DAYS * msPerDay));
+        trialEnd = fallbackTrialEnd;
     }
 
     const isExpired = now > trialEnd;
