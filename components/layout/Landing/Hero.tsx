@@ -17,20 +17,20 @@ export default function Hero() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl">
                 <motion.div
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
+                    animate={{ opacity: 0.4 }}
                     transition={{ duration: 2 }}
-                    className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]"
+                    className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/30 rounded-full blur-[120px]"
                 />
                 <motion.div
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
+                    animate={{ opacity: 0.4 }}
                     transition={{ duration: 2, delay: 0.5 }}
-                    className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[120px]"
+                    className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/30 rounded-full blur-[120px]"
                 />
             </div>
 
             <div className="container relative mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     {/* Text Content */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
@@ -43,7 +43,7 @@ export default function Hero() {
                             <span>{t("Landing.hero.badge")}</span>
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight text-foreground">
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">
                             {t("Landing.hero.title_start")}
                             <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent px-2">
                                 {t("Landing.hero.title_highlight")}

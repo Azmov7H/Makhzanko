@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { PlanType } from "@prisma/client";
 import { redirect } from "next/navigation";
 
@@ -19,7 +19,7 @@ export async function checkPlanAccess(
   tenantId: string,
   feature: Feature
 ): Promise<boolean> {
-  const tenant = await db.tenant.findUnique({
+  const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },
     include: {
       trialOverride: true,
@@ -57,7 +57,7 @@ export async function hasPlanAccess(
   tenantId: string,
   feature: Feature
 ): Promise<boolean> {
-  const tenant = await db.tenant.findUnique({
+  const tenant = await prisma.tenant.findUnique({
     where: { id: tenantId },
     include: {
       trialOverride: true,

@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { prisma } from "./prisma";
 import { PlanType } from "@prisma/client";
 
 export const PLAN_LIMITS = {
@@ -6,6 +6,7 @@ export const PLAN_LIMITS = {
         users: 1,
         products: 50,
         warehouses: 1,
+        customers: 30,
         sales: 30, // Per month
         reports: false,
         accounting: false,
@@ -16,6 +17,7 @@ export const PLAN_LIMITS = {
         users: 5,
         products: 500,
         warehouses: 3,
+        customers: 200,
         sales: Infinity,
         reports: true,
         accounting: false,
@@ -26,6 +28,7 @@ export const PLAN_LIMITS = {
         users: Infinity,
         products: Infinity,
         warehouses: Infinity,
+        customers: Infinity,
         sales: Infinity,
         reports: true,
         accounting: true,
@@ -64,7 +67,7 @@ export function getTrialDaysRemaining(trialEndsAt: Date | null): number {
 }
 
 export async function checkLimit(tenantId: string, resource: keyof typeof PLAN_LIMITS.FREE) {
-    const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
+    const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
     if (!tenant) throw new Error("Tenant not found");
 
     // Get effective plan (considering trial)
@@ -78,17 +81,19 @@ export async function checkLimit(tenantId: string, resource: keyof typeof PLAN_L
     let count = 0;
 
     if (resource === 'users') {
-        count = await db.user.count({ where: { tenantId } });
+        count = await prisma.user.count({ where: { tenantId } });
     } else if (resource === 'products') {
-        count = await db.product.count({ where: { tenantId } });
+        count = await prisma.product.count({ where: { tenantId } });
     } else if (resource === 'warehouses') {
-        count = await db.warehouse.count({ where: { tenantId } });
+        count = await prisma.warehouse.count({ where: { tenantId } });
+    } else if (resource === 'customers') {
+        count = await prisma.customer.count({ where: { tenantId } });
     } else if (resource === 'sales') {
         // Check sales this month
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
-        count = await db.sale.count({
+        count = await prisma.sale.count({
             where: {
                 tenantId,
                 date: { gte: startOfMonth }

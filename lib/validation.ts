@@ -29,6 +29,12 @@ export const getWarehouseSchema = (t: (key: string) => string) => z.object({
     location: z.string().optional(),
 });
 
+export const getCustomerSchema = (t: (key: string) => string) => z.object({
+    name: z.string().min(2, t("Customers.name_min")),
+    phone: z.string().optional(),
+    email: z.string().email(t("Auth.email_invalid")).optional().or(z.literal("")),
+});
+
 // Original schemas (keeping for backward compatibility or simple server-side use with default messages)
 export const loginSchema = z.object({
     email: z.string().email("Invalid email"),

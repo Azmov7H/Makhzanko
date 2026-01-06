@@ -1,0 +1,58 @@
+import { prisma } from "@/lib/prisma";
+import { getTenantContext } from "@/lib/auth";
+import { getI18n, getLocale } from "@/lib/i18n/server";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SalesClient } from "./SalesClient";
+import { Card, CardHeader } from "@/components/ui/card";
+
+export default async function SalesPage() {
+    return (
+        <Suspense fallback={<SalesSkeleton />}>
+            <SalesContent />
+        </Suspense>
+    );
+}
+
+async function SalesContent() {
+    const context = await getTenantContext();
+    const t = await getI18n();
+
+    const sales = await prisma.sale.findMany({
+        where: { tenantId: context.tenantId },
+        orderBy: { number: "desc" },
+        include: { user: true, items: true }
+    });
+
+    return (
+        <SalesClient
+            sales={JSON.parse(JSON.stringify(sales))}
+        />
+    );
+}
+
+function SalesSkeleton() {
+    return (
+        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-start space-y-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="space-y-4">
+                    <Skeleton className="h-16 w-80 rounded-[2rem]" />
+                    <Skeleton className="h-6 w-96 rounded-xl" />
+                </div>
+                <Skeleton className="h-16 w-48 rounded-[2rem]" />
+            </div>
+            
+            <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem] overflow-hidden">
+                <CardHeader className="p-10 border-b border-primary/5">
+                    <Skeleton className="h-10 w-64 rounded-2xl mb-4" />
+                    <Skeleton className="h-6 w-96 rounded-xl" />
+                </CardHeader>
+                <div className="p-10 space-y-6">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+                    ))}
+                </div>
+            </Card>
+        </div>
+    );
+}

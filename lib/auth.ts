@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { PlanType, Role } from "@prisma/client";
 
 const COOKIE_NAME = "saas_token";
@@ -17,7 +17,7 @@ export type TenantContext = {
 
 /**
  * Unified authentication utility
- * Reads token from cookies, verifies JWT, fetches current plan from DB
+ * Reads token from cookies, verifies JWT, fetches current status from DB
  * Redirects to /login on failure
  */
 export async function getTenantContext(): Promise<TenantContext> {
@@ -38,8 +38,8 @@ export async function getTenantContext(): Promise<TenantContext> {
   const userId = payload.userId as string;
   const role = payload.role as Role;
 
-  // Fetch user with active status and verify tenant
-  const user = await db.user.findUnique({
+  // Fetch user with active status and verify tenant with single query
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       tenantId: true,
@@ -47,24 +47,15 @@ export async function getTenantContext(): Promise<TenantContext> {
       deletedAt: true,
       email: true,
       name: true,
+      tenant: {
+        select: {
+          plan: true,
+        },
+      },
     },
   });
 
-  if (!user || user.tenantId !== tenantId) {
-    redirect("/login");
-  }
-
-  // Check if user is active and not deleted
-  if (!user.isActive || user.deletedAt) {
-    redirect("/login");
-  }
-
-  const tenant = await db.tenant.findUnique({
-    where: { id: tenantId },
-    select: { plan: true },
-  });
-
-  if (!tenant) {
+  if (!user || user.tenantId !== tenantId || !user.isActive || user.deletedAt || !user.tenant) {
     redirect("/login");
   }
 
@@ -72,26 +63,58 @@ export async function getTenantContext(): Promise<TenantContext> {
     userId,
     tenantId,
     role,
-    plan: tenant.plan,
+    plan: user.tenant.plan,
     email: user.email,
     name: user.name,
   };
 }
 
 /**
- * Legacy function - kept for backward compatibility
- * @deprecated Use getTenantContext() instead
+ * Check if the user is authenticated without redirecting.
+ * Useful for layout checks or optional auth sections.
  */
-export async function getAuthPayload(): Promise<{ userId: string; tenantId: string; role: string; plan: string } | null> {
+export async function getSession(): Promise<TenantContext | null> {
   try {
-    const context = await getTenantContext();
+    const cookieStore = await cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+    if (!token) return null;
+
+    const payload = await verifyToken(token);
+    if (!payload || typeof payload !== "object" || !("tenantId" in payload)) return null;
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId as string },
+      select: {
+        tenantId: true,
+        isActive: true,
+        deletedAt: true,
+        email: true,
+        name: true,
+        role: true,
+        tenant: {
+          select: {
+            plan: true
+          }
+        }
+      }
+    });
+
+    if (!user || user.tenantId !== payload.tenantId || !user.isActive || user.deletedAt || !user.tenant) return null;
+
     return {
-      userId: context.userId,
-      tenantId: context.tenantId,
-      role: context.role,
-      plan: context.plan,
+      userId: payload.userId as string,
+      tenantId: user.tenantId,
+      role: user.role,
+      plan: user.tenant.plan,
+      email: user.email,
+      name: user.name,
     };
-  } catch {
+  } catch (error) {
     return null;
   }
 }
+
+/**
+ * Compatibility alias for getTenantContext.
+ */
+export const getAuthPayload = getTenantContext;

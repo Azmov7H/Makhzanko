@@ -5,6 +5,7 @@ import { requireOwner } from "@/lib/auth-role";
 import { logActivity } from "@/lib/activity-logger";
 import { headers } from "next/headers";
 import { getRequestMetadata } from "@/lib/activity-logger";
+import { SubscriptionStatus } from "@prisma/client";
 
 /**
  * Get all tenants
@@ -24,7 +25,7 @@ export async function getAllTenants() {
       subscriptions: {
         where: {
           status: {
-            in: ["active", "trialing"],
+            in: ["active", "trialing"] as any,
           },
         },
         include: {

@@ -1,18 +1,12 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { headers } from "next/headers";
+import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createJournalEntry } from "@/lib/accounting";
+import { ExpenseService } from "@/services/expenses";
 
 export async function createExpenseAction(prevState: any, formData: FormData) {
-    const headersList = await headers();
-    const tenantId = headersList.get("x-tenant-id");
-
-    if (!tenantId) {
-        return { error: "Unauthorized" };
-    }
+    const context = await getTenantContext();
 
     const description = formData.get("description") as string;
     const amount = parseFloat(formData.get("amount") as string);
@@ -23,36 +17,10 @@ export async function createExpenseAction(prevState: any, formData: FormData) {
     }
 
     try {
-        await db.$transaction(async (tx) => {
-            const expense = await tx.expense.create({
-                data: {
-                    tenantId,
-                    description,
-                    amount,
-                    category,
-                },
-            });
-
-            const categoryMap: Record<string, string> = {
-                "Rent": "5100",
-                "Utilities": "5200",
-                "Salaries": "5300",
-                "Marketing": "5999",
-                "Maintenance": "5999",
-                "Other": "5999"
-            };
-            const debitAccount = categoryMap[category] || "5999";
-
-            await createJournalEntry({
-                tenantId,
-                description: `Expense: ${description}`,
-                reference: expense.id,
-                date: new Date(),
-                transactions: [
-                    { accountCode: debitAccount, type: "DEBIT", amount: Number(amount) },
-                    { accountCode: "1001", type: "CREDIT", amount: Number(amount) }, // Cash
-                ]
-            }, tx);
+        await ExpenseService.createExpense(context.tenantId, {
+            description,
+            amount,
+            category
         });
     } catch (error) {
         console.error("Failed to create expense:", error);
@@ -64,17 +32,13 @@ export async function createExpenseAction(prevState: any, formData: FormData) {
 }
 
 export async function deleteExpenseAction(id: string) {
-    const headersList = await headers();
-    const tenantId = headersList.get("x-tenant-id");
-
-    if (!tenantId) return { error: "Unauthorized" };
+    const context = await getTenantContext();
 
     try {
-        await db.expense.delete({
-            where: { id, tenantId },
-        });
+        await ExpenseService.deleteExpense(id, context.tenantId);
         revalidatePath("/dashboard/finance/expenses");
     } catch (error) {
         return { error: "Failed to delete expense" };
     }
 }
+
