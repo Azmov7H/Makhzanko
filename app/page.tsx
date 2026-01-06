@@ -9,9 +9,11 @@ import Footer from '@/components/layout/Footer';
 import { generatePageMetadata, getKeywords } from "@/lib/seo/metadata";
 import type { Locale as SEOLocale } from "@/lib/seo/types";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getI18n();
+  const t = await getI18n(locale);
 
   return generatePageMetadata(
     locale as SEOLocale,
@@ -26,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background text-start">
       <Navbar />
       <main className="flex-grow">
         <Hero />
