@@ -53,21 +53,21 @@ export function ProductsClient({ products, totalStock }: ProductsClientProps) {
             initial="hidden"
             animate="show"
             variants={container}
-            className="space-y-12 text-start"
+            className="space-y-8 md:space-y-12 text-start px-0"
         >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <motion.div variants={item} className="relative">
-                    <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
-                    <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
+                    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-primary/20 rounded-full blur-sm" />
+                    <h1 className="text-3xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
                         {t("Products.title")}
                     </h1>
-                    <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">
+                    <p className="text-muted-foreground mt-2 text-base md:text-lg font-medium max-w-2xl">
                         {t("Products.description")}
                     </p>
                 </motion.div>
-                <motion.div variants={item} className="flex flex-wrap gap-4 w-full md:w-auto">
+                <motion.div variants={item} className="flex flex-wrap gap-3 w-full md:w-auto">
                     <BulkExportProducts />
-                    <Button asChild className="h-14 flex-1 md:flex-none px-8 rounded-2xl bg-primary shadow-2xl shadow-primary/20 hover:scale-105 transition-all gap-3 font-black text-xs uppercase tracking-widest group">
+                    <Button asChild className="h-12 md:h-14 flex-1 md:flex-none px-6 md:px-8 rounded-xl md:rounded-2xl bg-primary shadow-2xl shadow-primary/20 hover:scale-105 transition-all gap-2 md:gap-3 font-black text-[10px] md:text-xs uppercase tracking-widest group">
                         <Link href="/dashboard/inventory/products/new">
                             <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
                             {t("Products.add_product")}
@@ -94,42 +94,42 @@ export function ProductsClient({ products, totalStock }: ProductsClientProps) {
                 </motion.div>
             ) : (
                 <>
-                    <div className="grid gap-8 grid-cols-1 sm:grid-cols-2">
+                    <div className="grid gap-4 md:gap-8 grid-cols-1 sm:grid-cols-2">
                         <motion.div variants={item}>
-                            <Card className="border-none shadow-sm bg-card rounded-[2.5rem] overflow-hidden group hover:shadow-primary/5 transition-all duration-500 relative">
+                            <Card className="border-none shadow-sm bg-card rounded-[2rem] md:rounded-[2.5rem] overflow-hidden group hover:shadow-primary/5 transition-all duration-500 relative">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/2 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/5 transition-colors" />
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-                                    <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 md:pb-6">
+                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                                         {t("Products.total_products")}
                                     </CardTitle>
-                                    <div className="p-3 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                                        <Box className="h-6 w-6" />
+                                    <div className="p-2 md:p-3 bg-primary/10 rounded-xl md:rounded-2xl text-primary group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                        <Box className="h-5 w-5 md:h-6 md:w-6" />
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-5xl font-black tracking-tighter">{products.length}</div>
-                                    <p className="text-sm font-bold text-primary mt-2 flex items-center gap-2">
-                                        <Layout className="h-4 w-4 opacity-40" />
+                                    <div className="text-3xl md:text-5xl font-black tracking-tighter">{products.length}</div>
+                                    <p className="text-xs font-bold text-primary mt-1 md:mt-2 flex items-center gap-2">
+                                        <Layout className="h-3 w-3 md:h-4 md:w-4 opacity-40" />
                                         {t("Products.list_title")}
                                     </p>
                                 </CardContent>
                             </Card>
                         </motion.div>
                         <motion.div variants={item}>
-                            <Card className="border-none shadow-sm bg-card rounded-[2.5rem] overflow-hidden group hover:shadow-primary/5 transition-all duration-500 relative">
+                            <Card className="border-none shadow-sm bg-card rounded-[2rem] md:rounded-[2.5rem] overflow-hidden group hover:shadow-primary/5 transition-all duration-500 relative">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/2 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-emerald-500/5 transition-colors" />
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-                                    <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 md:pb-6">
+                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                                         {t("Products.total_stock")}
                                     </CardTitle>
-                                    <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                                        <BarChart3 className="h-6 w-6" />
+                                    <div className="p-2 md:p-3 bg-emerald-500/10 rounded-xl md:rounded-2xl text-emerald-500 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                        <BarChart3 className="h-5 w-5 md:h-6 md:w-6" />
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-5xl font-black tracking-tighter">{totalStock}</div>
-                                    <p className="text-sm font-bold text-emerald-500 mt-2 flex items-center gap-2">
-                                        <TrendingUp className="h-4 w-4 opacity-40" />
+                                    <div className="text-3xl md:text-5xl font-black tracking-tighter">{totalStock}</div>
+                                    <p className="text-xs font-bold text-emerald-500 mt-1 md:mt-2 flex items-center gap-2">
+                                        <TrendingUp className="h-3 w-3 md:h-4 md:w-4 opacity-40" />
                                         {t("Products.total_stock")}
                                     </p>
                                 </CardContent>
@@ -139,14 +139,14 @@ export function ProductsClient({ products, totalStock }: ProductsClientProps) {
 
                     <motion.div variants={item}>
                         <Card className="border-none shadow-sm bg-card rounded-[3rem] overflow-hidden group">
-                            <CardHeader className="p-6 md:p-10 border-b border-primary/5 bg-primary/5">
-                                <div className="flex items-center gap-5">
-                                    <div className="p-4 bg-primary/10 rounded-2xl text-primary shadow-xl shadow-primary/5 group-hover:scale-110 transition-transform duration-500">
-                                        <History className="h-7 w-7" />
+                            <CardHeader className="p-6 md:p-10 border-b border-primary/5 bg-primary/5/30">
+                                <div className="flex items-center gap-4 md:gap-5">
+                                    <div className="p-3 md:p-4 bg-primary/10 rounded-xl md:rounded-2xl text-primary shadow-xl shadow-primary/5 group-hover:scale-110 transition-transform duration-500">
+                                        <History className="h-6 w-6 md:h-7 md:w-7" />
                                     </div>
                                     <div>
-                                        <CardTitle className="text-2xl font-black italic">{t("Products.list_title")}</CardTitle>
-                                        <CardDescription className="text-base font-medium mt-1">{t("Products.list_desc")}</CardDescription>
+                                        <CardTitle className="text-xl md:text-2xl font-black italic">{t("Products.list_title")}</CardTitle>
+                                        <CardDescription className="text-sm md:text-base font-medium mt-1">{t("Products.list_desc")}</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -301,7 +301,7 @@ export function ProductsClient({ products, totalStock }: ProductsClientProps) {
                                                                         "bg-destructive/10 text-destructive"
                                                             )}
                                                         >
-                                                            {productStock} units
+                                                            {productStock} {t("Products.units")}
                                                         </Badge>
                                                     </div>
                                                 </div>

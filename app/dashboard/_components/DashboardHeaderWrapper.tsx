@@ -38,11 +38,11 @@ export async function DashboardHeaderWrapper() {
     };
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-6 transition-all duration-300">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 transition-all duration-300">
             <MobileSidebar role={context.role} plan={plan} />
 
             {/* Search Bar */}
-            <div className="flex-1 flex max-w-md items-center gap-2 relative hidden md:flex">
+            <div className="flex-1 flex max-w-md items-center gap-2 relative hidden sm:flex">
                 <Search className="h-4 w-4 absolute left-3 rtl:right-3 rtl:left-auto text-muted-foreground" />
                 <Input
                     placeholder={t("Dashboard.search_placeholder") || "Search..."}
@@ -50,9 +50,9 @@ export async function DashboardHeaderWrapper() {
                 />
             </div>
 
-            <div className="flex-1 md:hidden" /> {/* Spacer for mobile */}
+            <div className="flex-1 sm:hidden" /> {/* Spacer for mobile */}
 
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-1 md:gap-4">
                 {/* Language Switch */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

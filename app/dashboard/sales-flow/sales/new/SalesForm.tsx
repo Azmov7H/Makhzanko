@@ -405,7 +405,7 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                                 )}
                             >
                                 <DollarSign className="h-8 w-8" />
-                                <span className="font-black text-sm uppercase tracking-widest">Cash</span>
+                                <span className="font-black text-sm uppercase tracking-widest">{t("Sales.cash")}</span>
                             </button>
                             <button
                                 onClick={() => setPaymentType("ONLINE")}
@@ -417,7 +417,7 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                                 )}
                             >
                                 <CreditCard className="h-8 w-8" />
-                                <span className="font-black text-sm uppercase tracking-widest">Online / Card</span>
+                                <span className="font-black text-sm uppercase tracking-widest">{t("Sales.online_card")}</span>
                             </button>
                         </div>
                     </div>

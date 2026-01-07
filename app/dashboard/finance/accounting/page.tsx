@@ -8,24 +8,24 @@ export default async function AccountingPage() {
 
     const modules = [
         {
-            title: t("Accounting.journal") || "Journal Entry",
-            description: "Record daily financial transactions with precision.",
+            title: t("Accounting.journal"),
+            description: t("Accounting.journal_desc"),
             href: "/dashboard/finance/accounting/journal",
             icon: BookOpen,
             color: "text-blue-500",
             bg: "bg-blue-500/10",
         },
         {
-            title: t("Accounting.ledger") || "General Ledger",
-            description: "Detailed account summaries and financial flows.",
+            title: t("Accounting.ledger"),
+            description: t("Accounting.ledger_desc"),
             href: "/dashboard/finance/accounting/ledger",
             icon: FileBarChart,
             color: "text-purple-500",
             bg: "bg-purple-500/10",
         },
         {
-            title: t("Accounting.treasury") || "Treasury",
-            description: "Expert management of cash flow and bank assets.",
+            title: t("Accounting.treasury"),
+            description: t("Accounting.treasury_desc"),
             href: "/dashboard/finance/accounting/treasury",
             icon: Landmark,
             color: "text-emerald-500",
@@ -38,10 +38,10 @@ export default async function AccountingPage() {
             <div className="relative">
                 <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
                 <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
-                    {t("Dashboard.accounting")}
+                    {t("Accounting.title")}
                 </h1>
                 <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">
-                    {t("Accounting.description") || "Securely manage and analyze your financial architecture and historical records."}
+                    {t("Accounting.description")}
                 </p>
             </div>
 

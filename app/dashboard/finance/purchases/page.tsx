@@ -63,7 +63,7 @@ async function PurchasesContent() {
                         </div>
                         <div>
                             <CardTitle className="text-2xl font-black italic">{t("Purchases.list_title")}</CardTitle>
-                            <CardDescription className="text-base font-medium mt-1">Detailed history of procurement operations and supply chain flow.</CardDescription>
+                            <CardDescription className="text-base font-medium mt-1">{t("Purchases.list_desc")}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -93,7 +93,11 @@ async function PurchasesContent() {
                                 purchases.map((po) => (
                                     <TableRow key={po.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row h-24">
                                         <TableCell className="px-8 font-bold text-sm tracking-tight opacity-70">
-                                            {new Date(po.date).toLocaleDateString("ar-EG")}
+                                            {new Date(po.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}
                                         </TableCell>
                                         <TableCell>
                                             <span className="font-black text-lg text-primary bg-primary/5 px-3 py-1 rounded-xl shadow-inner group-hover/row:scale-105 transition-transform inline-block">#{po.number}</span>

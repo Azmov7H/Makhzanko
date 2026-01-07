@@ -63,7 +63,7 @@ async function ExpensesContent() {
                         </div>
                         <div>
                             <CardTitle className="text-2xl font-black italic">{t("Expenses.list_title")}</CardTitle>
-                            <CardDescription className="text-base font-medium mt-1">Detailed log of all operational expenditures.</CardDescription>
+                            <CardDescription className="text-base font-medium mt-1">{t("Expenses.list_desc")}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -92,14 +92,18 @@ async function ExpensesContent() {
                                 expenses.map((expense) => (
                                     <TableRow key={expense.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row h-24">
                                         <TableCell className="px-8 font-bold text-sm tracking-tight opacity-70">
-                                            {new Date(expense.date).toLocaleDateString("ar-EG")}
+                                            {new Date(expense.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}
                                         </TableCell>
                                         <TableCell>
                                             <span className="font-black text-lg group-hover/row:text-primary transition-colors">{expense.description}</span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="secondary" className="font-black text-[10px] tracking-widest uppercase px-3 py-1 bg-primary/10 text-primary border-none rounded-xl">
-                                                {expense.category}
+                                                {t(`Expenses.categories.${expense.category}`)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-end px-8">

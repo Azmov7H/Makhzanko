@@ -35,7 +35,7 @@ export function DashboardContainer({
 
             <div className={cn(
                 "flex flex-1 flex-col relative w-full overflow-hidden transition-all duration-300",
-                isCollapsed ? "lg:ms-[80px]" : "lg:ms-[280px]"
+                isCollapsed ? "lg:ms-0" : "lg:ms-0" // The container itself shouldn't have margin if sidebar is fixed/absolute, but here it's flex.
             )}>
                 {header}
 
@@ -43,11 +43,11 @@ export function DashboardContainer({
                     {announcements}
                     {trialBanner}
 
-                    <main className="flex-1 p-4 md:p-6 lg:p-8 relative">
+                    <main className="flex-1 p-4 sm:p-6 relative">
                         {/* Subtle background glow - very low opacity */}
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/2 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-                        <div className="max-w-7xl mx-auto space-y-8">
+                        <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
                             {children}
                         </div>
                     </main>
