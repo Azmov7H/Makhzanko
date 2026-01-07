@@ -1,14 +1,19 @@
 "use client"
+
 import { createPurchaseAction } from "@/actions/purchases";
 import { useActionState, useState } from "react";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Truck, Warehouse as WarehouseIcon, ShoppingCart, ArrowLeft, Save, Sparkles, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/context";
+import { formatCurrency, cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 interface Product {
     id: string;
@@ -30,6 +35,7 @@ interface PurchaseItem {
 }
 
 export default function PurchaseForm({ products, warehouses }: { products: Product[], warehouses: Warehouse[] }) {
+    const { t, locale } = useI18n();
     const [state, action, isPending] = useActionState(createPurchaseAction, null);
     const [items, setItems] = useState<PurchaseItem[]>([]);
 
@@ -64,44 +70,95 @@ export default function PurchaseForm({ products, warehouses }: { products: Produ
     const total = items.reduce((sum: number, item) => sum + (item.cost * item.quantity), 0);
 
     return (
-        <div className="mx-auto max-w-4xl space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>New Purchase Order</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form action={action} className="space-y-6">
-                        {state?.error && (
-                            <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-                                {state.error}
-                            </div>
-                        )}
+        <form action={action} className="space-y-12 animate-in fade-in duration-700 pb-20 max-w-5xl mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="relative">
+                    <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
+                    <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
+                        {t("Purchases.new_po")}
+                    </h1>
+                    <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">{t("Purchases.create_desc")}</p>
+                </div>
+                <div className="flex gap-4">
+                    <Button asChild variant="outline" className="h-14 px-8 rounded-2xl border-primary/10 bg-card/40 backdrop-blur-xl hover:bg-primary/5 transition-all font-black text-xs uppercase tracking-widest">
+                        <Link href="/dashboard/finance/purchases">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            {t("Common.cancel")}
+                        </Link>
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isPending || items.length === 0}
+                        className="h-14 px-10 rounded-2xl bg-primary shadow-2xl shadow-primary/20 hover:scale-105 transition-all font-black text-xs uppercase tracking-widest gap-3"
+                    >
+                        <Save className="h-5 w-5" />
+                        {isPending ? t("Purchases.creating") : t("Purchases.create_button")}
+                    </Button>
+                </div>
+            </div>
 
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label>Warehouse</Label>
+            {state?.error && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-3xl bg-destructive/10 border border-destructive/20 p-6 text-sm text-destructive font-bold flex items-center gap-4 shadow-xl shadow-destructive/5"
+                >
+                    <div className="p-2 bg-destructive/20 rounded-xl">
+                        <Trash2 className="h-5 w-5 text-destructive" />
+                    </div>
+                    {state.error}
+                </motion.div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Left Column: Form Details */}
+                <div className="lg:col-span-8 space-y-10">
+                    <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem] overflow-hidden group">
+                        <CardHeader className="bg-primary/5 border-b border-primary/5 p-10">
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 bg-primary/10 rounded-2xl text-primary shadow-xl shadow-primary/5 group-hover:scale-110 transition-transform duration-500">
+                                    <WarehouseIcon className="h-8 w-8" />
+                                </div>
+                                <CardTitle className="text-2xl font-black italic">{t("Purchases.general_info")}</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.warehouse")}</Label>
                                 <Select name="warehouseId" required>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Warehouse" />
+                                    <SelectTrigger className="h-14 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-bold text-base">
+                                        <SelectValue placeholder={t("Purchases.select_warehouse")} />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        {warehouses.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
+                                    <SelectContent className="rounded-2xl border-primary/10 shadow-2xl">
+                                        {warehouses.map(w => <SelectItem key={w.id} value={w.id} className="h-12 font-medium">{w.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Supplier</Label>
-                                <Input name="supplier" placeholder="Supplier Name" />
+                            <div className="space-y-3">
+                                <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.supplier")}</Label>
+                                <Input
+                                    name="supplier"
+                                    placeholder={t("Purchases.supplier_placeholder")}
+                                    className="h-14 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-bold text-base placeholder:text-muted-foreground/30"
+                                />
                             </div>
-                        </div>
+                        </CardContent>
+                    </Card>
 
-                        <div className="border-t border-b py-6 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="font-medium">Add Items</h3>
+                    <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem] overflow-hidden group">
+                        <CardHeader className="bg-primary/5 border-b border-primary/5 p-10">
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 bg-primary/10 rounded-2xl text-primary shadow-xl shadow-primary/5 group-hover:scale-110 transition-transform duration-500">
+                                    <Plus className="h-8 w-8" />
+                                </div>
+                                <CardTitle className="text-2xl font-black italic">{t("Purchases.add_items")}</CardTitle>
                             </div>
-                            <div className="grid grid-cols-12 gap-4 items-end">
-                                <div className="col-span-5 space-y-2">
-                                    <Label>Product</Label>
+                        </CardHeader>
+                        <CardContent className="p-10 space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                                <div className="md:col-span-5 space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.product")}</Label>
                                     <Select
                                         value={selectedProduct}
                                         onValueChange={(val) => {
@@ -110,102 +167,170 @@ export default function PurchaseForm({ products, warehouses }: { products: Produ
                                             if (p) setCost(Number(p.cost));
                                         }}
                                     >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Product..." />
+                                        <SelectTrigger className="h-14 rounded-2xl bg-muted/30 border-primary/5 font-bold text-base">
+                                            <SelectValue placeholder={t("Purchases.select_product")} />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                            {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>)}
+                                        <SelectContent className="rounded-2xl border-primary/10">
+                                            {products.map(p => (
+                                                <SelectItem key={p.id} value={p.id} className="h-12 font-medium">
+                                                    {p.name} <span className="text-primary/40 font-mono ml-2">({p.sku})</span>
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="col-span-2 space-y-2">
-                                    <Label>Cost</Label>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        value={cost}
-                                        onChange={e => setCost(Number(e.target.value))}
-                                    />
+                                <div className="md:col-span-3 space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.cost")}</Label>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={cost}
+                                            onChange={e => setCost(Number(e.target.value))}
+                                            className="h-14 pl-10 rounded-2xl bg-muted/30 border-primary/5 font-black text-lg"
+                                        />
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 font-black">$</span>
+                                    </div>
                                 </div>
-                                <div className="col-span-2 space-y-2">
-                                    <Label>Qty</Label>
+                                <div className="md:col-span-2 space-y-3">
+                                    <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.qty")}</Label>
                                     <Input
                                         type="number"
                                         value={quantity}
                                         onChange={e => setQuantity(Number(e.target.value))}
+                                        className="h-14 rounded-2xl bg-muted/30 border-primary/5 font-black text-lg text-center"
                                     />
                                 </div>
-                                <div className="col-span-3">
+                                <div className="md:col-span-2">
                                     <Button
                                         type="button"
                                         variant="secondary"
                                         onClick={handleAddStart}
                                         disabled={!selectedProduct}
-                                        className="w-full"
+                                        className="w-full h-14 rounded-2xl bg-primary/10 hover:bg-primary hover:text-white text-primary transition-all font-black"
                                     >
-                                        <Plus className="mr-2 h-4 w-4" /> Add Item
+                                        <Plus className="h-6 w-6" />
                                     </Button>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Product</TableHead>
-                                        <TableHead className="text-right">Cost</TableHead>
-                                        <TableHead className="text-right">Qty</TableHead>
-                                        <TableHead className="text-right">Total</TableHead>
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {items.map((item, idx) => (
-                                        <TableRow key={idx}>
-                                            <TableCell>{item.name}</TableCell>
-                                            <TableCell className="text-right">${item.cost.toFixed(2)}</TableCell>
-                                            <TableCell className="text-right">{item.quantity}</TableCell>
-                                            <TableCell className="text-right">${(item.cost * item.quantity).toFixed(2)}</TableCell>
-                                            <TableCell className="text-center">
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => handleRemove(idx)} className="text-red-500 hover:text-red-700 h-8 w-8">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
+                            <div className="rounded-[2rem] border border-primary/5 bg-muted/10 overflow-hidden shadow-inner">
+                                <Table>
+                                    <TableHeader className="bg-primary/5">
+                                        <TableRow className="h-16 border-primary/5 hover:bg-transparent">
+                                            <TableHead className="px-8 text-xs font-black uppercase tracking-widest opacity-50">{t("Purchases.product")}</TableHead>
+                                            <TableHead className="text-right text-xs font-black uppercase tracking-widest opacity-50">{t("Purchases.cost")}</TableHead>
+                                            <TableHead className="text-right text-xs font-black uppercase tracking-widest opacity-50">{t("Purchases.qty")}</TableHead>
+                                            <TableHead className="text-right text-xs font-black uppercase tracking-widest opacity-50">{t("Purchases.total")}</TableHead>
+                                            <TableHead className="w-[80px]"></TableHead>
                                         </TableRow>
-                                    ))}
-                                    {items.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                                No items added.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <AnimatePresence mode="popLayout">
+                                            {items.map((item, idx) => (
+                                                <motion.tr
+                                                    key={`${item.productId}-${idx}`}
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                    className="h-20 border-primary/5 hover:bg-primary/[0.02] transition-colors group/row"
+                                                >
+                                                    <TableCell className="px-8 font-bold text-base">{item.name}</TableCell>
+                                                    <TableCell className="text-right font-black text-primary/60">{formatCurrency(item.cost)}</TableCell>
+                                                    <TableCell className="text-right font-black text-lg">
+                                                        <Badge variant="outline" className="rounded-lg px-3 py-1 font-black bg-primary/5 text-primary border-primary/10">
+                                                            {item.quantity}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-black text-xl text-primary">
+                                                        {formatCurrency(item.cost * item.quantity)}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleRemove(idx)}
+                                                            className="text-destructive/30 hover:text-destructive hover:bg-destructive/10 h-10 w-10 rounded-xl transition-all"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </motion.tr>
+                                            ))}
+                                        </AnimatePresence>
+                                        {items.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="h-40 text-center">
+                                                    <div className="flex flex-col items-center justify-center gap-3 opacity-20">
+                                                        <ShoppingCart className="h-12 w-12" />
+                                                        <p className="font-black italic uppercase tracking-widest text-sm">{t("Purchases.no_items")}</p>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                        <div className="flex justify-end gap-6 text-lg font-bold">
-                            <span>Total:</span>
-                            <span>${total.toFixed(2)}</span>
-                        </div>
+                {/* Right Column: Summary Card */}
+                <div className="lg:col-span-4 space-y-10">
+                    <Card className="border-none shadow-3xl bg-primary text-primary-foreground rounded-[3rem] overflow-hidden sticky top-32">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+                        <CardHeader className="p-10 pb-6">
+                            <CardTitle className="text-2xl font-black italic flex items-center gap-3">
+                                <Sparkles className="h-6 w-6" />
+                                {t("Purchases.summary")}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-10 space-y-10">
+                            <div className="space-y-6">
+                                <div className="flex justify-between items-center opacity-70">
+                                    <span className="text-sm font-black uppercase tracking-widest">{t("Purchases.subtotal")}</span>
+                                    <span className="font-bold">{formatCurrency(total)}</span>
+                                </div>
+                                <div className="flex justify-between items-center opacity-70 border-t border-white/10 pt-6">
+                                    <span className="text-sm font-black uppercase tracking-widest">{t("Purchases.items_count")}</span>
+                                    <span className="font-bold">{items.length}</span>
+                                </div>
+                                <div className="flex justify-between items-end pt-10 border-t border-white/20">
+                                    <div className="space-y-1">
+                                        <span className="block text-xs font-black uppercase tracking-[0.2em] opacity-60 leading-none">{t("Purchases.net_total")}</span>
+                                        <span className="block text-5xl font-black italic tracking-tighter leading-none">
+                                            {formatCurrency(total)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <input type="hidden" name="items" value={JSON.stringify(items)} />
+                            <input type="hidden" name="items" value={JSON.stringify(items)} />
 
-                        <div className="flex justify-end gap-4 pt-4">
-                            <Button variant="outline" asChild>
-                                <Link href="/dashboard/purchases">Cancel</Link>
-                            </Button>
                             <Button
                                 type="submit"
                                 disabled={isPending || items.length === 0}
+                                className="w-full h-16 rounded-[2rem] bg-white text-primary hover:bg-white/90 transition-all font-black text-sm uppercase tracking-[0.15em] shadow-2xl shadow-black/20 group"
                             >
-                                {isPending ? "Creating PO..." : "Create Purchase Order"}
+                                {isPending ? (
+                                    <div className="flex items-center gap-2">
+                                        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                                            <Package className="h-5 w-5" />
+                                        </motion.div>
+                                        {t("Purchases.creating")}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-3">
+                                        <Save className="h-6 w-6" />
+                                        {t("Purchases.complete_po")}
+                                    </div>
+                                )}
                             </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </form>
     );
 }

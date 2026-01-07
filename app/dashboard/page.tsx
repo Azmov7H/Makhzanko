@@ -26,26 +26,26 @@ export default async function DashboardLandingPage() {
     ];
 
     return (
-        <div className="space-y-8 text-start px-4 md:px-0">
+        <div className="space-y-6 md:space-y-8 text-start px-0">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-black tracking-tight text-foreground">
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">
                         {t("Dashboard.welcome")}
                     </h1>
-                    <p className="text-muted-foreground font-medium">
+                    <p className="text-muted-foreground font-medium text-sm md:text-base">
                         {t("Dashboard.welcome_desc")}
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     {quickLinks.map((link) => (
-                        <Link key={link.href} href={link.href}>
+                        <Link key={link.href} href={link.href} className="flex-1 sm:flex-none">
                             <Button
                                 variant="outline"
-                                className={`gap-2 h-10 px-4 rounded-xl border ${link.border} bg-background/50 backdrop-blur-sm hover:translate-y-[-2px] transition-all duration-300 shadow-sm`}
+                                className={`w-full gap-2 h-10 px-4 rounded-xl border ${link.border} bg-background/50 backdrop-blur-sm hover:translate-y-[-2px] transition-all duration-300 shadow-sm`}
                             >
                                 <link.icon className={`h-4 w-4 ${link.color.split(" ")[1]}`} />
-                                <span className="font-bold text-xs uppercase tracking-wider">{link.label}</span>
+                                <span className="font-bold text-[10px] md:text-xs uppercase tracking-wider whitespace-nowrap">{link.label}</span>
                             </Button>
                         </Link>
                     ))}

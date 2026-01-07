@@ -12,7 +12,7 @@ export default function Hero() {
     const { t } = useI18n();
 
     return (
-        <section className="relative w-full overflow-hidden bg-background pt-20 pb-16 md:pt-32 md:pb-32">
+        <section className="relative w-full overflow-hidden bg-background pt-12 pb-12 md:pt-32 md:pb-32">
             {/* Background Decorations */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl">
                 <motion.div
@@ -43,7 +43,7 @@ export default function Hero() {
                             <span>{t("Landing.hero.badge")}</span>
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">
+                        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">
                             {t("Landing.hero.title_start")}
                             <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent px-2">
                                 {t("Landing.hero.title_highlight")}
@@ -51,7 +51,7 @@ export default function Hero() {
                             {t("Landing.hero.title_end")}
                         </h1>
 
-                        <p className="max-w-xl mx-auto lg:mx-0 text-lg sm:text-xl text-muted-foreground leading-relaxed">
+                        <p className="max-w-xl mx-auto lg:mx-0 text-base sm:text-xl text-muted-foreground leading-relaxed">
                             {t("Landing.hero.description")}
                         </p>
 

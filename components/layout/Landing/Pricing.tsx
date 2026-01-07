@@ -45,7 +45,7 @@ export default function Pricing() {
   ], [t]);
 
   return (
-    <section id="pricing" className="py-24 px-6 bg-background">
+    <section id="pricing" className="py-12 md:py-24 px-6 bg-background">
       <div className="container mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -72,11 +72,10 @@ export default function Pricing() {
               className="h-full"
             >
               <Card
-                className={`relative flex flex-col min-h-[450px] rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl ${
-                  plan.popular
+                className={`relative flex flex-col min-h-[450px] rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl ${plan.popular
                     ? "border-2 border-primary shadow-xl z-10"
                     : "border border-border bg-muted/20"
-                }`}
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute top-0 right-0 w-full">
@@ -122,9 +121,8 @@ export default function Pricing() {
                     asChild
                     size="xl"
                     variant={plan.popular ? "default" : "outline"}
-                    className={`w-full rounded-2xl text-lg font-bold group ${
-                      plan.popular ? "shadow-lg shadow-primary/25" : ""
-                    }`}
+                    className={`w-full rounded-2xl text-lg font-bold group ${plan.popular ? "shadow-lg shadow-primary/25" : ""
+                      }`}
                   >
                     <Link href="/register">
                       {plan.buttonText}

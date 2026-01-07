@@ -26,19 +26,19 @@ export function Overview({ locale }: { locale: string }) {
                 <CardTitle>{t("Charts.monthly_revenue")}</CardTitle>
                 <CardDescription>{t("Charts.revenue_overview")}</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2">
-                <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={data}>
+            <CardContent className="pl-0 md:pl-2">
+                <ResponsiveContainer width="100%" height={300} className="md:h-[350px]">
+                    <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                         <XAxis
                             dataKey="name"
                             stroke="#888888"
-                            fontSize={12}
+                            fontSize={10}
                             tickLine={false}
                             axisLine={false}
                         />
                         <YAxis
                             stroke="#888888"
-                            fontSize={12}
+                            fontSize={10}
                             tickLine={false}
                             axisLine={false}
                             tickFormatter={(value) => `${value}`}
@@ -53,7 +53,7 @@ export function Overview({ locale }: { locale: string }) {
                             fill="currentColor"
                             radius={[4, 4, 0, 0]}
                             className="fill-primary"
-                            barSize={40}
+                            barSize={30}
                         />
                     </BarChart>
                 </ResponsiveContainer>
