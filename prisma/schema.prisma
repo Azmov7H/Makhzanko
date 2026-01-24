@@ -7,16 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model Tenant {
   id               String            @id @default(cuid())
   name             String
   slug             String            @unique
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
-  plan             PlanType          @default(FREE)
   currency         String            @default("SAR")
-  paymobCustomerId String?           @unique
-  trialEndsAt      DateTime?
   aiDialect        AIDialect         @default(FUSHA)
   accounts         Account[]
   activityLogs     ActivityLog[]
@@ -28,63 +26,19 @@ model Tenant {
   invoices         Invoice[]
   invoiceSettings  InvoiceSettings?
   journalEntries   JournalEntry[]
+  notifications    Notification[]
   products         Product[]
   purchases        PurchaseOrder[]
-  redemptions      Redemption[]
   returns          Return[]
   sales            Sale[]
   stocks           Stock[]
-  subscriptions    Subscription[]
-  trialOverride    TrialOverride?
   users            User[]
   warehouses       Warehouse[]
+  suppliers        Supplier[]
+  supplierPayments SupplierPayment[]
+  installments     Installment[]
 
   @@index([slug])
-}
-
-model Plan {
-  id                  String         @id @default(cuid())
-  name                String         @unique
-  type                PlanType
-  price               Decimal
-  features            Json
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  paymobIntegrationId String?        @unique
-  subscriptions       Subscription[]
-}
-
-model Subscription {
-  id                  String             @id @default(cuid())
-  tenantId            String
-  planId              String
-  status              SubscriptionStatus @default(active)
-  currentPeriodStart  DateTime
-  currentPeriodEnd    DateTime
-  cancelAtPeriodEnd   Boolean            @default(false)
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  paymobOrderId       String?            @unique
-  paymobTransactionId String?            @unique
-  payments            Payment[]
-  plan                Plan               @relation(fields: [planId], references: [id])
-  tenant              Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-}
-
-model Payment {
-  id                  String       @id @default(cuid())
-  subscriptionId      String
-  amount              Decimal
-  currency            String       @default("usd")
-  status              String
-  paidAt              DateTime?
-  createdAt           DateTime     @default(now())
-  paymobTransactionId String?      @unique
-  subscription        Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-
-  @@index([subscriptionId])
 }
 
 model InvoiceSettings {
@@ -125,30 +79,102 @@ model User {
 }
 
 model Customer {
-  id        String            @id @default(cuid())
-  name      String
-  phone     String?
-  email     String?
-  tenantId  String
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  tenant    Tenant            @relation(fields: [tenantId], references: [id])
-  payments  CustomerPayment[]
-  sales     Sale[]
+  id          String            @id @default(cuid())
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  creditLimit Decimal           @default(0)
+  notes       String?
+  tenantId    String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  tenant      Tenant            @relation(fields: [tenantId], references: [id])
+  payments    CustomerPayment[]
+  sales       Sale[]
+  installments Installment[]
 }
 
 model CustomerPayment {
-  id         String   @id @default(cuid())
-  amount     Decimal
-  date       DateTime @default(now())
-  reference  String?
-  customerId String
-  tenantId   String
-  customer   Customer @relation(fields: [customerId], references: [id])
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  id            String      @id @default(cuid())
+  amount        Decimal
+  date          DateTime    @default(now())
+  reference     String?
+  paymentMethod PaymentType @default(CASH)
+  notes         String?
+  customerId    String
+  tenantId      String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
 
   @@index([customerId])
   @@index([tenantId])
+}
+
+model Supplier {
+  id          String            @id @default(cuid())
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  creditLimit Decimal           @default(0)
+  notes       String?
+  tenantId    String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  tenant      Tenant            @relation(fields: [tenantId], references: [id])
+  payments    SupplierPayment[]
+  purchases   PurchaseOrder[]
+  installments Installment[]
+}
+
+model SupplierPayment {
+  id            String      @id @default(cuid())
+  amount        Decimal
+  date          DateTime    @default(now())
+  reference     String?
+  paymentMethod PaymentType @default(CASH)
+  notes         String?
+  supplierId    String
+  tenantId      String
+  supplier      Supplier    @relation(fields: [supplierId], references: [id])
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+
+  @@index([supplierId])
+  @@index([tenantId])
+}
+
+model Installment {
+  id          String      @id @default(cuid())
+  amount      Decimal
+  dueDate     DateTime
+  paidAt      DateTime?
+  status      PaymentStatus @default(UNPAID)
+  notes       String?
+  
+  // Relations
+  customerId  String?
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  
+  supplierId  String?
+  supplier    Supplier?   @relation(fields: [supplierId], references: [id])
+  
+  saleId      String?
+  sale        Sale?       @relation(fields: [saleId], references: [id])
+  
+  purchaseId  String?
+  purchase    PurchaseOrder? @relation(fields: [purchaseId], references: [id])
+  
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([supplierId])
+  @@index([dueDate])
 }
 
 model Warehouse {
@@ -208,12 +234,12 @@ model Sale {
   journalEntryId String?
   amountPaid     Decimal     @default(0)
   paymentType    PaymentType @default(CASH)
-  paymobOrderId  String?     @unique
   invoice        Invoice?
   customer       Customer?   @relation(fields: [customerId], references: [id])
   tenant         Tenant      @relation(fields: [tenantId], references: [id])
   user           User        @relation(fields: [userId], references: [id])
   items          SaleItem[]
+  installments   Installment[]
 
   @@unique([tenantId, number])
   @@index([tenantId, date])
@@ -301,7 +327,9 @@ model ReturnItem {
 model PurchaseOrder {
   id             String         @id @default(cuid())
   number         Int
-  supplier       String?
+  supplierName   String?        // Legacy / Manual string
+  supplierId     String?
+  supplier       Supplier?      @relation(fields: [supplierId], references: [id])
   total          Decimal
   date           DateTime       @default(now())
   status         String         @default("RECEIVED")
@@ -311,10 +339,11 @@ model PurchaseOrder {
   items          PurchaseItem[]
   tenant         Tenant         @relation(fields: [tenantId], references: [id])
   warehouse      Warehouse      @relation(fields: [warehouseId], references: [id])
+  installments   Installment[]
 
   @@unique([tenantId, number])
   @@index([tenantId, date])
-  @@index([supplier])
+  @@index([supplierId])
   @@index([status])
 }
 
@@ -395,19 +424,6 @@ model InventoryCountLine {
   product    Product        @relation(fields: [productId], references: [id])
 }
 
-model TrialOverride {
-  id        String   @id @default(cuid())
-  tenantId  String   @unique
-  plan      PlanType
-  expiresAt DateTime
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-}
-
 model ActivityLog {
   id        String   @id @default(cuid())
   tenantId  String
@@ -425,35 +441,6 @@ model ActivityLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
-}
-
-model PromoCode {
-  id          String       @id @default(cuid())
-  code        String       @unique
-  planType    PlanType
-  expiresAt   DateTime?
-  maxUses     Int?
-  currentUses Int          @default(0)
-  isActive    Boolean      @default(true)
-  createdBy   String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  redemptions Redemption[]
-
-  @@index([code])
-  @@index([isActive])
-}
-
-model Redemption {
-  id          String    @id @default(cuid())
-  promoCodeId String
-  tenantId    String
-  redeemedAt  DateTime  @default(now())
-  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
-  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([promoCodeId])
-  @@index([tenantId])
 }
 
 model ChatSession {
@@ -538,6 +525,25 @@ model AIKnowledge {
   @@index([isActive])
 }
 
+model Notification {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String?
+  title     String
+  message   String
+  type      String   @default("info")
+  status    String   @default("unread")
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
 enum AccountType {
   ASSET
   LIABILITY
@@ -558,25 +564,10 @@ enum Role {
   STAFF
 }
 
-enum PlanType {
-  FREE
-  PRO
-  BUSINESS
-}
-
-enum SubscriptionStatus {
-  active
-  trialing
-  past_due
-  canceled
-  pending
-}
-
 enum PaymentType {
   CASH
   BANK_TRANSFER
   DEFERRED
-  ONLINE
 }
 
 enum PaymentStatus {

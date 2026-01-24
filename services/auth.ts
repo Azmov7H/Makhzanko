@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/jwt";
 import bcrypt from "bcryptjs";
 import { DEFAULT_ACCOUNTS } from "@/lib/accounting";
-import { Role, PlanType, User, Tenant, AccountType } from "@prisma/client";
+import { Role, User, Tenant, AccountType } from "@prisma/client";
 import { UserSafe } from "@/types/user";
 
 export interface RegisterInput {
@@ -23,15 +23,10 @@ export class AuthService {
         const slug = companyName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
 
         return await prisma.$transaction(async (tx) => {
-            const trialEndsAt = new Date();
-            trialEndsAt.setDate(trialEndsAt.getDate() + 90); // 3 months free trial
-
             const tenant = await tx.tenant.create({
                 data: {
                     name: companyName,
                     slug,
-                    plan: "BUSINESS", // Full access during trial
-                    trialEndsAt,
                 },
             });
 
@@ -64,14 +59,13 @@ export class AuthService {
         });
     }
 
-    static async authenticate({ email, password }: any): Promise<UserSafe & { tenant: { id: string; plan: PlanType } }> {
+    static async authenticate({ email, password }: any): Promise<UserSafe & { tenant: { id: string } }> {
         const user = await prisma.user.findUnique({
             where: { email },
             include: {
                 tenant: {
                     select: {
                         id: true,
-                        plan: true
                     }
                 }
             }
@@ -87,16 +81,15 @@ export class AuthService {
         }
 
         const { passwordHash, ...safeUser } = user;
-        return safeUser as UserSafe & { tenant: { id: string; plan: PlanType } };
+        return safeUser as UserSafe & { tenant: { id: string } };
     }
 
-    static async createSessionToken(user: UserSafe & { tenant: { plan: PlanType } }) {
+    static async createSessionToken(user: UserSafe & { tenant: { id: string } }) {
         return await signToken({
             userId: user.id,
             email: user.email,
             role: user.role,
             tenantId: user.tenantId,
-            plan: user.tenant.plan,
         });
     }
 }

@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n/server";
 export async function DashboardAnnouncements() {
     const context = await getTenantContext();
     const locale = await getLocale();
-    const announcements = await getActiveAnnouncementsAction(context.plan);
+    const announcements = await getActiveAnnouncementsAction();
 
     return (
         <AnnouncementBanner

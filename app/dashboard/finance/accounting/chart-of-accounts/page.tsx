@@ -43,10 +43,10 @@ export default async function ChartOfAccountsPage() {
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow className="h-16 hover:bg-transparent border-primary/5">
-                                <TableHead className="px-8 text-xs font-black uppercase tracking-widest w-[150px]">{t("Accounting.code")}</TableHead>
+                                <TableHead className="px-8 text-xs font-black uppercase tracking-widest w-[150px]">{t("Common.code")}</TableHead>
                                 <TableHead className="text-xs font-black uppercase tracking-widest">{t("Accounting.account_name")}</TableHead>
-                                <TableHead className="text-xs font-black uppercase tracking-widest">{t("Accounting.type")}</TableHead>
-                                <TableHead className="text-center px-8 text-xs font-black uppercase tracking-widest w-[200px]">{t("Accounting.action")}</TableHead>
+                                <TableHead className="text-xs font-black uppercase tracking-widest">{t("Common.type")}</TableHead>
+                                <TableHead className="text-center px-8 text-xs font-black uppercase tracking-widest w-[200px]">{t("Common.actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

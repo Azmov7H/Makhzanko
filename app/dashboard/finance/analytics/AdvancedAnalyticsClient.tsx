@@ -35,11 +35,18 @@ interface AnalyticsProduct {
     };
 }
 
+interface AnalyticsStats {
+    growthRate: string;
+    targetAchievement: string;
+    growthStatus: "up" | "down";
+}
+
 interface AnalyticsProps {
     params: Promise<{ locale: string }>;
     data: {
         performance: PerformanceStaff[];
         analyticsData: AnalyticsProduct[];
+        stats: AnalyticsStats;
     };
 }
 
@@ -95,8 +102,8 @@ export default function AdvancedAnalyticsClient({
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { title: t("Analytics.growth_rate"), value: "+12.5%", desc: t("Analytics.growth_desc"), icon: Activity, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-                    { title: t("Analytics.sales_target"), value: "84%", desc: t("Analytics.target_desc"), icon: Target, color: "text-accent", bg: "bg-accent/10" },
+                    { title: t("Analytics.growth_rate"), value: data.stats.growthRate, desc: t("Analytics.growth_desc"), icon: Activity, color: data.stats.growthStatus === "up" ? "text-emerald-500" : "text-destructive", bg: data.stats.growthStatus === "up" ? "bg-emerald-500/10" : "bg-destructive/10" },
+                    { title: t("Analytics.sales_target"), value: data.stats.targetAchievement, desc: t("Analytics.target_desc"), icon: Target, color: "text-accent", bg: "bg-accent/10" },
                     { title: t("Analytics.active_staff"), value: performance.length.toString(), desc: t("Analytics.staff_desc"), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
                     { title: t("Analytics.top_product"), value: analyticsData[0]?.name || "N/A", desc: t("Analytics.product_desc"), icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
                 ].map((stat, i) => (

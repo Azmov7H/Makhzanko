@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth-role";
-import { Role, SubscriptionStatus } from "@prisma/client";
+import { Role } from "@prisma/client";
 import { logActivity } from "@/lib/activity-logger";
 import { headers } from "next/headers";
 import { getRequestMetadata } from "@/lib/activity-logger";
@@ -23,7 +23,6 @@ export async function getAllUsers() {
         select: {
           id: true,
           name: true,
-          plan: true,
         },
       },
     },
@@ -32,32 +31,7 @@ export async function getAllUsers() {
     },
   });
 
-  // Get subscription status for each tenant
-  const usersWithSubscriptions = await Promise.all(
-    users.map(async (user) => {
-      const subscription = await db.subscription.findFirst({
-        where: {
-          tenantId: user.tenantId,
-          status: {
-            in: ["active", "trialing"] as any,
-          },
-        },
-        include: {
-          plan: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-
-      return {
-        ...user,
-        subscription,
-      };
-    })
-  );
-
-  return usersWithSubscriptions;
+  return users;
 }
 
 /**

@@ -22,7 +22,7 @@ export async function createAnnouncementAction(data: {
     title: string;
     content: string;
     type: "INFO" | "WARNING" | "CRITICAL";
-    target: "ALL" | "FREE" | "PRO" | "BUSINESS";
+    target: "ALL";
 }) {
     const owner = await requireOwner();
 
@@ -76,14 +76,11 @@ export async function deleteAnnouncementAction(id: string) {
 /**
  * Get active announcements for a specific tenant plan
  */
-export async function getActiveAnnouncementsAction(plan: string) {
+export async function getActiveAnnouncementsAction() {
     return await db.announcement.findMany({
         where: {
             isActive: true,
-            OR: [
-                { target: "ALL" },
-                { target: plan as any }
-            ]
+            target: "ALL"
         },
         orderBy: { createdAt: "desc" }
     });

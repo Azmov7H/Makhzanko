@@ -3,14 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { Role, PlanType } from "@prisma/client";
+import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const PLAN_LIMITS = {
-    [PlanType.FREE]: 2,
-    [PlanType.PRO]: 10,
-    [PlanType.BUSINESS]: Infinity,
-};
 
 export async function updateStoreName(formData: FormData) {
     const context = await getTenantContext();
@@ -39,16 +34,6 @@ export async function addUserToTeam(formData: FormData) {
     const password = formData.get("password") as string;
 
     if (!email || !role || !password) return { error: "Missing fields" };
-
-    // Check plan limits
-    const userCount = await prisma.user.count({
-        where: { tenantId: context.tenantId },
-    });
-
-    const limit = PLAN_LIMITS[context.plan];
-    if (userCount >= limit) {
-        return { error: "Plan limit reached" };
-    }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({

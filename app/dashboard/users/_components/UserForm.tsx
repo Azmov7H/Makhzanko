@@ -130,9 +130,10 @@ export default function UserForm({ user }: UserFormProps) {
                                                 <SelectValue placeholder={t("Users.select_role")} />
                                             </SelectTrigger>
                                             <SelectContent className="rounded-2xl border-none shadow-3xl bg-card/90 backdrop-blur-xl">
-                                                <SelectItem value="STAFF" className="font-bold">Staff</SelectItem>
-                                                <SelectItem value="MANAGER" className="font-bold">Manager</SelectItem>
-                                                <SelectItem value="ADMIN" className="font-bold">Admin</SelectItem>
+                                                <SelectItem value="STAFF" className="font-bold">{t("Dashboard.roles.STAFF")}</SelectItem>
+                                                <SelectItem value="MANAGER" className="font-bold">{t("Dashboard.roles.MANAGER")}</SelectItem>
+                                                <SelectItem value="ADMIN" className="font-bold">{t("Dashboard.roles.ADMIN")}</SelectItem>
+                                                <SelectItem value="OWNER" className="font-bold">{t("Dashboard.roles.OWNER")}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )}

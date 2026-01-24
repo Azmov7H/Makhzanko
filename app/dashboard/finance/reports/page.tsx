@@ -1,5 +1,4 @@
 import { getSalesReport, getInventoryValuation, getBestSellingProducts, getDashboardChartData } from "@/actions/reports";
-import { checkPlanAccess } from "@/lib/plan-access";
 import { getTenantContext } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ReportsChartsClient from "./ReportsChartsClient";
@@ -31,8 +30,6 @@ export default async function ReportsPage() {
     const locale = await getLocale();
     const context = await getTenantContext();
     const t = await getI18n(locale);
-
-    await checkPlanAccess(context.tenantId, "reports");
 
     const [valuation, bestSellers, sales, chartData] = await Promise.all([
         getInventoryValuation(),

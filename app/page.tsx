@@ -4,7 +4,6 @@ import { Locale } from "@/lib/i18n/config";
 import Navbar from '@/components/layout/Navbar';
 import Hero from '@/components/layout/Landing/Hero';
 import Features from '@/components/layout/Landing/Features';
-import Pricing from '@/components/layout/Landing/Pricing';
 import Footer from '@/components/layout/Footer';
 import { generatePageMetadata, getKeywords } from "@/lib/seo/metadata";
 import type { Locale as SEOLocale } from "@/lib/seo/types";
@@ -33,7 +32,6 @@ export default function HomePage() {
       <main className="flex-grow">
         <Hero />
         <Features />
-        <Pricing />
       </main>
       <Footer />
     </div>

@@ -71,9 +71,7 @@ export default function Hero() {
 
                         <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mt-2">
                             {[
-                                t("Landing.hero.no_credit"),
                                 t("Landing.hero.support_24_7"),
-                                t("Landing.hero.trial_14_days")
                             ].map((text, i) => (
                                 <motion.div
                                     key={i}

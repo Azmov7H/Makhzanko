@@ -18,6 +18,7 @@ import { seoConfig } from "@/lib/seo/config";
 import { Suspense } from "react";
 import "./globals.css";
 import { PageTransition } from "@/components/layout/PageTransition";
+import AppShell from "@/app/AppShell";
 
 const cairo = Cairo({
     subsets: ["arabic", "latin"],
@@ -80,27 +81,3 @@ export default async function RootLayout({
     );
 }
 
-async function AppShell({ children }: { children: React.ReactNode }) {
-    const locale = await getLocale();
-    const messages = await getMessages(locale);
-    const direction = getDirection(locale);
-    const websiteLD = generateWebSiteLD(locale as "ar" | "en");
-
-    return (
-        <I18nProvider locale={locale} messages={messages}>
-            <div dir={direction}>
-                <StructuredData data={[websiteLD]} />
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="light"
-                    enableSystem
-                    disableTransitionOnChange={false}
-                >
-                    <PageTransition>
-                        {children}
-                    </PageTransition>
-                </ThemeProvider>
-            </div>
-        </I18nProvider>
-    );
-}

@@ -65,7 +65,9 @@ export default async function AccountLedgerPage(props: { params: Promise<{ accou
                     </Button>
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <Badge variant="secondary" className="font-black tracking-widest text-[10px] uppercase px-3 py-1 bg-primary/10 text-primary border-none">{account.type.replace("_", " ")}</Badge>
+                            <Badge variant="secondary" className="font-black tracking-widest text-[10px] uppercase px-3 py-1 bg-primary/10 text-primary border-none">
+                                {t(`Accounting.Types.${account.type}`) || account.type.replace("_", " ")}
+                            </Badge>
                             <span className="text-muted-foreground/30 font-black text-xs uppercase tracking-widest">{account.code}</span>
                         </div>
                         <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
@@ -100,8 +102,8 @@ export default async function AccountLedgerPage(props: { params: Promise<{ accou
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow className="h-16 hover:bg-transparent border-primary/5">
-                                <TableHead className="px-8 text-xs font-black uppercase tracking-widest w-[160px]">{t("Accounting.date")}</TableHead>
-                                <TableHead className="text-xs font-black uppercase tracking-widest">{t("Accounting.description")}</TableHead>
+                                <TableHead className="px-8 text-xs font-black uppercase tracking-widest w-[160px]">{t("Common.date")}</TableHead>
+                                <TableHead className="text-xs font-black uppercase tracking-widest">{t("Common.description")}</TableHead>
                                 <TableHead className="text-xs font-black uppercase tracking-widest text-end w-[130px]">{t("Accounting.debit")}</TableHead>
                                 <TableHead className="text-xs font-black uppercase tracking-widest text-end w-[130px]">{t("Accounting.credit")}</TableHead>
                                 <TableHead className="text-end px-8 text-xs font-black uppercase tracking-widest w-[180px]">{t("Accounting.balance")}</TableHead>
@@ -117,7 +119,7 @@ export default async function AccountLedgerPage(props: { params: Promise<{ accou
                                         <div className="flex flex-col gap-1">
                                             <span className="font-black text-lg group-hover/row:text-primary transition-colors">{tx.journalEntry.description}</span>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">REF:</span>
+                                                <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">{t("Accounting.reference")}:</span>
                                                 <span className="text-xs font-black bg-muted/50 px-2 py-0.5 rounded-lg text-muted-foreground">{tx.journalEntry.reference || "N/A"}</span>
                                             </div>
                                         </div>

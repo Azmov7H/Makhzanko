@@ -13,7 +13,6 @@ export default async function InvoiceDesignPage({ params }: { params: Promise<{ 
     if (!auth?.tenantId) redirect("/login");
 
     const settings = await getInvoiceSettingsAction();
-    const plan = auth.plan || "FREE";
 
     return (
         <div className="space-y-6">
@@ -22,7 +21,7 @@ export default async function InvoiceDesignPage({ params }: { params: Promise<{ 
                 <p className="text-muted-foreground text-sm">{t('Invoices.designer.page_desc')}</p>
             </div>
 
-            <InvoiceDesigner settings={settings} plan={plan} />
+            <InvoiceDesigner settings={settings} />
         </div>
     );
 }

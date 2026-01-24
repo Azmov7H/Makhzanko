@@ -25,7 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { PlanType, Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 
 interface User {
     id: string;
@@ -37,20 +37,13 @@ interface User {
 
 interface TeamSettingsProps {
     users: User[];
-    currentPlan: PlanType;
     currentUserId: string;
 }
 
-const PLAN_LIMITS = {
-    [PlanType.FREE]: 2,
-    [PlanType.PRO]: 10,
-    [PlanType.BUSINESS]: "Unlimited",
-};
-
-export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettingsProps) {
+export function TeamSettings({ users, currentUserId }: TeamSettingsProps) {
     const { t } = useI18n();
-    const limit = PLAN_LIMITS[currentPlan];
-    const isLimitReached = typeof limit === "number" && users.length >= limit;
+    const limit = "Unlimited";
+    const isLimitReached = false;
 
     async function handleAddUser(formData: FormData) {
         const result = await addUserToTeam(formData);
@@ -162,14 +155,7 @@ export function TeamSettings({ users, currentPlan, currentUserId }: TeamSettings
                         {t("Settings.add_user")}
                     </CardTitle>
                     <CardDescription className="text-base font-medium">
-                        {isLimitReached ? (
-                            <span className="flex items-center gap-2 text-destructive font-bold">
-                                <AlertCircle className="h-5 w-5" />
-                                {t("Settings.plan_limit_reached")}. {t("Settings.upgrade_plan")}
-                            </span>
-                        ) : (
-                            t("Settings.team_members_desc")
-                        )}
+                        {t("Settings.team_members_desc")}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-8">

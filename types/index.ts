@@ -1,6 +1,6 @@
-import { Role, PlanType } from "@prisma/client";
+import { Role } from "@prisma/client";
 
-export type { Role, PlanType };
+export type { Role };
 
 export interface User {
     id: string;
@@ -15,7 +15,6 @@ export interface Tenant {
     id: string;
     name: string;
     slug: string;
-    plan: PlanType;
     currency: string;
 }
 

@@ -19,17 +19,45 @@ export class CustomerService {
             include: {
                 sales: {
                     orderBy: { date: "desc" },
-                    take: 5
                 },
                 payments: {
                     orderBy: { date: "desc" },
-                    take: 5
                 }
             }
         });
     }
 
-    static async create(tenantId: string, data: any) {
+    static async getCustomerStats(id: string, tenantId: string) {
+        const [sales, payments] = await Promise.all([
+            prisma.sale.aggregate({
+                where: { customerId: id, tenantId },
+                _sum: { total: true }
+            }),
+            prisma.customerPayment.aggregate({
+                where: { customerId: id, tenantId },
+                _sum: { amount: true }
+            })
+        ]);
+
+        const totalSales = Number(sales._sum.total || 0);
+        const totalPayments = Number(payments._sum.amount || 0);
+        const balance = totalSales - totalPayments;
+
+        return {
+            totalSales,
+            totalPayments,
+            balance
+        };
+    }
+
+    static async create(tenantId: string, data: {
+        name: string;
+        phone?: string;
+        email?: string;
+        address?: string;
+        creditLimit?: number;
+        notes?: string;
+    }) {
         return await prisma.customer.create({
             data: {
                 ...data,
@@ -38,7 +66,14 @@ export class CustomerService {
         });
     }
 
-    static async update(id: string, tenantId: string, data: any) {
+    static async update(id: string, tenantId: string, data: {
+        name?: string;
+        phone?: string;
+        email?: string;
+        address?: string;
+        creditLimit?: number;
+        notes?: string;
+    }) {
         return await prisma.customer.update({
             where: { id, tenantId },
             data,

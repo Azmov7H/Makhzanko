@@ -43,9 +43,9 @@ export default async function LedgerPage() {
             <div className="relative">
                 <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
                 <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
-                    {t("Dashboard.ledger") || "General Ledger"}
+                    {t("Accounting.ledger")}
                 </h1>
-                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">Comprehensive history of all financial transactions recorded across the system.</p>
+                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">{t("Accounting.ledger_desc")}</p>
             </div>
 
             <Separator className="bg-primary/5 h-px" />
@@ -57,27 +57,27 @@ export default async function LedgerPage() {
                             <div className="p-3 bg-primary/10 rounded-2xl shadow-xl shadow-primary/5 group-hover:scale-110 transition-transform duration-500">
                                 <BookOpen className="h-7 w-7 text-primary" />
                             </div>
-                            Journal Entries
+                            {t("Accounting.journal_entries")}
                         </CardTitle>
-                        <CardDescription className="text-base font-medium mt-1">Consolidated view of all transaction logs.</CardDescription>
+                        <CardDescription className="text-base font-medium mt-1">{t("Accounting.journal_consolidated_desc")}</CardDescription>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader className="bg-muted/30">
                             <TableRow className="hover:bg-transparent border-primary/5 h-16">
-                                <TableHead className="px-8 text-xs font-black uppercase tracking-widest w-[140px]">Date</TableHead>
-                                <TableHead className="text-xs font-black uppercase tracking-widest">Description</TableHead>
-                                <TableHead className="text-xs font-black uppercase tracking-widest">Account Details</TableHead>
-                                <TableHead className="text-xs font-black uppercase tracking-widest text-end w-[180px] px-8">Debit</TableHead>
-                                <TableHead className="text-xs font-black uppercase tracking-widest text-end w-[180px] px-8">Credit</TableHead>
+                                <TableHead className="px-8 text-xs font-black uppercase tracking-widest w-[140px]">{t("Common.date")}</TableHead>
+                                <TableHead className="text-xs font-black uppercase tracking-widest">{t("Common.description")}</TableHead>
+                                <TableHead className="text-xs font-black uppercase tracking-widest">{t("Accounting.account_details")}</TableHead>
+                                <TableHead className="text-xs font-black uppercase tracking-widest text-end w-[180px] px-8">{t("Accounting.debit")}</TableHead>
+                                <TableHead className="text-xs font-black uppercase tracking-widest text-end w-[180px] px-8">{t("Accounting.credit")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {journalEntries.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-64 text-center text-muted-foreground font-medium text-lg italic">
-                                        No transactions found in the records.
+                                        {t("Accounting.no_transactions")}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -89,7 +89,7 @@ export default async function LedgerPage() {
                                         <TableCell className="py-6">
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-black text-base group-hover/row:text-primary transition-colors">{entry.description}</span>
-                                                <span className="text-[10px] font-black text-muted-foreground uppercase bg-muted/50 w-fit px-2 py-0.5 rounded-lg tracking-widest">REF: {entry.reference || "N/A"}</span>
+                                                <span className="text-[10px] font-black text-muted-foreground uppercase bg-muted/50 w-fit px-2 py-0.5 rounded-lg tracking-widest">{t("Accounting.reference")}: {entry.reference || "N/A"}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="p-0">

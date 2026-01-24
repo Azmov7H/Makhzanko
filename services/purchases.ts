@@ -5,7 +5,8 @@ import { TransactionType } from "@prisma/client";
 
 export interface CreatePurchaseInput {
     warehouseId: string;
-    supplier: string;
+    supplier?: string;
+    supplierId?: string;
     items: { productId: string; quantity: number; cost: number }[];
 }
 
@@ -28,7 +29,8 @@ export class PurchaseService {
                     tenantId,
                     warehouseId: input.warehouseId,
                     number: nextNumber,
-                    supplier: input.supplier || "Unknown",
+                    supplierName: input.supplier || "Manual Entry",
+                    supplierId: input.supplierId,
                     total: total,
                     status: "RECEIVED",
                 }

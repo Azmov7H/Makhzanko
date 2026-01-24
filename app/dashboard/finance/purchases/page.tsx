@@ -102,7 +102,7 @@ async function PurchasesContent() {
                                         <TableCell>
                                             <span className="font-black text-lg text-primary bg-primary/5 px-3 py-1 rounded-xl shadow-inner group-hover/row:scale-105 transition-transform inline-block">#{po.number}</span>
                                         </TableCell>
-                                        <TableCell className="font-bold text-base">{po.supplier || "-"}</TableCell>
+                                        <TableCell className="font-bold text-base">{po.supplierName || "-"}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 group/item">
                                                 <Warehouse className="h-4 w-4 text-primary opacity-30 group-hover/item:opacity-100 transition-opacity" />
@@ -122,7 +122,7 @@ async function PurchasesContent() {
                                                     po.status === "RECEIVED" ? "bg-emerald-500/10 text-emerald-500" : "bg-primary/10 text-primary"
                                                 )}
                                             >
-                                                {po.status}
+                                                {po.status === "RECEIVED" ? t("Purchases.status_received") : t("Purchases.status_pending")}
                                             </Badge>
                                         </TableCell>
                                     </TableRow>

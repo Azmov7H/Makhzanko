@@ -17,5 +17,10 @@ export default async function NewPurchasePage() {
         orderBy: { name: "asc" },
     });
 
-    return <PurchaseForm products={products} warehouses={warehouses} />;
+    const suppliers = await db.supplier.findMany({
+        where: { tenantId: auth.tenantId },
+        orderBy: { name: "asc" },
+    });
+
+    return <PurchaseForm products={products} warehouses={warehouses} suppliers={suppliers} />;
 }

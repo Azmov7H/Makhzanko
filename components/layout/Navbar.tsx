@@ -49,17 +49,7 @@ export default function Navbar() {
           <ThemeToggle />
           <LanguageToggle />
 
-          <Link href="/login" className="hidden sm:block">
-            <Button variant="outline" size="sm" className="rounded-full">
-              {t("Auth.login")}
-            </Button>
-          </Link>
 
-          <Link href="/register" className="hidden sm:block">
-            <Button size="sm" className="rounded-full gradient-primary">
-              {t("Auth.register")}
-            </Button>
-          </Link>
 
           {/* Mobile Menu */}
           <Sheet open={open} onOpenChange={setOpen}>

@@ -81,7 +81,7 @@ export function UsersClient({ users }: UsersClientProps) {
                                             user.role === "OWNER" ? "bg-amber-500/10 text-amber-500" :
                                                 user.role === "ADMIN" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                                         )}>
-                                            {user.role}
+                                            {t("Dashboard.roles." + user.role)}
                                         </Badge>
                                         <Badge variant="outline" className={cn(
                                             "rounded-xl px-2 py-1 border-none",

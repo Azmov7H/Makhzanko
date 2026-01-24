@@ -31,7 +31,7 @@ async function SettingsContent() {
   const [tenant, users, currentUser, invoiceSettings] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: context.tenantId },
-      select: { name: true, plan: true }
+      select: { name: true }
     }),
     prisma.user.findMany({
       where: { tenantId: context.tenantId },
@@ -97,7 +97,7 @@ async function SettingsContent() {
 
       <Tabs defaultValue="general" className="w-full">
         <div className="overflow-x-auto pb-2 mb-2 scrollbar-none">
-          <TabsList className="flex h-auto w-auto min-w-full sm:min-w-[500px] sm:grid sm:grid-cols-5 bg-muted/30 p-1 rounded-xl border border-primary/5 shadow-inner scrollbar-none">
+          <TabsList className="flex h-auto w-auto min-w-full sm:min-w-[400px] sm:grid sm:grid-cols-4 bg-muted/30 p-1 rounded-xl border border-primary/5 shadow-inner scrollbar-none">
             <TabsTrigger value="general" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all font-bold">
               <Store className="h-4 w-4 mr-2" />
               {t("Settings.general")}
@@ -112,12 +112,9 @@ async function SettingsContent() {
             </TabsTrigger>
             <TabsTrigger value="profile" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all font-bold">
               <User className="h-4 w-4 mr-2" />
-              {t("Settings.profile")}
+              {t("Settings.profile_tab")}
             </TabsTrigger>
-            <TabsTrigger value="billing" className="rounded-lg py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md transition-all font-bold">
-              <CreditCard className="h-4 w-4 mr-2" />
-              {t("Settings.billing_plans")}
-            </TabsTrigger>
+
           </TabsList>
         </div>
 
@@ -132,7 +129,6 @@ async function SettingsContent() {
         <TabsContent value="team" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
           <TeamSettings
             users={users}
-            currentPlan={tenant.plan}
             currentUserId={context.userId}
           />
         </TabsContent>
@@ -141,35 +137,7 @@ async function SettingsContent() {
           <ProfileSettings user={currentUser} />
         </TabsContent>
 
-        <TabsContent value="billing" className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-400">
-          <Card className="border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-muted/30 border-b border-primary/5 p-8">
-              <CardTitle className="flex items-center gap-2 text-2xl font-black">
-                <CreditCard className="h-6 w-6 text-primary" />
-                {t("Settings.billing_sub")}
-              </CardTitle>
-              <CardDescription className="text-base">{t("Settings.manage_billing")}</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 md:p-12 text-center space-y-8">
-              <div className="bg-primary/5 h-24 w-24 rounded-3xl flex items-center justify-center mx-auto rotate-3 hover:rotate-0 transition-all duration-500 shadow-xl shadow-primary/5">
-                <CreditCard className="h-12 w-12 text-primary" />
-              </div>
-              <div className="max-w-md mx-auto space-y-6">
-                <div className="space-y-2">
-                  <h4 className="text-3xl font-black">Manage Your Plan</h4>
-                  <p className="text-muted-foreground text-xl">
-                    Current Plan: <span className="text-primary font-black uppercase tracking-wider">{tenant.plan}</span>
-                  </p>
-                </div>
-                <Button asChild className="w-full h-16 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 text-lg font-bold">
-                  <Link href="/dashboard/settings/billing">
-                    {t("Settings.billing_sub")}
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
       </Tabs>
     </div>
   );
