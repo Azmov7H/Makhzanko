@@ -2,7 +2,6 @@ export const ACCOUNTS = {
     ASSETS: {
         CASH: "1001",
         BANK: "1002",
-        ONLINE_GATEWAY: "1103",
         ACCOUNTS_RECEIVABLE: "1200",
         INVENTORY: "1300",
     },

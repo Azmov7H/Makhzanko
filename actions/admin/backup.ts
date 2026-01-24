@@ -27,7 +27,6 @@ export async function exportTenantsAction() {
         id: t.id,
         name: t.name,
         slug: t.slug,
-        plan: t.plan,
         createdAt: t.createdAt,
         productCount: t._count.products,
         userCount: t._count.users

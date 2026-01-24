@@ -117,7 +117,7 @@ export default function NewExpensePage() {
                                         required
                                         className="h-16 pl-12 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-black text-2xl group-hover:bg-muted/50"
                                     />
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 font-black text-xl">$</span>
+                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/40 font-black text-xl">{t("Common.currency")}</span>
                                 </div>
                             </div>
 

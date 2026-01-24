@@ -17,6 +17,7 @@ import Link from "next/link";
 import { getI18n, getLocale } from "@/lib/i18n/server";
 import { cn } from "@/lib/cn";
 import { Input } from "@/components/ui/input";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export async function DashboardHeaderWrapper() {
     const context = await getTenantContext();
@@ -25,21 +26,16 @@ export async function DashboardHeaderWrapper() {
 
     const tenant = await prisma.tenant.findUnique({
         where: { id: context.tenantId },
-        select: { name: true, plan: true }
+        select: { name: true }
     });
 
     const tenantName = tenant?.name || t("Dashboard.brand_name");
-    const plan = tenant?.plan || "FREE";
 
-    const planColors: Record<string, string> = {
-        FREE: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-        PRO: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-        BUSINESS: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-    };
+
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 transition-all duration-300">
-            <MobileSidebar role={context.role} plan={plan} />
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 transition-all duration-300">
+            <MobileSidebar role={context.role} />
 
             {/* Search Bar */}
             <div className="flex-1 flex max-w-md items-center gap-2 relative hidden sm:flex">
@@ -75,19 +71,19 @@ export async function DashboardHeaderWrapper() {
                 </DropdownMenu>
 
                 {/* Notifications */}
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 w-9 h-9 relative">
-                    <Bell className="h-4 w-4" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive border-2 border-background animate-pulse" />
-                </Button>
+                <NotificationCenter
+                    locale={locale}
+                    translations={{
+                        title: t("Dashboard.notifications.title"),
+                        mark_all_read: t("Dashboard.notifications.mark_all_read"),
+                        no_notifications: t("Dashboard.notifications.no_notifications"),
+                        unread: t("Dashboard.notifications.unread"),
+                        delete: t("Dashboard.notifications.delete"),
+                    }}
+                />
 
-                {/* Admin Link */}
-                {context.role === "OWNER" && (
-                    <Link href="/admin" className="hidden sm:block">
-                        <Button variant="ghost" size="sm" className="gap-2 hover:bg-primary/10 rounded-full font-bold transition-all duration-300 group">
-                            <Shield className="h-4 w-4 text-primary group-hover:rotate-12 transition-transform" />
-                        </Button>
-                    </Link>
-                )}
+
+
 
                 <div className="h-6 w-[1px] bg-primary/10 mx-1" />
 
@@ -106,9 +102,6 @@ export async function DashboardHeaderWrapper() {
                                 <p className="text-sm font-bold leading-none">{t("Dashboard.user_menu.my_account")}</p>
                                 <div className="flex items-center gap-2">
                                     <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[100px]">{context.tenantId}</p>
-                                    <Badge variant="outline" className={cn("rounded-full px-1.5 py-0 text-[9px] uppercase h-4", planColors[plan])}>
-                                        {plan}
-                                    </Badge>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
@@ -119,12 +112,7 @@ export async function DashboardHeaderWrapper() {
                                 <span className="font-medium text-sm">{t("Dashboard.settings")}</span>
                             </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/10 cursor-pointer py-2.5 transition-colors">
-                            <Link href="/dashboard/settings/billing" className="flex items-center gap-3">
-                                <div className="p-1.5 bg-muted rounded-lg"><Settings className="h-4 w-4" /></div>
-                                <span className="font-medium text-sm">{t("Dashboard.user_menu.billing")}</span>
-                            </Link>
-                        </DropdownMenuItem>
+
                         <DropdownMenuSeparator className="bg-primary/5" />
                         <form action={logoutAction}>
                             <DropdownMenuItem asChild className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-colors">

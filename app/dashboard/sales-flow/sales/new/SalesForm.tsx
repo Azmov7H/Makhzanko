@@ -14,13 +14,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ShoppingCart, Trash2, CreditCard, Plus, Minus, Search, Package, User, Sparkles, Receipt, Percent, DollarSign, Loader2 } from "lucide-react";
+import { ShoppingCart, Trash2, CreditCard, Plus, Minus, Search, Package, User, Sparkles, Receipt, Percent, DollarSign, Loader2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { initiatePaymobPayment } from "@/actions/payment";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function SalesForm({ products, warehouses }: { products: any[]; warehouses: any[] }) {
@@ -34,7 +33,9 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
     const [customerName, setCustomerName] = useState("");
     const [discountType, setDiscountType] = useState<"percentage" | "fixed" | "none">("none");
     const [discountValue, setDiscountValue] = useState(0);
-    const [paymentType, setPaymentType] = useState<"CASH" | "ONLINE">("CASH");
+    const [paymentType, setPaymentType] = useState<"CASH" | "DEFERRED">("CASH");
+    const [installmentCount, setInstallmentCount] = useState(3);
+    const [installmentInterval, setInstallmentInterval] = useState(1);
     const [iframeUrl, setIframeUrl] = useState<string | null>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
@@ -88,26 +89,18 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                     customerName: customerName || undefined,
                     discountType: discountType !== "none" ? discountType : undefined,
                     discountValue: discountType !== "none" ? discountValue : undefined,
-                    paymentType: paymentType as any, // "CASH" | "ONLINE"
+                    paymentType: paymentType as any,
+                    installmentCount: paymentType === "DEFERRED" ? installmentCount : undefined,
+                    installmentInterval: paymentType === "DEFERRED" ? installmentInterval : undefined,
                 });
 
                 if (result.error) {
                     toast.error(result.error);
                 } else {
-                    if (paymentType === "ONLINE" && result.saleId) {
-                        const payResult = await initiatePaymobPayment(result.saleId);
-                        if (payResult.success && payResult.iframeUrl) {
-                            setIframeUrl(payResult.iframeUrl);
-                            setIsPaymentModalOpen(true);
-                        } else {
-                            toast.error(payResult.error || "Failed to initiate payment");
-                        }
-                    } else {
-                        toast.success(t("Common.success"), {
-                            className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-                        });
-                        router.push(`/dashboard/sales-flow/sales`);
-                    }
+                    toast.success(t("Common.success"), {
+                        className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
+                    });
+                    router.push(`/dashboard/sales-flow/sales`);
                 }
             } catch (error) {
                 toast.error(t("Common.error"));
@@ -404,22 +397,74 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                                         : "border-primary/5 bg-card/40 hover:bg-card/60 hover:border-primary/20 text-muted-foreground"
                                 )}
                             >
-                                <DollarSign className="h-8 w-8" />
-                                <span className="font-black text-sm uppercase tracking-widest">{t("Sales.cash")}</span>
+                                <DollarSign className="h-6 w-6" />
+                                <span className="font-black text-[10px] uppercase tracking-widest">{t("Sales.cash")}</span>
                             </button>
                             <button
-                                onClick={() => setPaymentType("ONLINE")}
+                                onClick={() => setPaymentType("DEFERRED")}
                                 className={cn(
                                     "flex flex-col items-center justify-center gap-2 p-6 rounded-2xl border-2 transition-all duration-300",
-                                    paymentType === "ONLINE"
+                                    paymentType === "DEFERRED"
                                         ? "border-primary bg-primary/5 text-primary shadow-xl shadow-primary/10"
                                         : "border-primary/5 bg-card/40 hover:bg-card/60 hover:border-primary/20 text-muted-foreground"
                                 )}
                             >
-                                <CreditCard className="h-8 w-8" />
-                                <span className="font-black text-sm uppercase tracking-widest">{t("Sales.online_card")}</span>
+                                <Clock className="h-6 w-6" />
+                                <span className="font-black text-[10px] uppercase tracking-widest">{t("Sales.deferred") || "Installments"}</span>
                             </button>
                         </div>
+
+                        {/* Installment Config */}
+                        <AnimatePresence>
+                            {paymentType === "DEFERRED" && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="pt-4 space-y-6 overflow-hidden"
+                                >
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
+                                                {t("Sales.installments_count") || "Number of Payments"}
+                                            </label>
+                                            <div className="flex items-center bg-card/40 rounded-2xl p-2 border border-primary/10">
+                                                <Button variant="ghost" size="icon" onClick={() => setInstallmentCount(Math.max(2, installmentCount - 1))} className="h-10 w-10">
+                                                    <Minus className="h-4 w-4" />
+                                                </Button>
+                                                <span className="flex-1 text-center font-black text-xl">{installmentCount}</span>
+                                                <Button variant="ghost" size="icon" onClick={() => setInstallmentCount(installmentCount + 1)} className="h-10 w-10">
+                                                    <Plus className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
+                                                {t("Sales.interval_months") || "Monthly Interval"}
+                                            </label>
+                                            <div className="flex items-center bg-card/40 rounded-2xl p-2 border border-primary/10">
+                                                <Button variant="ghost" size="icon" onClick={() => setInstallmentInterval(Math.max(1, installmentInterval - 1))} className="h-10 w-10">
+                                                    <Minus className="h-4 w-4" />
+                                                </Button>
+                                                <span className="flex-1 text-center font-black text-xl">{installmentInterval}</span>
+                                                <Button variant="ghost" size="icon" onClick={() => setInstallmentInterval(installmentInterval + 1)} className="h-10 w-10">
+                                                    <Plus className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/10 border-dashed">
+                                        <div className="flex justify-between items-center text-sm font-bold opacity-60 italic mb-2">
+                                            <span>{t("Sales.per_installment") || "Amount per payment"}:</span>
+                                            <span className="text-primary font-black text-lg">{formatCurrency(total / installmentCount)}</span>
+                                        </div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground text-center">
+                                            {t("Sales.installment_plan_desc") || "First payment starting today, recurring monthly."}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <Button
@@ -435,34 +480,16 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
                             </div>
                         ) : (
                             <div className="relative z-10 flex items-center justify-center gap-4">
-                                <span className="font-black text-xl uppercase tracking-widest italic">{paymentType === "ONLINE" ? t("Sales.pay_now") || "Pay Now" : t("Sales.complete_sale")}</span>
+                                <span className="font-black text-xl uppercase tracking-widest italic">
+                                    {paymentType === "DEFERRED" ? t("Sales.start_plan") || "Start Payment Plan" : t("Sales.complete_sale")}
+                                </span>
                             </div>
                         )}
                     </Button>
                 </CardFooter>
             </Card>
 
-            <Dialog open={isPaymentModalOpen} onOpenChange={(open) => {
-                if (!open) {
-                    setIsPaymentModalOpen(false);
-                    // On close, redirect to sales list or check status?
-                    // For now, redirect to sales to show Pending status.
-                    router.push(`/dashboard/sales-flow/sales`);
-                }
-            }}>
-                <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden rounded-[2rem]">
-                    <DialogHeader className="p-6 pb-2">
-                        <DialogTitle>{t("Sales.online_payment") || "Online Payment"}</DialogTitle>
-                    </DialogHeader>
-                    {iframeUrl && (
-                        <iframe
-                            src={iframeUrl}
-                            className="w-full h-full border-none"
-                            allow="payment"
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+            {/* Removed Online Payment Dialog */}
         </div>
     );
 }

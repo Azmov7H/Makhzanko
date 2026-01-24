@@ -4,7 +4,6 @@ import { ProductService } from "@/services/products";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { checkLimit } from "@/lib/limits";
 
 export async function createProductAction(prevState: any, formData: FormData) {
     const context = await getTenantContext();
@@ -18,7 +17,6 @@ export async function createProductAction(prevState: any, formData: FormData) {
     if (!name || !sku) return { error: "Missing fields" };
 
     try {
-        await checkLimit(context.tenantId, "products");
         await ProductService.create(context.tenantId, { name, sku, price, cost, minStock });
     } catch (error: any) {
         console.error("Create Product Error:", error);

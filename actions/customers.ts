@@ -4,7 +4,6 @@ import { CustomerService } from "@/services/customers";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { checkLimit } from "@/lib/limits";
 
 export async function createCustomerAction(prevState: any, formData: FormData) {
     const context = await getTenantContext();
@@ -16,7 +15,6 @@ export async function createCustomerAction(prevState: any, formData: FormData) {
     if (!name) return { error: "Name is required" };
 
     try {
-        await checkLimit(context.tenantId, "customers");
         await CustomerService.create(context.tenantId, { name, phone, email });
     } catch (error: any) {
         console.error("Create Customer Error:", error);

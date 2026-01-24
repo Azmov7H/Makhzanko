@@ -10,7 +10,6 @@ interface DashboardContainerProps {
     sidebar: React.ReactNode;
     header: React.ReactNode;
     announcements: React.ReactNode;
-    trialBanner: React.ReactNode;
     locale: "en" | "ar";
 }
 
@@ -19,7 +18,6 @@ export function DashboardContainer({
     sidebar,
     header,
     announcements,
-    trialBanner,
     locale
 }: DashboardContainerProps) {
     const { isCollapsed } = useSidebar();
@@ -41,7 +39,6 @@ export function DashboardContainer({
 
                 <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
                     {announcements}
-                    {trialBanner}
 
                     <main className="flex-1 p-4 sm:p-6 relative">
                         {/* Subtle background glow - very low opacity */}

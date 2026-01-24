@@ -37,18 +37,18 @@ export default async function AccountingReportsPage() {
             <div className="relative">
                 <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
                 <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
-                    Financial Reports
+                    {t("Accounting.reports_title")}
                 </h1>
-                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">In-depth accounting reports including trial balance and income statements.</p>
+                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">{t("Accounting.reports_desc")}</p>
             </div>
 
             <Tabs defaultValue="trial-balance" className="space-y-8">
                 <TabsList className="bg-primary/5 p-1 rounded-2xl h-14 w-fit border border-primary/5">
                     <TabsTrigger value="trial-balance" className="rounded-xl px-8 h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl font-black text-xs uppercase tracking-widest transition-all">
-                        Trial Balance
+                        {t("Accounting.trial_balance")}
                     </TabsTrigger>
                     <TabsTrigger value="profit-loss" className="rounded-xl px-8 h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl font-black text-xs uppercase tracking-widest transition-all">
-                        Profit & Loss
+                        {t("Accounting.profit_loss")}
                     </TabsTrigger>
                 </TabsList>
 
@@ -60,10 +60,10 @@ export default async function AccountingReportsPage() {
                                     <PieChart className="h-7 w-7" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-black italic">Trial Balance</CardTitle>
+                                    <CardTitle className="text-2xl font-black italic">{t("Accounting.trial_balance")}</CardTitle>
                                     <CardDescription className="text-base font-medium mt-1 flex items-center gap-2">
                                         <Clock className="h-4 w-4 opacity-50" />
-                                        As of {new Date().toLocaleDateString("ar-EG")}
+                                        {t("Accounting.as_of")} {new Date().toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
                                     </CardDescription>
                                 </div>
                             </div>
@@ -72,7 +72,7 @@ export default async function AccountingReportsPage() {
                             <Table>
                                 <TableHeader className="bg-muted/30">
                                     <TableRow className="h-16 hover:bg-transparent border-primary/5">
-                                        <TableHead className="px-8 text-xs font-black uppercase tracking-widest">Account</TableHead>
+                                        <TableHead className="px-8 text-xs font-black uppercase tracking-widest">{t("Accounting.account")}</TableHead>
                                         <TableHead className="text-end text-xs font-black uppercase tracking-widest w-[180px]">{t("Accounting.debit")}</TableHead>
                                         <TableHead className="text-end px-8 text-xs font-black uppercase tracking-widest w-[180px]">{t("Accounting.credit")}</TableHead>
                                     </TableRow>
@@ -95,7 +95,7 @@ export default async function AccountingReportsPage() {
                                         </TableRow>
                                     ))}
                                     <TableRow className="bg-primary/5 hover:bg-primary/5 border-t-2 border-primary/20">
-                                        <TableCell className="px-8 h-20 text-xl font-black italic text-primary uppercase tracking-widest">Total</TableCell>
+                                        <TableCell className="px-8 h-20 text-xl font-black italic text-primary uppercase tracking-widest">{t("Common.total")}</TableCell>
                                         <TableCell className="text-end h-20 font-black text-2xl tracking-tighter text-primary">{formatCurrency(totalDebit)}</TableCell>
                                         <TableCell className="text-end px-8 h-20 font-black text-2xl tracking-tighter text-primary">{formatCurrency(totalCredit)}</TableCell>
                                     </TableRow>
@@ -113,8 +113,8 @@ export default async function AccountingReportsPage() {
                                     <FileText className="h-7 w-7" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-black italic">Profit & Loss Statement</CardTitle>
-                                    <CardDescription className="text-base font-medium mt-1">Income statement summarizing revenues and expenses.</CardDescription>
+                                    <CardTitle className="text-2xl font-black italic">{t("Accounting.statement_p_l")}</CardTitle>
+                                    <CardDescription className="text-base font-medium mt-1">{t("Accounting.statement_p_l_desc")}</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
@@ -122,7 +122,7 @@ export default async function AccountingReportsPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3">
                                     <TrendingUp className="h-6 w-6 text-emerald-500" />
-                                    <h3 className="text-xl font-black italic uppercase tracking-wider text-emerald-600">Revenue</h3>
+                                    <h3 className="text-xl font-black italic uppercase tracking-wider text-emerald-600">{t("Accounting.revenue")}</h3>
                                 </div>
                                 <div className="grid gap-4 pl-12">
                                     {revenueItems.map(acc => (
@@ -132,7 +132,7 @@ export default async function AccountingReportsPage() {
                                         </div>
                                     ))}
                                     <div className="flex justify-between items-center pt-6 mt-4 border-t border-emerald-500/10">
-                                        <span className="text-xl font-black italic uppercase tracking-[0.2em] text-emerald-600">Total Revenue</span>
+                                        <span className="text-xl font-black italic uppercase tracking-[0.2em] text-emerald-600">{t("Accounting.total_revenue")}</span>
                                         <div className="bg-emerald-500 text-white px-6 py-2 rounded-2xl shadow-xl shadow-emerald-500/20 font-black text-2xl tracking-tighter">
                                             {formatCurrency(revenue)}
                                         </div>
@@ -143,7 +143,7 @@ export default async function AccountingReportsPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3">
                                     <TrendingDown className="h-6 w-6 text-destructive" />
-                                    <h3 className="text-xl font-black italic uppercase tracking-wider text-destructive/80">Expenses</h3>
+                                    <h3 className="text-xl font-black italic uppercase tracking-wider text-destructive/80">{t("Accounting.expenses")}</h3>
                                 </div>
                                 <div className="grid gap-4 pl-12">
                                     {expenseItems.map(acc => (
@@ -153,7 +153,7 @@ export default async function AccountingReportsPage() {
                                         </div>
                                     ))}
                                     <div className="flex justify-between items-center pt-6 mt-4 border-t border-destructive/10">
-                                        <span className="text-xl font-black italic uppercase tracking-[0.2em] text-destructive/80">Total Expenses</span>
+                                        <span className="text-xl font-black italic uppercase tracking-[0.2em] text-destructive/80">{t("Accounting.total_expenses")}</span>
                                         <div className="bg-destructive/10 text-destructive px-6 py-2 rounded-2xl border border-destructive/20 font-black text-2xl tracking-tighter">
                                             {formatCurrency(expenses)}
                                         </div>
@@ -169,7 +169,7 @@ export default async function AccountingReportsPage() {
                                     "flex justify-between items-center p-8 rounded-[2.5rem] shadow-3xl",
                                     netIncome >= 0 ? "bg-emerald-500/5 shadow-emerald-500/5" : "bg-destructive/5 shadow-destructive/5"
                                 )}>
-                                    <span className="text-3xl font-black italic tracking-tighter uppercase underline decoration-primary/30 decoration-4">Net Income</span>
+                                    <span className="text-3xl font-black italic tracking-tighter uppercase underline decoration-primary/30 decoration-4">{t("Accounting.net_income")}</span>
                                     <span className={cn(
                                         "text-5xl font-black tracking-tighter drop-shadow-sm",
                                         netIncome >= 0 ? "text-emerald-500" : "text-destructive"

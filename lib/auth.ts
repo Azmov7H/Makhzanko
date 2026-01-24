@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PlanType, Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 
 const COOKIE_NAME = "saas_token";
 
@@ -10,7 +10,6 @@ export type TenantContext = {
   userId: string;
   tenantId: string;
   role: Role;
-  plan: PlanType;
   email: string | null;
   name: string | null;
 };
@@ -47,11 +46,7 @@ export async function getTenantContext(): Promise<TenantContext> {
       deletedAt: true,
       email: true,
       name: true,
-      tenant: {
-        select: {
-          plan: true,
-        },
-      },
+      tenant: true,
     },
   });
 
@@ -63,7 +58,6 @@ export async function getTenantContext(): Promise<TenantContext> {
     userId,
     tenantId,
     role,
-    plan: user.tenant.plan,
     email: user.email,
     name: user.name,
   };
@@ -91,11 +85,7 @@ export async function getSession(): Promise<TenantContext | null> {
         email: true,
         name: true,
         role: true,
-        tenant: {
-          select: {
-            plan: true
-          }
-        }
+        tenant: true
       }
     });
 
@@ -105,7 +95,6 @@ export async function getSession(): Promise<TenantContext | null> {
       userId: payload.userId as string,
       tenantId: user.tenantId,
       role: user.role,
-      plan: user.tenant.plan,
       email: user.email,
       name: user.name,
     };

@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
-import { checkLimit } from "@/lib/limits";
 import { revalidatePath } from "next/cache";
 
 interface InvoiceSettingsData {
@@ -78,91 +77,87 @@ export async function getInvoiceSettingsAction() {
 }
 
 export async function updateInvoiceSettingsAction(data: InvoiceSettingsData) {
-    const context = await getTenantContext();
-
-    // Check Limits
     try {
-        await checkLimit(context.tenantId, "customInvoices");
-    } catch (error) {
-        const err = error as Error;
-        return { error: err.message };
-    }
+        const context = await getTenantContext();
 
-    const {
-        logoUrl,
-        primaryColor,
-        accentColor,
-        fontFamily,
-        fontSize,
-        templateStyle,
-        showTax,
-        showDiscount,
-        showSeller,
-        showWarehouse,
-        showCustomerSection,
-        showItemCode,
-        showHeader,
-        showFooter,
-        showPaymentInfo,
-        companyAddress,
-        companyPhone,
-        companyEmail,
-        companyTaxId,
-        footerNotes
-    } = data;
+        const {
+            logoUrl,
+            primaryColor,
+            accentColor,
+            fontFamily,
+            fontSize,
+            templateStyle,
+            showTax,
+            showDiscount,
+            showSeller,
+            showWarehouse,
+            showCustomerSection,
+            showItemCode,
+            showHeader,
+            showFooter,
+            showPaymentInfo,
+            companyAddress,
+            companyPhone,
+            companyEmail,
+            companyTaxId,
+            footerNotes
+        } = data;
 
-    const existingSettings = await prisma.invoiceSettings.findUnique({
-        where: { tenantId: context.tenantId },
-        select: { id: true }
-    });
-
-    if (existingSettings) {
-        await prisma.invoiceSettings.update({
+        const existingSettings = await prisma.invoiceSettings.findUnique({
             where: { tenantId: context.tenantId },
-            data: {
-                logoUrl,
-                primaryColor,
-                accentColor,
-                fontFamily,
-                fontSize,
-                templateStyle,
-                showTax,
-                showDiscount,
-                showSeller,
-                showCustomerSection,
-                companyAddress,
-                companyPhone,
-                companyEmail,
-                footerNotes
-            },
             select: { id: true }
         });
-    } else {
-        await prisma.invoiceSettings.create({
-            data: {
-                tenantId: context.tenantId,
-                logoUrl,
-                primaryColor: primaryColor || "#000000",
-                accentColor: accentColor || "#4F46E5",
-                fontFamily: fontFamily || "Inter",
-                fontSize: fontSize || "medium",
-                templateStyle: templateStyle || "modern",
-                showTax: showTax ?? true,
-                showDiscount: showDiscount ?? true,
-                showSeller: showSeller ?? true,
-                showCustomerSection: showCustomerSection ?? true,
-                companyAddress: companyAddress || "",
-                companyPhone: companyPhone || "",
-                companyEmail: companyEmail || "",
-                footerNotes: footerNotes || ""
-            },
-            select: { id: true }
-        });
+
+        if (existingSettings) {
+            await prisma.invoiceSettings.update({
+                where: { tenantId: context.tenantId },
+                data: {
+                    logoUrl,
+                    primaryColor,
+                    accentColor,
+                    fontFamily,
+                    fontSize,
+                    templateStyle,
+                    showTax,
+                    showDiscount,
+                    showSeller,
+                    showCustomerSection,
+                    companyAddress,
+                    companyPhone,
+                    companyEmail,
+                    footerNotes
+                },
+                select: { id: true }
+            });
+        } else {
+            await prisma.invoiceSettings.create({
+                data: {
+                    tenantId: context.tenantId,
+                    logoUrl,
+                    primaryColor: primaryColor || "#000000",
+                    accentColor: accentColor || "#4F46E5",
+                    fontFamily: fontFamily || "Inter",
+                    fontSize: fontSize || "medium",
+                    templateStyle: templateStyle || "modern",
+                    showTax: showTax ?? true,
+                    showDiscount: showDiscount ?? true,
+                    showSeller: showSeller ?? true,
+                    showCustomerSection: showCustomerSection ?? true,
+                    companyAddress: companyAddress || "",
+                    companyPhone: companyPhone || "",
+                    companyEmail: companyEmail || "",
+                    footerNotes: footerNotes || ""
+                },
+                select: { id: true }
+            });
+        }
+
+        revalidatePath("/dashboard/settings");
+        revalidatePath("/dashboard/sales/invoices/design");
+        revalidatePath("/dashboard/sales/invoices");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Update Invoice Settings Error:", error);
+        return { error: error.message || "Failed to update invoice settings" };
     }
-
-    revalidatePath("/dashboard/settings");
-    revalidatePath("/dashboard/sales/invoices/design");
-    revalidatePath("/dashboard/sales/invoices");
-    return { success: true };
 }
-

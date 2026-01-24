@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createJournalEntry } from "@/lib/accounting";
 import { ACCOUNTS } from "@/lib/accounting-constants";
+import { NotificationService } from "./notifications";
 
 export interface CreateSaleInput {
     warehouseId: string;
@@ -9,13 +10,12 @@ export interface CreateSaleInput {
     customerName?: string;
     discountType?: "percentage" | "fixed";
     discountValue?: number;
-    paymentType?: "CASH" | "BANK_TRANSFER" | "DEFERRED" | "ONLINE";
-    paymobOrderId?: string;
+    paymentType?: "CASH" | "BANK_TRANSFER" | "DEFERRED";
 }
 
 export class SalesService {
     static async createSale(tenantId: string, userId: string, data: CreateSaleInput, status: string = "COMPLETED") {
-        const { warehouseId, items, customerId, customerName, discountType, discountValue, paymentType = "CASH", paymobOrderId } = data;
+        const { warehouseId, items, customerId, customerName, discountType, discountValue, paymentType = "CASH" } = data;
 
         return await prisma.$transaction(async (tx) => {
             // 1. Get next number safely
@@ -52,12 +52,9 @@ export class SalesService {
                     tenantId,
                     userId,
                     customerId,
-                    status: status, // PENDING_PAYMENT or COMPLETED
+                    status: status,
                     paymentType,
-                    paymobOrderId,
-                    // If ONLINE + PENDING, amountPaid is 0 initially in terms of "Cash Received", 
-                    // but usually for accounting we might track it differently. For now 0.
-                    amountPaid: (paymentType === "DEFERRED" || status === "PENDING_PAYMENT") ? 0 : total,
+                    amountPaid: (paymentType === "DEFERRED") ? 0 : total,
                     items: {
                         create: items.map((item: any) => {
                             const product = productMap.get(item.productId);
@@ -99,6 +96,25 @@ export class SalesService {
                         }
                     });
                 }
+                // Check if total stock is low for this product across all warehouses
+                const totalStock = await tx.stock.aggregate({
+                    where: { tenantId, productId: item.productId },
+                    _sum: { quantity: true }
+                });
+
+                const product = productMap.get(item.productId);
+                if (product && totalStock._sum.quantity !== null && totalStock._sum.quantity <= product.minStock) {
+                    await tx.notification.create({
+                        data: {
+                            tenantId,
+                            title: `نقص في المخزون: ${product.name}`,
+                            message: `وصل رصيد المنتج ${product.name} إلى ${totalStock._sum.quantity} قطعة، وهو أقل من أو يساوي الحد الأدنى (${product.minStock})`,
+                            type: "warning",
+                            status: "unread",
+                            link: `/dashboard/inventory/products`
+                        }
+                    });
+                }
             }
 
             // 5. Generate human-readable invoice token
@@ -134,11 +150,6 @@ export class SalesService {
                 }
             });
 
-            // If pending payment, we STOP here. accounting entries are deferred.
-            if (status === "PENDING_PAYMENT") {
-                return newSale;
-            }
-
             // 7. GL Entries (Only if COMPLETED)
             const totalCost = items.reduce((sum: number, item: any) => {
                 const product = productMap.get(item.productId);
@@ -147,7 +158,6 @@ export class SalesService {
 
             let debitAccount: string = ACCOUNTS.ASSETS.CASH;
             if (paymentType === "BANK_TRANSFER") debitAccount = ACCOUNTS.ASSETS.BANK;
-            if (paymentType === "ONLINE") debitAccount = ACCOUNTS.ASSETS.ONLINE_GATEWAY;
             if (paymentType === "DEFERRED") debitAccount = ACCOUNTS.ASSETS.ACCOUNTS_RECEIVABLE;
 
             await createJournalEntry({
@@ -164,66 +174,6 @@ export class SalesService {
             }, tx);
 
             return newSale;
-        });
-    }
-
-    static async finalizeSale(saleId: string) {
-        return await prisma.$transaction(async (tx) => {
-            const sale = await tx.sale.findUnique({
-                where: { id: saleId },
-                include: { items: true, invoice: true, tenant: true }
-            });
-            if (!sale) throw new Error("Sale not found");
-            if (sale.status === "COMPLETED") return sale;
-
-            // Update Sale status
-            await tx.sale.update({
-                where: { id: saleId },
-                data: {
-                    status: "COMPLETED",
-                    amountPaid: sale.total
-                }
-            });
-
-            // Update Invoice status
-            if (sale.invoice) {
-                await tx.invoice.update({
-                    where: { id: sale.invoice.id },
-                    data: { status: "COMPLETED" }
-                });
-            }
-
-            // Fetch product costs for GL
-            const productIds = sale.items.map((i) => i.productId);
-            const products = await tx.product.findMany({
-                where: { id: { in: productIds } },
-                select: { id: true, cost: true }
-            });
-            const productMap = new Map(products.map(p => [p.id, p]));
-
-            const totalCost = sale.items.reduce((sum, item) => {
-                const product = productMap.get(item.productId);
-                return sum + (Number(product?.cost || 0) * item.quantity);
-            }, 0);
-
-            // GL Entries
-            // Default to Online Gateway since this is finalized from online payment
-            const debitAccount = ACCOUNTS.ASSETS.ONLINE_GATEWAY;
-
-            await createJournalEntry({
-                tenantId: sale.tenantId,
-                description: `Sale #${sale.number} (ONLINE)`,
-                reference: sale.id,
-                date: new Date(),
-                transactions: [
-                    { accountCode: debitAccount, type: "DEBIT", amount: Number(sale.total) },
-                    { accountCode: ACCOUNTS.REVENUE.SALES, type: "CREDIT", amount: Number(sale.total) },
-                    { accountCode: ACCOUNTS.EXPENSE.COGS, type: "DEBIT", amount: Number(totalCost) },
-                    { accountCode: ACCOUNTS.ASSETS.INVENTORY, type: "CREDIT", amount: Number(totalCost) },
-                ]
-            }, tx);
-
-            return sale;
         });
     }
 }

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
+import { PaymentStatus } from "@prisma/client";
 
 export interface ChatMessage {
     role: "system" | "user" | "assistant";
@@ -42,20 +43,14 @@ export class InternalModelService {
         else if (this.matches(userQuery, ["hi", "hello", "hey", "مرحبا", "اهلا", "سلام", "ازيك", "اشحالكم", "هلا"])) {
             responseText = this.getGreeting(dialect, isArabic);
         }
-        else if (this.matches(userQuery, ["sale", "revenue", "income", "مبيع", "ايراد", "دخل", "ربح", "بيع", "فلوس"])) {
-            responseText = await this.getSalesSummary(tenantId, isArabic, dialect);
+        else if (this.matches(userQuery, ["debt", "installment", "pay", "collect", "دين", "ديون", "قسط", "اقساط", "تحصيل", "مستحقات"])) {
+            responseText = await this.getDebtSummary(tenantId, isArabic, dialect);
         }
-        else if (this.matches(userQuery, ["low stock", "inventory", "stock", "مخزون", "نواقص", "كمية", "بضاعة", "خلص"])) {
-            responseText = await this.getLowStockAlerts(tenantId, isArabic, dialect);
+        else if (this.matches(userQuery, ["finance", "treasury", "cash", "money", "مالية", "خزينة", "فلوس", "كاش", "ارباح", "سيولة"])) {
+            responseText = await this.getFinancialSummary(tenantId, isArabic, dialect);
         }
-        else if (this.matches(userQuery, ["risk", "danger", "warning", "خطر", "تحذير", "مشكلة", "خسارة"])) {
-            responseText = await this.getRiskWarnings(tenantId, isArabic, dialect);
-        }
-        else if (this.matches(userQuery, ["improve", "advice", "production", "نصيحة", "تحسين", "تطوير", "انتاج"])) {
-            responseText = await this.getProductionAdvice(tenantId, isArabic, dialect);
-        }
-        else if (this.matches(userQuery, ["top product", "best sell", "أفضل منتج", "أكثر مبيعا", "ترند", "شائع"])) {
-            responseText = await this.getTopProducts(tenantId, isArabic, dialect);
+        else if (this.matches(userQuery, ["supplier", "vendor", "purchase", "مورد", "موردين", "شراء", "توريد"])) {
+            responseText = await this.getSupplierStats(tenantId, isArabic, dialect);
         }
         else if (this.matches(userQuery, ["customer", "client", "people", "عملاء", "عميل", "زبون"])) {
             responseText = await this.getCustomerStats(tenantId, isArabic, dialect);
@@ -175,19 +170,91 @@ export class InternalModelService {
 
     // --- Core Data Fetchers (Updated with Dialect Tone) ---
 
+    private static async getDebtSummary(tenantId: string, isArabic: boolean, dialect: Dialect): Promise<string> {
+        const pendingInstallments = await db.installment.findMany({
+            where: { tenantId, status: PaymentStatus.UNPAID },
+            select: { amount: true, customerId: true, supplierId: true }
+        });
+
+        const toCollect = pendingInstallments
+            .filter((i: any) => i.customerId !== null)
+            .reduce((sum: number, i: any) => sum + Number(i.amount), 0);
+
+        const toPay = pendingInstallments
+            .filter((i: any) => i.supplierId !== null)
+            .reduce((sum: number, i: any) => sum + Number(i.amount), 0);
+
+        if (pendingInstallments.length === 0) {
+            return isArabic
+                ? "لا توجد أقساط أو ديون معلقة حالياً. سجلاتك نظيفة!"
+                : "No pending installments or debts found. Your records are clear!";
+        }
+
+        let msg = isArabic ? "**ملخص المديونيات والأقساط:**\n" : "**Debt & Installment Summary:**\n";
+        msg += `- ${isArabic ? 'مستحقات للتحصيل (من عملاء)' : 'To Collect (from customers)'}: **${formatCurrency(toCollect)}**\n`;
+        msg += `- ${isArabic ? 'مدفوعات مطلوبة (لموردين)' : 'To Pay (to suppliers)'}: **${formatCurrency(toPay)}**\n`;
+
+        if (toPay > toCollect) {
+            msg += `\n> [!WARNING]\n> ${isArabic
+                ? "مدفوعاتك للموردين أكبر من تحصيلاتك، يرجى الحذر وتوفير سيولة كافية."
+                : "Payables exceed receivables. Please ensure sufficient liquidity."}`;
+        }
+
+        return msg;
+    }
+
+    private static async getFinancialSummary(tenantId: string, isArabic: boolean, dialect: Dialect): Promise<string> {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Sales Revenue
+        const sales = await db.sale.findMany({ where: { tenantId, date: { gte: today }, status: "COMPLETED" } });
+        const revenue = sales.reduce((sum: number, s: any) => sum + Number(s.total), 0);
+
+        // Supplier Payments
+        const payments = await db.supplierPayment.findMany({ where: { tenantId, date: { gte: today } } });
+        const expenses = payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0);
+
+        const net = revenue - expenses;
+
+        let msg = isArabic ? `**الوضع المالي لليوم (${today.toLocaleDateString()}):**\n` : `**Financial Status for Today (${today.toLocaleDateString()}):**\n`;
+        msg += `- ${isArabic ? 'إجمالي المبيعات' : 'Total Sales'}: **${formatCurrency(revenue)}**\n`;
+        msg += `- ${isArabic ? 'مدفوعات الموردين' : 'Supplier Payments'}: **${formatCurrency(expenses)}**\n`;
+        msg += `- ${isArabic ? 'صافي الحركة' : 'Net Activity'}: **${formatCurrency(net)}**\n`;
+
+        return msg;
+    }
+
+    private static async getSupplierStats(tenantId: string, isArabic: boolean, dialect: Dialect): Promise<string> {
+        const suppliers = await db.supplier.findMany({
+            where: { tenantId },
+            include: { purchases: true }
+        });
+
+        if (suppliers.length === 0) return isArabic ? "لم تقم بإضافة أي موردين بعد." : "No suppliers added yet.";
+
+        const topSupplier = suppliers.sort((a: any, b: any) => b.purchases.length - a.purchases.length)[0];
+
+        let msg = isArabic ? "**إحصائيات الموردين:**\n" : "**Supplier Statistics:**\n";
+        msg += `- ${isArabic ? 'إجمالي الموردين' : 'Total Suppliers'}: **${suppliers.length}**\n`;
+        msg += `- ${isArabic ? 'المورد الأكثر تعاملاً' : 'Most frequent supplier'}: **${topSupplier.name}** (${topSupplier.purchases.length} ${isArabic ? 'طلبات' : 'orders'})\n`;
+
+        return msg;
+    }
+
     private static async getSalesSummary(tenantId: string, isArabic: boolean, dialect: Dialect): Promise<string> {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const sales = await db.sale.findMany({ where: { tenantId, date: { gte: today }, status: "COMPLETED" } });
-        const totalRevenue = sales.reduce((sum, sale) => sum + Number(sale.total), 0);
+        const totalRevenue = sales.reduce((sum: number, sale: any) => sum + Number(sale.total), 0);
 
         if (sales.length === 0) {
-            return isArabic ? "لسه مفيش مبيعات النهاردة، إن شاء الله رزقكم واسع." : "No sales yet today.";
+            return isArabic ? "لم يتم تسجيل أي مبيعات اليوم حتى الآن. نأمل أن يتحسن الوضع قريباً!" : "No sales recorded yet today.";
         }
 
         return isArabic
-            ? `إجمالي مبيعات اليوم حتى الآن هو ${formatCurrency(totalRevenue)} من خلال ${sales.length} عمليات بيع.`
-            : `Today's revenue is ${formatCurrency(totalRevenue)} from ${sales.length} transactions.`;
+            ? `إجمالي مبيعات اليوم هو **${formatCurrency(totalRevenue)}** من خلال **${sales.length}** عملية بيع مكتملة.`
+            : `Today's total sales revenue is **${formatCurrency(totalRevenue)}** from **${sales.length}** completed transactions.`;
     }
 
     private static async getLowStockAlerts(tenantId: string, isArabic: boolean, dialect: Dialect): Promise<string> {
@@ -242,7 +309,7 @@ export class InternalModelService {
 
     private static async queryAIKnowledge(query: string, tenantId: string): Promise<string | null> {
         try {
-            const knowledge = await (db as any).aIKnowledge.findMany({
+            const knowledge = await db.aIKnowledge.findMany({
                 where: { OR: [{ tenantId }, { tenantId: null }], isActive: true }
             });
             const match = knowledge.find((k: any) => query.includes(k.question.toLowerCase()) || k.question.toLowerCase().includes(query));

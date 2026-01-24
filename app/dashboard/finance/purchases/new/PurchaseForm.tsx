@@ -3,7 +3,7 @@
 import { createPurchaseAction } from "@/actions/purchases";
 import { useActionState, useState } from "react";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
-import { Plus, Trash2, Truck, Warehouse as WarehouseIcon, ShoppingCart, ArrowLeft, Save, Sparkles, Package } from "lucide-react";
+import { Plus, Trash2, Truck, Warehouse as WarehouseIcon, ShoppingCart, ArrowLeft, Save, Sparkles, Package, CreditCard, Clock, DollarSign, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,11 @@ interface Warehouse {
     name: string;
 }
 
+interface Supplier {
+    id: string;
+    name: string;
+}
+
 interface PurchaseItem {
     productId: string;
     name: string;
@@ -34,7 +39,7 @@ interface PurchaseItem {
     cost: number;
 }
 
-export default function PurchaseForm({ products, warehouses }: { products: Product[], warehouses: Warehouse[] }) {
+export default function PurchaseForm({ products, warehouses, suppliers }: { products: Product[], warehouses: Warehouse[], suppliers: Supplier[] }) {
     const { t, locale } = useI18n();
     const [state, action, isPending] = useActionState(createPurchaseAction, null);
     const [items, setItems] = useState<PurchaseItem[]>([]);
@@ -42,6 +47,12 @@ export default function PurchaseForm({ products, warehouses }: { products: Produ
     const [selectedProduct, setSelectedProduct] = useState<string>("");
     const [quantity, setQuantity] = useState<number>(1);
     const [cost, setCost] = useState<number>(0);
+
+    const [paymentType, setPaymentType] = useState<"CASH" | "DEFERRED">("CASH");
+    const [installmentCount, setInstallmentCount] = useState(3);
+    const [installmentInterval, setInstallmentInterval] = useState(1);
+    const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
+    const [manualSupplier, setManualSupplier] = useState("");
 
     const handleAddStart = () => {
         if (!selectedProduct) return;
@@ -137,11 +148,32 @@ export default function PurchaseForm({ products, warehouses }: { products: Produ
                             </div>
                             <div className="space-y-3">
                                 <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.supplier")}</Label>
-                                <Input
-                                    name="supplier"
-                                    placeholder={t("Purchases.supplier_placeholder")}
-                                    className="h-14 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-bold text-base placeholder:text-muted-foreground/30"
-                                />
+                                <div className="flex gap-2">
+                                    <Select
+                                        name="supplierId"
+                                        value={selectedSupplierId}
+                                        onValueChange={setSelectedSupplierId}
+                                    >
+                                        <SelectTrigger className="h-14 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-bold text-base">
+                                            <SelectValue placeholder={t("Purchases.select_supplier") || "Select Supplier"} />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-primary/10 shadow-2xl">
+                                            {suppliers.map(s => <SelectItem key={s.id} value={s.id} className="h-12 font-medium">{s.name}</SelectItem>)}
+                                            <SelectItem value="manual" className="font-black text-primary italic border-t border-primary/10 mt-2">{t("Purchases.manual_entry") || "Manual Entry"}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {selectedSupplierId === "manual" && (
+                                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex-1">
+                                            <Input
+                                                name="supplier"
+                                                value={manualSupplier}
+                                                onChange={e => setManualSupplier(e.target.value)}
+                                                placeholder={t("Purchases.supplier_name") || "Enter name..."}
+                                                className="h-14 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-bold text-base"
+                                            />
+                                        </motion.div>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -189,7 +221,7 @@ export default function PurchaseForm({ products, warehouses }: { products: Produ
                                             onChange={e => setCost(Number(e.target.value))}
                                             className="h-14 pl-10 rounded-2xl bg-muted/30 border-primary/5 font-black text-lg"
                                         />
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 font-black">$</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/40 font-black">{t("Common.currency")}</span>
                                     </div>
                                 </div>
                                 <div className="md:col-span-2 space-y-3">
@@ -286,27 +318,108 @@ export default function PurchaseForm({ products, warehouses }: { products: Produ
                                 {t("Purchases.summary")}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-10 space-y-10">
+                        <CardContent className="p-10 space-y-8">
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center opacity-70">
                                     <span className="text-sm font-black uppercase tracking-widest">{t("Purchases.subtotal")}</span>
                                     <span className="font-bold">{formatCurrency(total)}</span>
                                 </div>
-                                <div className="flex justify-between items-center opacity-70 border-t border-white/10 pt-6">
-                                    <span className="text-sm font-black uppercase tracking-widest">{t("Purchases.items_count")}</span>
-                                    <span className="font-bold">{items.length}</span>
-                                </div>
-                                <div className="flex justify-between items-end pt-10 border-t border-white/20">
+                                <div className="flex justify-between items-end pt-6 border-t border-white/20">
                                     <div className="space-y-1">
                                         <span className="block text-xs font-black uppercase tracking-[0.2em] opacity-60 leading-none">{t("Purchases.net_total")}</span>
-                                        <span className="block text-5xl font-black italic tracking-tighter leading-none">
+                                        <span className="block text-4xl font-black italic tracking-tighter leading-none">
                                             {formatCurrency(total)}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Payment Method in Summary */}
+                            <div className="space-y-4 pt-6 border-t border-white/10">
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                                    <DollarSign className="h-3 w-3" />
+                                    {t("Sales.payment_method") || "Payment"}
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentType("CASH")}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 text-xs",
+                                            paymentType === "CASH"
+                                                ? "border-white bg-white/10 text-white"
+                                                : "border-white/5 bg-white/5 text-white/40 hover:bg-white/10"
+                                        )}
+                                    >
+                                        <DollarSign className="h-5 w-5" />
+                                        <span className="font-black uppercase tracking-widest">{t("Sales.cash")}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentType("DEFERRED")}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 text-xs",
+                                            paymentType === "DEFERRED"
+                                                ? "border-white bg-white/10 text-white"
+                                                : "border-white/5 bg-white/5 text-white/40 hover:bg-white/10"
+                                        )}
+                                    >
+                                        <Clock className="h-5 w-5" />
+                                        <span className="font-black uppercase tracking-widest">{t("Sales.deferred") || "DEBT"}</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Installment Config in Sidebar */}
+                            <AnimatePresence>
+                                {paymentType === "DEFERRED" && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="space-y-4 pt-4 overflow-hidden border-t border-white/10"
+                                    >
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-1">
+                                                    {t("Sales.installments_count") || "PAYMENTS"}
+                                                </label>
+                                                <div className="flex items-center bg-white/5 rounded-xl p-1 border border-white/10">
+                                                    <Button variant="ghost" type="button" size="icon" onClick={() => setInstallmentCount(Math.max(2, installmentCount - 1))} className="h-8 w-8 hover:bg-white/10 text-white">
+                                                        <Minus className="h-3 w-3" />
+                                                    </Button>
+                                                    <span className="flex-1 text-center font-black text-sm">{installmentCount}</span>
+                                                    <Button variant="ghost" type="button" size="icon" onClick={() => setInstallmentCount(installmentCount + 1)} className="h-8 w-8 hover:bg-white/10 text-white">
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-1">
+                                                    {t("Sales.interval_months") || "INTERVAL"}
+                                                </label>
+                                                <div className="flex items-center bg-white/5 rounded-xl p-1 border border-white/10">
+                                                    <Button variant="ghost" type="button" size="icon" onClick={() => setInstallmentInterval(Math.max(1, installmentInterval - 1))} className="h-8 w-8 hover:bg-white/10 text-white">
+                                                        <Minus className="h-3 w-3" />
+                                                    </Button>
+                                                    <span className="flex-1 text-center font-black text-sm">{installmentInterval}</span>
+                                                    <Button variant="ghost" type="button" size="icon" onClick={() => setInstallmentInterval(installmentInterval + 1)} className="h-8 w-8 hover:bg-white/10 text-white">
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center text-xs italic opacity-80">
+                                            {formatCurrency(total / installmentCount)} / month
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <input type="hidden" name="items" value={JSON.stringify(items)} />
+                            <input type="hidden" name="paymentType" value={paymentType} />
+                            <input type="hidden" name="installmentCount" value={installmentCount} />
+                            <input type="hidden" name="installmentInterval" value={installmentInterval} />
 
                             <Button
                                 type="submit"

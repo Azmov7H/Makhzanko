@@ -90,7 +90,7 @@ export function GeneralSettings({ initialName }: { initialName: string }) {
                         <div className="space-y-1">
                             <Label className="text-lg font-black">{t("Settings.theme")}</Label>
                             <p className="text-sm font-medium text-muted-foreground/60">
-                                {t("Settings.dark")} / {t("Settings.light")} Mode
+                                {t("Settings.dark")} / {t("Settings.light")}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">

@@ -15,19 +15,12 @@ import { Loader2, Save, Image as ImageIcon, Smartphone, Mail, MapPin } from "luc
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
 
-export default function InvoiceDesigner({ settings, plan }: { settings: any, plan: string }) {
+export default function InvoiceDesigner({ settings }: { settings: any }) {
     const [config, setConfig] = useState(settings);
     const [isPending, startTransition] = useTransition();
     const { t } = useI18n();
 
-    const isLocked = plan === "FREE";
-
     const handleSave = () => {
-        if (isLocked) {
-            toast.error(t('Invoices.designer.upgrade_error'));
-            return;
-        }
-
         startTransition(async () => {
             const result = await updateInvoiceSettingsAction(config);
             if (result.error) {
@@ -55,7 +48,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                         <span>{t('Invoices.designer.title')}</span>
-                        {isLocked && <Badge variant="secondary">{t('Invoices.designer.locked')}</Badge>}
                     </CardTitle>
                     <CardDescription>
                         {t('Invoices.designer.desc')}
@@ -72,7 +64,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                     value={config.logoUrl || ""}
                                     onChange={(e) => updateConfig("logoUrl", e.target.value)}
                                     placeholder={t('Invoices.designer.logo_placeholder')}
-                                    disabled={isLocked}
                                 />
                                 <div className="h-10 w-10 border rounded flex items-center justify-center bg-gray-50 flex-shrink-0">
                                     {config.logoUrl ? <img src={config.logoUrl} className="max-h-8 max-w-8 object-contain" alt="Logo preview" /> : <ImageIcon className="h-4 w-4 text-gray-400" />}
@@ -88,7 +79,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                         type="color"
                                         value={config.primaryColor || "#000000"}
                                         onChange={(e) => updateConfig("primaryColor", e.target.value)}
-                                        disabled={isLocked}
                                         className="w-10 h-10 p-1 cursor-pointer"
                                     />
                                     <span className="text-xs font-mono">{config.primaryColor}</span>
@@ -101,7 +91,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                         type="color"
                                         value={config.accentColor || "#4F46E5"}
                                         onChange={(e) => updateConfig("accentColor", e.target.value)}
-                                        disabled={isLocked}
                                         className="w-10 h-10 p-1 cursor-pointer"
                                     />
                                     <span className="text-xs font-mono">{config.accentColor}</span>
@@ -112,7 +101,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>{t('Invoices.designer.font_family')}</Label>
-                                <Select value={config.fontFamily || "Inter"} onValueChange={(val) => updateConfig("fontFamily", val)} disabled={isLocked}>
+                                <Select value={config.fontFamily || "Inter"} onValueChange={(val) => updateConfig("fontFamily", val)}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Inter">Inter (Sans)</SelectItem>
@@ -124,7 +113,7 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                             </div>
                             <div className="space-y-2">
                                 <Label>{t('Invoices.designer.font_size')}</Label>
-                                <Select value={config.fontSize || "medium"} onValueChange={(val) => updateConfig("fontSize", val)} disabled={isLocked}>
+                                <Select value={config.fontSize || "medium"} onValueChange={(val) => updateConfig("fontSize", val)}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="small">Small</SelectItem>
@@ -146,7 +135,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                 value={config.companyAddress || ""}
                                 onChange={(e) => updateConfig("companyAddress", e.target.value)}
                                 placeholder={t('Invoices.designer.address_placeholder')}
-                                disabled={isLocked}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -156,7 +144,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                     value={config.companyPhone || ""}
                                     onChange={(e) => updateConfig("companyPhone", e.target.value)}
                                     placeholder={t('Invoices.designer.phone_placeholder')}
-                                    disabled={isLocked}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -165,7 +152,6 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                                     value={config.companyEmail || ""}
                                     onChange={(e) => updateConfig("companyEmail", e.target.value)}
                                     placeholder={t('Invoices.designer.email_placeholder')}
-                                    disabled={isLocked}
                                 />
                             </div>
                         </div>
@@ -178,27 +164,27 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                         <div className="grid grid-cols-1 gap-4">
                             <div className="flex items-center justify-between">
                                 <Label>{t('Invoices.designer.show_tax')}</Label>
-                                <Switch checked={config.showTax} onCheckedChange={(c) => updateConfig("showTax", c)} disabled={isLocked} />
+                                <Switch checked={config.showTax} onCheckedChange={(c) => updateConfig("showTax", c)} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label>{t('Invoices.designer.show_discount')}</Label>
-                                <Switch checked={config.showDiscount} onCheckedChange={(c) => updateConfig("showDiscount", c)} disabled={isLocked} />
+                                <Switch checked={config.showDiscount} onCheckedChange={(c) => updateConfig("showDiscount", c)} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label>{t('Invoices.designer.show_seller')}</Label>
-                                <Switch checked={config.showSeller} onCheckedChange={(c) => updateConfig("showSeller", c)} disabled={isLocked} />
+                                <Switch checked={config.showSeller} onCheckedChange={(c) => updateConfig("showSeller", c)} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label>{t('Invoices.designer.show_customer')}</Label>
-                                <Switch checked={config.showCustomerSection} onCheckedChange={(c) => updateConfig("showCustomerSection", c)} disabled={isLocked} />
+                                <Switch checked={config.showCustomerSection} onCheckedChange={(c) => updateConfig("showCustomerSection", c)} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label>{t('Invoices.designer.show_sku')}</Label>
-                                <Switch checked={config.showItemCode} onCheckedChange={(c) => updateConfig("showItemCode", c)} disabled={isLocked} />
+                                <Switch checked={config.showItemCode} onCheckedChange={(c) => updateConfig("showItemCode", c)} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label>{t('Invoices.designer.show_warehouse')}</Label>
-                                <Switch checked={config.showWarehouse} onCheckedChange={(c) => updateConfig("showWarehouse", c)} disabled={isLocked} />
+                                <Switch checked={config.showWarehouse} onCheckedChange={(c) => updateConfig("showWarehouse", c)} />
                             </div>
                         </div>
                     </div>
@@ -211,17 +197,15 @@ export default function InvoiceDesigner({ settings, plan }: { settings: any, pla
                             value={config.footerNotes || ""}
                             onChange={(e) => updateConfig("footerNotes", e.target.value)}
                             placeholder={t('Invoices.designer.footer_placeholder')}
-                            disabled={isLocked}
                             className="h-24 resize-none"
                         />
                     </div>
 
                     <div className="pt-4 sticky bottom-0 bg-white pb-4 z-10">
-                        <Button onClick={handleSave} disabled={isPending || isLocked} className="w-full">
+                        <Button onClick={handleSave} disabled={isPending} className="w-full">
                             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             {t('Invoices.designer.save')}
                         </Button>
-                        {isLocked && <p className="text-xs text-red-500 mt-2 text-center">{t('Invoices.designer.upgrade_notice')}</p>}
                     </div>
                 </CardContent>
             </Card>

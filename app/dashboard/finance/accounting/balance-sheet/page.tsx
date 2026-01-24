@@ -36,9 +36,9 @@ export default async function BalanceSheetPage() {
             <div className="relative">
                 <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
                 <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
-                    {t("Dashboard.balance_sheet") || "الميزانية العمومية (Balance Sheet)"}
+                    {t("Accounting.balance_sheet")}
                 </h1>
-                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">Snapshot of your company's financial position in real-time.</p>
+                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">{t("Accounting.balance_sheet_desc")}</p>
             </div>
 
             <Separator className="bg-primary/5 h-px" />
@@ -47,7 +47,7 @@ export default async function BalanceSheetPage() {
                 <Card className="border-none shadow-2xl shadow-emerald-500/5 bg-card/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group hover:scale-[1.03] transition-all duration-500">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-3xl opacity-20" />
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">Total Assets</CardTitle>
+                        <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">{t("Accounting.total_assets")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black text-emerald-500 tracking-tighter">{formatCurrency(data.totalAssets)}</div>
@@ -56,7 +56,7 @@ export default async function BalanceSheetPage() {
                 <Card className="border-none shadow-2xl shadow-destructive/5 bg-card/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group hover:scale-[1.03] transition-all duration-500">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/10 rounded-full -mr-16 -mt-16 blur-3xl opacity-20" />
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">Total Liabilities</CardTitle>
+                        <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">{t("Accounting.total_liabilities")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black text-destructive tracking-tighter">{formatCurrency(data.totalLiabilities)}</div>
@@ -65,7 +65,7 @@ export default async function BalanceSheetPage() {
                 <Card className="border-none shadow-2xl shadow-primary/5 bg-card/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group hover:scale-[1.03] transition-all duration-500">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl opacity-20" />
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">Total Equity</CardTitle>
+                        <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">{t("Accounting.total_equity")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black text-primary tracking-tighter">{formatCurrency(data.totalEquity)}</div>
@@ -80,13 +80,13 @@ export default async function BalanceSheetPage() {
                             <div className="p-3 bg-emerald-500/10 rounded-2xl shadow-xl shadow-emerald-500/5">
                                 <TrendingUp className="h-7 w-7 text-emerald-500" />
                             </div>
-                            Assets (الأصول)
+                            {t("Accounting.assets")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 flex-1">
                         <div className="space-y-6">
                             {data.assets.length === 0 ? (
-                                <p className="text-center text-muted-foreground py-12 font-medium">No assets found</p>
+                                <p className="text-center text-muted-foreground py-12 font-medium">{t("Accounting.no_assets")}</p>
                             ) : (
                                 data.assets.map((a) => (
                                     <div key={a.id} className="flex justify-between items-center group/row p-4 rounded-2xl hover:bg-emerald-500/5 transition-all duration-300 border border-transparent hover:border-emerald-500/10">
@@ -109,13 +109,13 @@ export default async function BalanceSheetPage() {
                                 <div className="p-3 bg-destructive/10 rounded-2xl shadow-xl shadow-destructive/5">
                                     <TrendingDown className="h-7 w-7 text-destructive" />
                                 </div>
-                                Liabilities (الخصوم)
+                                {t("Accounting.liabilities")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-8 flex-1">
                             <div className="space-y-6">
                                 {data.liabilities.length === 0 ? (
-                                    <p className="text-center text-muted-foreground py-8 font-medium">No liabilities found</p>
+                                    <p className="text-center text-muted-foreground py-8 font-medium">{t("Accounting.no_liabilities")}</p>
                                 ) : (
                                     data.liabilities.map((l) => (
                                         <div key={l.id} className="flex justify-between items-center group/row p-4 rounded-2xl hover:bg-destructive/5 transition-all duration-300 border border-transparent hover:border-destructive/10">
@@ -137,13 +137,13 @@ export default async function BalanceSheetPage() {
                                 <div className="p-3 bg-primary/10 rounded-2xl shadow-xl shadow-primary/5">
                                     <Scale className="h-7 w-7 text-primary" />
                                 </div>
-                                Equity (حقوق الملكية)
+                                {t("Accounting.equity")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-8 flex-1">
                             <div className="space-y-6">
                                 {data.equity.length === 0 ? (
-                                    <p className="text-center text-muted-foreground py-8 font-medium">No equity recorded</p>
+                                    <p className="text-center text-muted-foreground py-8 font-medium">{t("Accounting.no_equity")}</p>
                                 ) : (
                                     data.equity.map((e) => (
                                         <div key={e.id} className="flex justify-between items-center group/row p-4 rounded-2xl hover:bg-primary/5 transition-all duration-300 border border-transparent hover:border-primary/10">
@@ -174,9 +174,9 @@ export default async function BalanceSheetPage() {
                         )}
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black tracking-tight">{data.isBalanced ? "Perfectly Balanced" : "System Imbalance"}</h3>
+                        <h3 className="text-3xl font-black tracking-tight">{data.isBalanced ? t("Accounting.balanced") : t("Accounting.imbalance")}</h3>
                         <p className="text-lg font-medium opacity-80 mt-1">
-                            Financial Equation: Assets (A) = Liabilities (L) + Equity (E)
+                            {t("Accounting.financial_equation")}
                         </p>
                     </div>
                 </div>

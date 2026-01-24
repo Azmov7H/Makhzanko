@@ -2,10 +2,6 @@
 
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth-role";
-import { logActivity } from "@/lib/activity-logger";
-import { headers } from "next/headers";
-import { getRequestMetadata } from "@/lib/activity-logger";
-import { SubscriptionStatus } from "@prisma/client";
 
 /**
  * Get all tenants
@@ -22,21 +18,6 @@ export async function getAllTenants() {
           sales: true,
         },
       },
-      subscriptions: {
-        where: {
-          status: {
-            in: ["active", "trialing"] as any,
-          },
-        },
-        include: {
-          plan: true,
-        },
-        take: 1,
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-      trialOverride: true,
     },
     orderBy: {
       createdAt: "desc",

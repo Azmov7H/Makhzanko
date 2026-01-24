@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { checkLimit } from "@/lib/limits";
+
 
 export async function createWarehouseAction(prevState: any, formData: FormData) {
     const context = await getTenantContext();
@@ -14,13 +14,7 @@ export async function createWarehouseAction(prevState: any, formData: FormData) 
 
     if (!name) return { error: "Name is required" };
 
-    // Check Limits
-    try {
-        await checkLimit(context.tenantId, "warehouses");
-    } catch (error) {
-        const err = error as Error;
-        return { error: err.message };
-    }
+
 
     await prisma.warehouse.create({
         data: {
