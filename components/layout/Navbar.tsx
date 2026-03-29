@@ -9,9 +9,16 @@ import LanguageToggle from "./LanguageToggle";
 import Logo from "./Logo";
 import { ThemeDropdown } from "./Toggel";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function Navbar() {
   const { t, locale } = useI18n();
+  const { user, checkSession } = useAuth();
+
+  useEffect(() => {
+    checkSession();
+  }, []);
 
   const links = [
     { id: 1, name: t("Landing.features.title"), href: "/#features" },
@@ -51,6 +58,29 @@ export default function Navbar() {
           <ThemeDropdown />
           <LanguageToggle />
 
+          <div className="hidden md:flex items-center gap-3 ml-2 rtl:ml-0 rtl:mr-2">
+            {user ? (
+              <Link href="/dashboard">
+                <Button className="rounded-xl gradient-primary shadow-lg shadow-primary/20 transition-all hover:scale-105">
+                  {t("Dashboard.dashboard")}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="rounded-xl font-semibold">
+                    {t("Auth.login")}
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button className="rounded-xl gradient-primary shadow-lg shadow-primary/20 transition-all hover:scale-105">
+                    {t("Auth.register")}
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+
 
 
           {/* Mobile Menu */}
@@ -78,16 +108,26 @@ export default function Navbar() {
               <hr className="border-border" />
 
               <div className="flex flex-col gap-4">
-                <Link href="/login" onClick={() => setOpen(false)}>
-                  <Button variant="outline" size="xl" className="w-full rounded-2xl">
-                    {t("Auth.login")}
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setOpen(false)}>
-                  <Button size="xl" className="w-full rounded-2xl gradient-primary">
-                    {t("Auth.register")}
-                  </Button>
-                </Link>
+                {user ? (
+                  <Link href="/dashboard" onClick={() => setOpen(false)}>
+                    <Button size="xl" className="w-full rounded-2xl gradient-primary shadow-lg shadow-primary/20">
+                      {t("Dashboard.dashboard")}
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setOpen(false)}>
+                      <Button variant="outline" size="xl" className="w-full rounded-2xl">
+                        {t("Auth.login")}
+                      </Button>
+                    </Link>
+                    <Link href="/register" onClick={() => setOpen(false)}>
+                      <Button size="xl" className="w-full rounded-2xl gradient-primary">
+                        {t("Auth.register")}
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>

@@ -4,10 +4,17 @@ import { useI18n } from "@/lib/i18n/context";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function Hero() {
     const { t } = useI18n();
+    const { user, checkSession } = useAuth();
+
+    useEffect(() => {
+        checkSession();
+    }, []);
 
     return (
         <section className="relative min-h-[85vh] flex items-center pt-20 overflow-hidden bg-background">
@@ -59,12 +66,21 @@ export default function Hero() {
                             transition={{ delay: 0.3 }}
                             className="flex flex-wrap gap-5"
                         >
-                            <Button asChild size="xl" className="h-14 px-10 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-lg shadow-primary/10 hover:translate-y-[-2px] transition-all">
-                                <Link href="/register">
-                                    {t("Landing.hero.start_free")}
-                                    <ArrowRight className="ms-2 h-5 w-5 rtl:rotate-180" />
-                                </Link>
-                            </Button>
+                            {user ? (
+                                <Button asChild size="xl" className="h-14 px-10 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                                    <Link href="/dashboard">
+                                        {t("Dashboard.dashboard")}
+                                        <LayoutDashboard className="ms-2 h-5 w-5" />
+                                    </Link>
+                                </Button>
+                            ) : (
+                                <Button asChild size="xl" className="h-14 px-10 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-lg shadow-primary/10 hover:translate-y-[-2px] transition-all">
+                                    <Link href="/register">
+                                        {t("Landing.hero.start_free")}
+                                        <ArrowRight className="ms-2 h-5 w-5 rtl:rotate-180" />
+                                    </Link>
+                                </Button>
+                            )}
                             <Button asChild variant="ghost" size="xl" className="h-14 px-10 rounded-lg font-bold text-lg border border-border/50 hover:bg-accent/50 transition-all">
                                 <Link href="/#features">
                                     {t("Landing.hero.explore_features")}

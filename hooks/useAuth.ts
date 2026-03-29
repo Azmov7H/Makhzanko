@@ -10,6 +10,31 @@ export function useAuth() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [user, setUser] = useState<any>(null);
+
+    const checkSession = async () => {
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+            const response = await fetch(`${baseUrl}/api/auth/me`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+                return data;
+            } else {
+                setUser(null);
+                return null;
+            }
+        } catch (err) {
+            setUser(null);
+            return null;
+        }
+    };
 
     const register = async (formData: FormData) => {
         setLoading(true);
@@ -94,7 +119,9 @@ export function useAuth() {
     return {
         register,
         login,
+        checkSession,
         loading,
         error,
+        user,
     };
 }
