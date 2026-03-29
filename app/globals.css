@@ -1,0 +1,332 @@
+@import "tailwindcss";
+
+/* @plugin "tailwindcss-animate"; */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-cairo: var(--font-cairo);
+  --font-inter: var(--font-inter);
+  --font-ibm-arabic: "IBM Plex Sans Arabic", sans-serif;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(12px);
+
+  --deep-glass: rgba(15, 23, 42, 0.6);
+  --deep-glass-border: rgba(255, 255, 255, 0.1);
+  --deep-glass-blur: blur(24px);
+}
+
+:root {
+  /* Neo-Arabic Minimalism Palette - Clean, Professional, High-End */
+  --background: 0 0% 100%;       /* Pure Silk White */
+  --foreground: 222 47% 11%;    /* Midnight Blue */
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --primary: 222 47% 11%;      /* Contrast focus - Midnight Blue */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 42 35% 56%;    /* Satin Gold Accent - Subtle */
+  --secondary-foreground: 222 47% 11%;
+
+  --accent: 210 40% 96%;      /* Ultra Light Sky/Stone */
+  --accent-foreground: 222 47% 11%;
+
+  --muted: 210 20% 98%;
+  --muted-foreground: 215 16% 47%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 20% 98%;
+
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 222 47% 11%;
+
+  --radius: 0.75rem;          /* Sharper, more modern corners */
+}
+
+.dark {
+  --background: 222 47% 4%;
+  --foreground: 210 40% 98%;
+
+  --card: 222 47% 7%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222 47% 5%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 210 40% 98%;
+  --primary-foreground: 222 47% 4%;
+
+  --secondary: 42 35% 56%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 222 47% 15%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 222 47% 10%;
+  --accent-foreground: 210 40% 98%;
+
+  --border: 222 47% 18%;
+  --input: 222 47% 18%;
+  --ring: 212 27% 87%;
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "IBM Plex Sans Arabic", var(--font-cairo), sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-amiri), serif;
+    @apply tracking-tight font-black text-foreground;
+  }
+
+
+
+  /* Font override for English */
+  html[lang="en"] body {
+    font-family: var(--font-inter), sans-serif;
+  }
+
+
+
+  h1 { font-size: 36px; }
+  h2 { font-size: 28px; }
+  h3 { font-size: 22px; }
+  body { font-size: 16px; }
+  small { font-size: 14px; }
+
+
+  button,
+  a {
+    touch-action: manipulation;
+  }
+}
+
+/* RTL Support */
+html[lang="ar"],
+[dir="rtl"] {
+  direction: rtl;
+}
+
+/* Simple scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
+}
+
+/* Custom Animations for Owner Dashboard */
+@keyframes blob {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate(20px, -50px) scale(1.1);
+  }
+
+  50% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  75% {
+    transform: translate(50px, 50px) scale(1.05);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out;
+}
+
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s ease-in-out infinite;
+}
+
+.animate-bounce-slow-delay {
+  animation: bounce-slow 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.luxury-card {
+  @apply bg-white dark:bg-card border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl overflow-hidden;
+}
+
+.satin-button {
+  @apply h-12 px-8 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2;
+}
+
+.text-dynamic {
+  @apply text-foreground/90 transition-colors duration-300;
+}

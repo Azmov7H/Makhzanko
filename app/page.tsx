@@ -1,0 +1,40 @@
+import { Metadata } from "next";
+import { getI18n, getLocale } from "@/lib/i18n/server";
+import { Locale } from "@/lib/i18n/config";
+import Navbar from '@/components/layout/Navbar';
+import Hero from '@/components/layout/Landing/Hero';
+import Features from '@/components/layout/Landing/Features';
+import FAQ from '@/components/layout/Landing/FAQ';
+import Footer from '@/components/layout/Footer';
+import { generatePageMetadata, getKeywords } from "@/lib/seo/metadata";
+import type { Locale as SEOLocale } from "@/lib/seo/types";
+
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getI18n(locale);
+
+  return generatePageMetadata(
+    locale as SEOLocale,
+    {
+      title: t("SEO.home.title"),
+      description: t("SEO.home.description"),
+      keywords: getKeywords(locale as SEOLocale),
+    },
+    ""
+  );
+}
+
+export default function HomePage() {
+  return (
+    <div className="flex flex-col min-h-screen bg-background text-start">
+      <Navbar />
+      <main className="flex-grow">
+        <Hero />
+        <Features />
+        <FAQ />
+      </main>
+      <Footer />
+    </div>
+  );
+}

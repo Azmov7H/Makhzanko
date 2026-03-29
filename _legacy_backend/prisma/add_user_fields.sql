@@ -1,0 +1,10 @@
+-- Add missing fields to User table
+ALTER TABLE "User" 
+ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN DEFAULT true,
+ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP,
+ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Update existing users to be active
+UPDATE "User" SET "isActive" = true WHERE "isActive" IS NULL;
+
