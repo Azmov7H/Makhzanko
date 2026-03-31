@@ -3,7 +3,7 @@
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ExpenseService } from "@/services/expenses";
+import { ExpenseService } from "@/_legacy_backend/services/expenses";
 
 export async function createExpenseAction(prevState: any, formData: FormData) {
     const context = await getTenantContext();

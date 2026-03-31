@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
-import { deleteUserAction } from "@/actions/users";
+import { deleteUserAction } from "@/_legacy_backend/actions/users";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 

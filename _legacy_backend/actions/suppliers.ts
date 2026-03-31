@@ -1,6 +1,6 @@
 "use server";
 
-import { SupplierService } from "@/services/suppliers";
+import { SupplierService } from "@/_legacy_backend/services/suppliers";
 import { revalidatePath } from "next/cache";
 import { getTenantContext } from "@/lib/auth";
 

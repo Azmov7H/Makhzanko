@@ -6,11 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { User, Save, Shield } from "lucide-react";
-import { updateProfile } from "@/actions/settings";
+import { updateProfile, changePassword } from "@/_legacy_backend/actions/settings";
 import { toast } from "sonner";
 import { Role } from "@prisma/client";
-
-import { changePassword } from "@/actions/settings";
 
 interface ProfileSettingsProps {
     user: {

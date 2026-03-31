@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { updateInvoiceSettingsAction } from "@/actions/invoice-settings";
+import { updateInvoiceSettingsAction } from "@/_legacy_backend/actions/invoice-settings";
 import { Save, Eye, Palette, Building2, Settings2, Sparkles, Smartphone, Mail, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";

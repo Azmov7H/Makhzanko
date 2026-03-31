@@ -1,6 +1,6 @@
 "use server";
 
-import { UserService } from "@/services/users";
+import { UserService } from "@/_legacy_backend/services/users";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

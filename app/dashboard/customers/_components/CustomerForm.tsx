@@ -1,6 +1,6 @@
 "use client";
 
-import { createCustomerAction, updateCustomerAction } from "@/actions/customers";
+import { createCustomerAction, updateCustomerAction } from "@/_legacy_backend/actions/customers";
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/context";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { updateAIDialect } from "@/actions/ai";
+import { updateAIDialect } from "@/_legacy_backend/actions/ai";
 import { cn } from "@/lib/utils";
 
 interface Message {

@@ -1,4 +1,4 @@
-import { UserService } from "@/services/users";
+import { UserService } from "@/_legacy_backend/services/users";
 import { getTenantContext } from "@/lib/auth";
 import { UsersClient } from "./_components/UsersClient";
 

@@ -1,4 +1,4 @@
-import { SupplierService } from "@/services/suppliers";
+import { SupplierService } from "@/_legacy_backend/services/suppliers";
 import { getTenantContext } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { SupplierForm } from "../../_components/SupplierForm";

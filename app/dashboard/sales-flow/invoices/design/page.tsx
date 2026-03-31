@@ -1,4 +1,4 @@
-import { getInvoiceSettingsAction } from "@/actions/invoice-settings";
+import { getInvoiceSettingsAction } from "@/_legacy_backend/actions/invoice-settings";
 import InvoiceDesigner from "./InvoiceDesigner";
 import { getAuthPayload } from "@/lib/auth";
 import { redirect } from "next/navigation";

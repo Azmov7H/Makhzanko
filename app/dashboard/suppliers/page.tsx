@@ -1,4 +1,4 @@
-import { SupplierService } from "@/services/suppliers";
+import { SupplierService } from "@/_legacy_backend/services/suppliers";
 import { getTenantContext } from "@/lib/auth";
 import { SuppliersClient } from "./_components/SuppliersClient";
 

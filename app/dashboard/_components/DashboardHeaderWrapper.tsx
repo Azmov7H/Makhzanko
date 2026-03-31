@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { CircleUser, Settings, HelpCircle, LogOut, Shield, Search, Bell, Globe } from "lucide-react";
-import { logoutAction } from "@/actions/auth";
+import { logoutAction } from "@/_legacy_backend/actions/auth";
 import Link from "next/link";
 import { getI18n, getLocale } from "@/lib/i18n/server";
 import { cn } from "@/lib/cn";

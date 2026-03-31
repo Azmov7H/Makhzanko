@@ -1,4 +1,4 @@
-import { CustomerService } from "@/services/customers";
+import { CustomerService } from "@/_legacy_backend/services/customers";
 import { getTenantContext } from "@/lib/auth";
 import { CustomersClient } from "./_components/CustomersClient";
 

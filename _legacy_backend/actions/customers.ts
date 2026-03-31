@@ -1,6 +1,6 @@
 "use server";
 
-import { CustomerService } from "@/services/customers";
+import { CustomerService } from "@/_legacy_backend/services/customers";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

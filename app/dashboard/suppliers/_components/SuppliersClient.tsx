@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
-import { deleteSupplierAction } from "@/actions/suppliers";
+import { deleteSupplierAction } from "@/_legacy_backend/actions/suppliers";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 

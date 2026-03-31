@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { startChatSessionAction, sendChatMessageAction } from "@/actions/chat";
+import { startChatSessionAction, sendChatMessageAction } from "@/_legacy_backend/actions/chat";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n/context";
 import { ScrollArea } from "@/components/ui/scroll-area";

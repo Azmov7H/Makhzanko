@@ -1,6 +1,6 @@
 "use client";
 
-import { createInventoryCountAction } from "@/actions/audit";
+import { createInventoryCountAction } from "@/_legacy_backend/actions/audit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

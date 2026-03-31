@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCw } from "lucide-react";
-import { exportProductsAction } from "@/actions/advanced-features";
+import { exportProductsAction } from "@/_legacy_backend/actions/advanced-features";
 import { useI18n } from "@/lib/i18n/context";
 import { toast } from "sonner";
 

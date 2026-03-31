@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getTenantContext } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { InvoiceDocument } from "./InvoiceDocument";
-import { getInvoiceFinancialSummary } from "@/actions/reports";
+import { getInvoiceFinancialSummary } from "@/_legacy_backend/actions/reports";
 import { getLocale } from "@/lib/i18n/server";
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {

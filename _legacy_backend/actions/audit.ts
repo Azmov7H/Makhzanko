@@ -4,7 +4,7 @@ import { getTenantContext } from "@/lib/auth";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { AuditService } from "@/services/audit";
+import { AuditService } from "@/_legacy_backend/services/audit";
 
 export async function createInventoryCountAction(warehouseId: string) {
     const context = await getTenantContext();

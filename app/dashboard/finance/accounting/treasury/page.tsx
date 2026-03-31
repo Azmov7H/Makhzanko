@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, ArrowUpCircle, ArrowDownCircle, History, Landmark, Zap } from "lucide-react";
-import { getTreasuryAccount, getAccountLedger } from "@/actions/accounting";
+import { getTreasuryAccount, getAccountLedger } from "@/_legacy_backend/actions/accounting";
 import { formatCurrency, cn } from "@/lib/utils";
 import { TreasuryActions } from "./TreasuryActions";
 import {

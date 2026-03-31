@@ -2,7 +2,7 @@ import { getI18n, getLocale } from "@/lib/i18n/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Scale, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { getBalanceSheet } from "@/actions/accounting";
+import { getBalanceSheet } from "@/_legacy_backend/actions/accounting";
 import { formatCurrency, cn } from "@/lib/utils";
 
 interface BalanceSheetAccount {

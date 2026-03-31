@@ -13,7 +13,7 @@ import {
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { deleteWarehouseAction } from "@/actions/warehouses";
+import { deleteWarehouseAction } from "@/_legacy_backend/actions/warehouses";
 import { cn } from "@/lib/utils";
 
 interface WarehousesClientProps {

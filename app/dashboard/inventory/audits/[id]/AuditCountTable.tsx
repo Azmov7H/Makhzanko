@@ -1,6 +1,6 @@
 "use client";
 
-import { updateCountLineAction, finalizeInventoryCountAction } from "@/actions/audit";
+import { updateCountLineAction, finalizeInventoryCountAction } from "@/_legacy_backend/actions/audit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

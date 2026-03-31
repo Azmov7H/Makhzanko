@@ -1,4 +1,4 @@
-import { getTrialBalance } from "@/actions/accounting";
+import { getTrialBalance } from "@/_legacy_backend/actions/accounting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

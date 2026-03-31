@@ -3,7 +3,7 @@
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getSalesReport } from "@/actions/reports";
+import { getSalesReport } from "@/_legacy_backend/actions/reports";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 

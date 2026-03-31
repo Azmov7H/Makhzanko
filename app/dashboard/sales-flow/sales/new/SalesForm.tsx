@@ -1,6 +1,6 @@
 "use client";
 
-import { createSaleAction } from "@/actions/sales";
+import { createSaleAction } from "@/_legacy_backend/actions/sales";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";

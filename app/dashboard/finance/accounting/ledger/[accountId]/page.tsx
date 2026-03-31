@@ -1,4 +1,4 @@
-import { getAccountLedger } from "@/actions/accounting";
+import { getAccountLedger } from "@/_legacy_backend/actions/accounting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";

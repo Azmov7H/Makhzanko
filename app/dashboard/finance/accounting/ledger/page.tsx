@@ -2,7 +2,7 @@ import { getI18n, getLocale } from "@/lib/i18n/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BookOpen } from "lucide-react";
-import { getJournalEntries } from "@/actions/accounting";
+import { getJournalEntries } from "@/_legacy_backend/actions/accounting";
 import { formatCurrency, cn } from "@/lib/utils";
 import {
     Table,

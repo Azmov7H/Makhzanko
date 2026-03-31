@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Trash2, Plus, Receipt, History, Calendar, Tag, DollarSign, ArrowRight } from "lucide-react";
-import { deleteExpenseAction } from "@/actions/expenses";
+import { deleteExpenseAction } from "@/_legacy_backend/actions/expenses";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {

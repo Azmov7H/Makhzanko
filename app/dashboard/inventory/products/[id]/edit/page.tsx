@@ -1,4 +1,4 @@
-import { ProductService } from "@/services/products";
+import { ProductService } from "@/_legacy_backend/services/products";
 import { getTenantContext } from "@/lib/auth";
 import EditProductPage from "../../_components/EditProductPage";
 import { notFound } from "next/navigation";

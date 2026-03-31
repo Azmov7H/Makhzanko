@@ -1,4 +1,4 @@
-import { UserService } from "@/services/users";
+import { UserService } from "@/_legacy_backend/services/users";
 import { getTenantContext } from "@/lib/auth";
 import UserForm from "../../_components/UserForm";
 import { notFound } from "next/navigation";

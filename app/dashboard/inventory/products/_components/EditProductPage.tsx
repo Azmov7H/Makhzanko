@@ -1,6 +1,6 @@
 "use client";
 
-import { updateProductAction } from "@/actions/products";
+import { updateProductAction } from "@/_legacy_backend/actions/products";
 import { useTransition } from "react";
 import { motion, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";

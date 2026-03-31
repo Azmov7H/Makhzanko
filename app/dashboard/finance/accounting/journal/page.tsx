@@ -1,4 +1,4 @@
-import { getJournalEntries } from "@/actions/accounting";
+import { getJournalEntries } from "@/_legacy_backend/actions/accounting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getI18n, getLocale } from "@/lib/i18n/server";

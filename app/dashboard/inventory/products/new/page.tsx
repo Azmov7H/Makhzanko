@@ -1,6 +1,6 @@
 "use client";
 
-import { createProductAction, checkProductExistsAction } from "@/actions/products";
+import { createProductAction, checkProductExistsAction } from "@/_legacy_backend/actions/products";
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";

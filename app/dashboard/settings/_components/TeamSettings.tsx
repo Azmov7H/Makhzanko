@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Users, Trash2, Shield, UserPlus, AlertCircle } from "lucide-react";
-import { addUserToTeam, deleteUserFromTeam, toggleDeferredPaymentAction } from "@/actions/settings";
+import { addUserToTeam, deleteUserFromTeam, toggleDeferredPaymentAction } from "@/_legacy_backend/actions/settings";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";

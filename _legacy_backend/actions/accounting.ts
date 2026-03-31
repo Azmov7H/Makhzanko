@@ -2,7 +2,7 @@
 
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { AccountingService } from "@/services/accounting";
+import { AccountingService } from "@/_legacy_backend/services/accounting";
 import { prisma } from "@/lib/prisma";
 import { ACCOUNTS } from "@/lib/accounting-constants";
 

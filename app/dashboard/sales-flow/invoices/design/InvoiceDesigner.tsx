@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateInvoiceSettingsAction } from "@/actions/invoice-settings";
+import { updateInvoiceSettingsAction } from "@/_legacy_backend/actions/invoice-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

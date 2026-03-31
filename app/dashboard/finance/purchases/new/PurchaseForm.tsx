@@ -1,6 +1,6 @@
 "use client"
 
-import { createPurchaseAction } from "@/actions/purchases";
+import { createPurchaseAction } from "@/_legacy_backend/actions/purchases";
 import { useActionState, useState } from "react";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import { Plus, Trash2, Truck, Warehouse as WarehouseIcon, ShoppingCart, ArrowLeft, Save, Sparkles, Package, CreditCard, Clock, DollarSign, Minus } from "lucide-react";

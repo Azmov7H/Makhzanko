@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { getI18n } from "@/lib/i18n/server";
 import { AnnouncementSection } from "./_components/AnnouncementSection";
 import { DemandForecastSection } from "./_components/DemandForecastSection";
-import { getInventoryAlerts } from "@/actions/reports";
+import { getInventoryAlerts } from "@/_legacy_backend/actions/reports";
 
 export default async function DashboardLandingPage() {
     const locale = await getLocale();

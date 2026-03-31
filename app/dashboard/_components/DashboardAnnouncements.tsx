@@ -1,4 +1,4 @@
-import { getActiveAnnouncementsAction } from "@/actions/admin/announcements";
+import { getActiveAnnouncementsAction } from "@/_legacy_backend/actions/admin/announcements";
 import { AnnouncementBanner } from "@/components/ui/AnnouncementBanner";
 import { getTenantContext } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";

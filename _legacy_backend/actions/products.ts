@@ -1,6 +1,6 @@
 "use server";
 
-import { ProductService } from "@/services/products";
+import { ProductService } from "@/_legacy_backend/services/products";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

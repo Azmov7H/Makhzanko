@@ -1,6 +1,6 @@
 "use client";
 
-import { updateWarehouseAction } from "@/actions/warehouses";
+import { updateWarehouseAction } from "@/_legacy_backend/actions/warehouses";
 import { useTransition } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";

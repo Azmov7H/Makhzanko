@@ -2,7 +2,7 @@
 
 import { getTenantContext } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ReportService } from "@/services/reports";
+import { ReportService } from "@/_legacy_backend/services/reports";
 
 export async function getSalesReport(range: string = "30days") {
     const context = await getTenantContext();

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getTenantContext } from "@/lib/auth";
-import { getEmployeePerformance } from "@/actions/advanced-features";
+import { getEmployeePerformance } from "@/_legacy_backend/actions/advanced-features";
 import AdvancedAnalyticsClient from "./AdvancedAnalyticsClient";
 
 interface TopProduct {

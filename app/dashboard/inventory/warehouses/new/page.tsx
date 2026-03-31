@@ -1,6 +1,6 @@
 "use client";
 
-import { createWarehouseAction } from "@/actions/warehouses";
+import { createWarehouseAction } from "@/_legacy_backend/actions/warehouses";
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";

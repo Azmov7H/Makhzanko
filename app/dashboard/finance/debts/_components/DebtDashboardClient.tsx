@@ -29,7 +29,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { useState } from "react";
 
-import { payInstallmentAction } from "@/actions/installments";
+import { payInstallmentAction } from "@/_legacy_backend/actions/installments";
 import { toast } from "sonner";
 
 interface DebtDashboardProps {

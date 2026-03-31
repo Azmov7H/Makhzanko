@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, ArrowRight, Package } from "lucide-react";
-import { getLowStockProducts } from "@/actions/advanced-features";
+import { getLowStockProducts } from "@/_legacy_backend/actions/advanced-features";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/context";

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n/context";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createSupplierAction, updateSupplierAction } from "@/actions/suppliers";
+import { createSupplierAction, updateSupplierAction } from "@/_legacy_backend/actions/suppliers";
 import { toast } from "sonner";
 import { Loader2, Save, X, Truck, Phone, Mail, MapPin, BadgeDollarSign, Info } from "lucide-react";
 import { motion } from "framer-motion";

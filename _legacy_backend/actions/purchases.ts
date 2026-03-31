@@ -3,9 +3,8 @@
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { PurchaseService } from "@/services/purchases";
-
-import { InstallmentService } from "@/services/installments";
+import { PurchaseService } from "@/_legacy_backend/services/purchases";
+import { InstallmentService } from "@/_legacy_backend/services/installments";
 
 interface PurchaseItemInput {
     productId: string;

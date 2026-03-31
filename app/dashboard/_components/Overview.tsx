@@ -4,7 +4,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGri
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getDashboardChartData } from "@/actions/reports";
+import { getDashboardChartData } from "@/_legacy_backend/actions/reports";
 
 export function Overview({ locale }: { locale: string }) {
     const { t } = useI18n();

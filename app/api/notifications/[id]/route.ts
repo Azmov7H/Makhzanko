@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { NotificationService } from "@/services/notifications";
+import { NotificationService } from "@/_legacy_backend/services/notifications";
 
 export async function PATCH(
     req: Request,

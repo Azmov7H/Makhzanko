@@ -1,4 +1,4 @@
-import { InstallmentService } from "@/services/installments";
+import { InstallmentService } from "@/_legacy_backend/services/installments";
 import { getTenantContext } from "@/lib/auth";
 import { DebtDashboardClient } from "./_components/DebtDashboardClient";
 

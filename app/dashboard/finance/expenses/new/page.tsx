@@ -1,6 +1,6 @@
 "use client";
 
-import { createExpenseAction } from "@/actions/expenses";
+import { createExpenseAction } from "@/_legacy_backend/actions/expenses";
 import { useActionState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

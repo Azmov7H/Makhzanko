@@ -1,4 +1,4 @@
-import { getSalesReport, getInventoryValuation, getBestSellingProducts, getDashboardChartData } from "@/actions/reports";
+import { getSalesReport, getInventoryValuation, getBestSellingProducts, getDashboardChartData } from "@/_legacy_backend/actions/reports";
 import { ReportsClient } from "./_components/ReportsClient";
 import { getTenantContext } from "@/lib/auth";
 

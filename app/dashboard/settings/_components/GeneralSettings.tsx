@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Store, Save, Globe, Moon, Sun, Monitor } from "lucide-react";
-import { updateStoreName } from "@/actions/settings";
+import { updateStoreName } from "@/_legacy_backend/actions/settings";
 import { toast } from "sonner";
 import LanguageToggle from "@/components/layout/LanguageToggle";
 import { ThemeToggle } from "@/components/layout/Toggel";

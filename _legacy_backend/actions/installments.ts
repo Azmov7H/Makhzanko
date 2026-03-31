@@ -1,6 +1,6 @@
 "use server";
 
-import { InstallmentService } from "@/services/installments";
+import { InstallmentService } from "@/_legacy_backend/services/installments";
 import { revalidatePath } from "next/cache";
 import { getTenantContext } from "@/lib/auth";
 

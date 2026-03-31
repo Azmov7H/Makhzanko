@@ -1,4 +1,4 @@
-import { getSalesReport, getInventoryValuation, getBestSellingProducts, getDashboardChartData } from "@/actions/reports";
+import { getSalesReport, getInventoryValuation, getBestSellingProducts, getDashboardChartData } from "@/_legacy_backend/actions/reports";
 import { getTenantContext } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ReportsChartsClient from "./ReportsChartsClient";

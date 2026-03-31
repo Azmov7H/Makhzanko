@@ -1,12 +1,12 @@
 "use server";
 
-import { SalesService } from "@/services/sales";
 import { getTenantContext } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
 
-import { InstallmentService } from "@/services/installments";
+import { SalesService } from "@/_legacy_backend/services/sales";
+import { InstallmentService } from "@/_legacy_backend/services/installments";
 
 export async function createSaleAction(data: {
     warehouseId: string;

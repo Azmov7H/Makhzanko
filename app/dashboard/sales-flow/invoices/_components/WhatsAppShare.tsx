@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Loader2 } from "lucide-react";
-import { getWhatsAppMessage } from "@/actions/advanced-features";
+import { getWhatsAppMessage } from "@/_legacy_backend/actions/advanced-features";
 import { useI18n } from "@/lib/i18n/context";
 
 interface WhatsAppShareProps {

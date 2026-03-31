@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
 
+const COOKIE_NAME = "saas_token";
+
 export function useAuth() {
     const { t } = useI18n();
     const router = useRouter();
@@ -12,13 +14,34 @@ export function useAuth() {
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
 
+    // Helper to set cookie
+    const setAuthCookie = (token: string) => {
+        document.cookie = `${COOKIE_NAME}=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+    };
+
+    // Helper to get cookie
+    const getAuthCookie = () => {
+        if (typeof document === "undefined") return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${COOKIE_NAME}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+        return null;
+    };
+
     const checkSession = async () => {
         try {
+            const token = getAuthCookie();
+            if (!token) {
+                setUser(null);
+                return null;
+            }
+
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
             const response = await fetch(`${baseUrl}/api/auth/me`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 },
             });
 
@@ -66,7 +89,10 @@ export function useAuth() {
                 throw new Error(data.message || t("Auth.error_register_failed"));
             }
 
-            // Auto-login: Redirect directly to dashboard
+            if (data.token) {
+                setAuthCookie(data.token);
+            }
+
             toast.success(t("Auth.success_register"));
             router.push("/dashboard");
         } catch (err: any) {
@@ -104,7 +130,10 @@ export function useAuth() {
                 throw new Error(data.message || t("Auth.error_login_failed"));
             }
 
-            // Redirect to dashboard
+            if (data.token) {
+                setAuthCookie(data.token);
+            }
+
             toast.success(t("Auth.success_login"));
             router.push("/dashboard");
         } catch (err: any) {
@@ -116,9 +145,16 @@ export function useAuth() {
         }
     };
 
+    const logout = () => {
+        document.cookie = `${COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+        setUser(null);
+        router.push("/login");
+    };
+
     return {
         register,
         login,
+        logout,
         checkSession,
         loading,
         error,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { InternalModelService } from "@/services/ai/internal_model";
+import { InternalModelService } from "@/_legacy_backend/services/ai/internal_model";
 import { getTenantContext } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
