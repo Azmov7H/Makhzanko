@@ -10,12 +10,12 @@ export const seoConfig = {
         en: "Makhzanko",
     },
     siteDescription: {
-        ar: "نظام متكامل لإدارة المخازن والمحاسبة والمبيعات، صُمم خصيصاً للسوق المصري",
-        en: "Complete inventory, accounting and sales management system designed for the Egyptian market",
+        ar: "مخزنكو: نظام إداري ذكي ومحاسبي متكامل صُمم خصيصاً للسوق المصري لمحلات الموبايلات والشركات. إدارة مخازن، كاشير، أقساط، وتتبع IMEI.",
+        en: "Makhzanko: Smart ERP & accounting system designed for the Egyptian market. Mobile stores, inventory, POS, installments, and IMEI tracking.",
     },
 
     // URLs
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://makhzanko.vercel.app/",
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://makhzanko.com",
 
     // Default Images
     defaultOgImage: "/og-image.png",
@@ -54,23 +54,26 @@ export const seoConfig = {
     // Default Keywords
     keywords: {
         ar: [
+            "إدارة محلات الموبايلات",
+            "نظام حسابات موبايلات",
+            "برنامج كاشير موبايلات",
+            "إدارة أقساط الموبايلات",
+            "تتبع سيريال نمبر IMEI",
             "إدارة المخازن",
-            "نظام محاسبة",
-            "كاشير",
-            "إدارة المبيعات",
-            "ERP",
-            "نظام نقاط البيع",
-            "إدارة المخزون",
+            "نظام محاسبة سحابي",
+            "برنامج مبيعات ومشتريات",
             "برنامج محاسبة مصري",
+            "ERP للموبايلات",
         ],
         en: [
-            "inventory management",
-            "accounting system",
-            "sales management",
-            "ERP",
-            "point of sale",
-            "stock management",
+            "mobile store management",
+            "IMEI tracking system",
+            "mobile shop POS",
+            "installment management software",
+            "cloud inventory management",
             "Egyptian accounting software",
+            "sales and purchase software",
+            "mobile ERP",
         ],
     },
 } as const;

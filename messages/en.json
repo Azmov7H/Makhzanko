@@ -5,7 +5,7 @@
             "title_highlight": "Smart",
             "title_end": "Business Management",
             "description": "Makhzanko is the integrated solution for warehouse management, accounting, and sales. Designed specifically for the Egyptian market to save you time and effort.",
-            "start_free": "Get Started",
+            "start_free": "Get Started for Free",
             "explore_features": "Explore Features",
             "support_24_7": "24/7 Tech Support",
             "badge": "New Version 2.0 Now Available",
@@ -46,39 +46,66 @@
             "units_sold": "Units Sold"
         },
         "features": {
-            "title": "Makhzanko Features",
+            "title": "Advanced Features",
             "subtitle": "Why Choose Makhzanko?",
-            "description": "Everything you need to manage your business in one integrated platform.",
+            "description": "Integrated smart solutions to manage your business with ease and professionalism from anywhere, anytime.",
+            "imei": {
+                "title": "IMEI & Serial Tracking",
+                "desc": "Precise tracking for every mobile device with a unique serial number to facilitate sales and warranty."
+            },
+            "installments": {
+                "title": "Installments System",
+                "desc": "Professional scheduling of customer installments with a smart alert system for due dates."
+            },
+            "maintenance": {
+                "title": "Warranty & Maintenance",
+                "desc": "Full tracking of warranty status for sold devices and efficient management of maintenance orders."
+            },
             "inventory": {
-                "title": "Smart Inventory Management",
-                "desc": "Advanced product tracking across multiple warehouses with real-time updates and automatic alerts."
+                "title": "Smart Warehousing",
+                "desc": "Precise monitoring of products across multiple warehouses with real-time updates and accurate audit metrics."
             },
             "reports": {
-                "title": "Accurate Financial Reports",
-                "desc": "Interactive dashboards displaying sales, expenses, and net profit with extreme precision."
-            },
-            "alerts": {
-                "title": "Instant Alerts",
-                "desc": "Never miss a transaction; alert system for new orders, low stock, or expiring documents."
-            },
-            "multi_lang": {
-                "title": "Multi-language & Currency",
-                "desc": "Flexible interface fully supporting Arabic and English with easy currency conversion."
-            },
-            "team": {
-                "title": "Team Management",
-                "desc": "Complete control over your team's access; define who sees reports or performs sales."
+                "title": "Financial Intelligence",
+                "desc": "Interactive dashboards showing sales, profits, and cash flows with extreme precision."
             },
             "security": {
-                "title": "Bank-level Security",
-                "desc": "Your data is encrypted and saved on secure cloud servers with daily backup system."
+                "title": "World-class Security",
+                "desc": "Your data is encrypted and saved on secure cloud servers with an automatic backup system."
             }
         },
+        "faq": {
+            "title": "Frequently Asked Questions",
+            "subtitle": "Have a Question?",
+            "description": "Here are answers to the most common questions about the Makhzanko platform.",
+            "items": [
+                {
+                    "q": "What is Makhzanko?",
+                    "a": "Makhzanko is a comprehensive cloud platform designed to manage warehouses, sales, accounting, and installments. It providing integrated solutions for SMEs to manage their business from anywhere."
+                },
+                {
+                    "q": "Can I try the system for free?",
+                    "a": "Yes, you can start a 14-day free trial with access to all features to evaluate how well the system fits your needs."
+                },
+                {
+                    "q": "Is my data safe with Makhzanko?",
+                    "a": "Absolutely. We use advanced encryption protocols (SSL) and perform periodic backups of your data on secured cloud servers to ensure it's never lost."
+                },
+                {
+                    "q": "Does the system support VAT?",
+                    "a": "Yes, the system is fully equipped to handle taxes and financial regulations in various countries, with the ability to customize tax invoices."
+                },
+                {
+                    "q": "Can I work via mobile?",
+                    "a": "Yes, the Makhzanko interface is designed to work seamlessly on all devices (mobile, tablet, computer) as one synchronized team."
+                }
+            ]
+        },
         "footer": {
-            "desc": "An integrated system for warehouse and accounting management, designed to help SMEs grow and thrive.",
+            "desc": "An integrated system for warehouse and accounting management, designed to help SMEs grow and thrive with the latest cloud technologies.",
             "brand_name": "Makhzanko",
             "quick_links": "Quick Links",
-            "support": "Support",
+            "support": "Support Center",
             "contact": "Contact Us",
             "rights": "All rights reserved.",
             "terms": "Terms & Conditions",
@@ -114,7 +141,12 @@
         "already_account": "Already have an account?",
         "tenant_name": "Company Name",
         "full_name": "Full Name",
-        "placeholder_email": "m@example.com"
+        "placeholder_email": "name@example.com",
+        "success_register": "Registration successful! Welcome to Makhzanko.",
+        "success_login": "Welcome back!",
+        "error_register_failed": "Registration failed",
+        "error_login_failed": "Login failed",
+        "error_unexpected": "An unexpected error occurred"
     },
     "Dashboard": {
         "brand_name": "Makhzanko",
@@ -631,7 +663,6 @@
             "classic": "Classic",
             "minimal": "Minimal",
             "visibility": "Visibility Toggles",
-            "visibility_desc": "Control what information is displayed on the invoice.",
             "show_tax": "Show Tax",
             "show_discount": "Show Discount",
             "show_header": "Show Header",
@@ -878,7 +909,7 @@
         "description": "Manage your inventory suppliers and procurement relationships",
         "add_supplier": "Add Supplier",
         "edit_supplier": "Edit Supplier",
-        "form_desc": "Enter supplier details and procurement terms",
+        "form_desc": "Enter supplier details and permissions",
         "list_title": "Supplier Directory",
         "list_desc": "A complete list of your verified suppliers",
         "name": "Supplier Name",

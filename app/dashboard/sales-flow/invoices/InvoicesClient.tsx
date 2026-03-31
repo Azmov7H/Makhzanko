@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FileText, Palette, Eye, Layout, Calendar, MessageCircle, Share2, Sparkles, ArrowRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,52 @@ import { WhatsAppShare } from "./_components/WhatsAppShare";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n/context";
 
-interface InvoicesClientProps {
-    invoices: any[];
-}
-
-export function InvoicesClient({ invoices }: InvoicesClientProps) {
+export function InvoicesClient() {
     const { t } = useI18n();
+    const [invoices, setInvoices] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchInvoices() {
+            try {
+                // Fetching from /api/sales because Rust backend handles invoices via the sales table
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/sales`, {
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    // Map generic sales to the expected invoice structure
+                    const mapped = data.map((sale: any) => ({
+                        id: sale.id, // Using sale ID as invoice ID for now
+                        sale: {
+                            number: sale.number,
+                            date: sale.date,
+                            total: Number(sale.total || 0)
+                        }
+                    }));
+                    setInvoices(mapped);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchInvoices();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-96 items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <p className="text-muted-foreground font-bold tracking-widest text-xs uppercase animate-pulse">
+                        {t("Common.loading") || "LOADING..."}
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     const container = {
         hidden: { opacity: 0 },

@@ -2,169 +2,124 @@
 
 import { useI18n } from "@/lib/i18n/context";
 import { motion } from "framer-motion";
-
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
-import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function Hero() {
     const { t } = useI18n();
+    const { user, checkSession } = useAuth();
+
+    useEffect(() => {
+        checkSession();
+    }, []);
 
     return (
-        <section className="relative w-full overflow-hidden bg-background pt-12 pb-12 md:pt-32 md:pb-32">
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.4 }}
-                    transition={{ duration: 2 }}
-                    className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/30 rounded-full blur-[120px]"
-                />
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.4 }}
-                    transition={{ duration: 2, delay: 0.5 }}
-                    className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/30 rounded-full blur-[120px]"
-                />
-            </div>
+        <section className="relative min-h-[85vh] flex items-center pt-20 overflow-hidden bg-background">
+            {/* Minimalist Focal Point */}
+            <div className="absolute top-0 right-0 w-120 h-120 bg-primary/5 blur-[120px] rounded-full -me-64 -mt-64 pointer-events-none rtl:left-0 rtl:right-auto rtl:-ms-64" />
 
-            <div className="container relative mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Text Content */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="flex flex-col gap-8 text-center lg:text-start"
-                    >
-                        <div className="inline-flex items-center gap-2 self-center lg:self-start px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-semibold text-primary">
-                            <Sparkles className="h-4 w-4" />
-                            <span>{t("Landing.hero.badge")}</span>
-                        </div>
-
-                        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-foreground">
-                            {t("Landing.hero.title_start")}
-                            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent px-2">
-                                {t("Landing.hero.title_highlight")}
-                            </span>
-                            {t("Landing.hero.title_end")}
-                        </h1>
-
-                        <p className="max-w-xl mx-auto lg:mx-0 text-base sm:text-xl text-muted-foreground leading-relaxed">
-                            {t("Landing.hero.description")}
-                        </p>
-
-                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                            <Button asChild size="xl" className="w-full sm:w-auto gap-2 px-8 rounded-full shadow-lg shadow-primary/20 hover:shadow-xl transition-all">
-                                <Link href="/register">
-                                    {t("Landing.hero.start_free")}
-                                    <ArrowRight className="h-5 w-5 rtl:rotate-180" />
-                                </Link>
-                            </Button>
-                            <Button asChild variant="outline" size="xl" className="w-full sm:w-auto px-8 rounded-full hover:bg-muted/50">
-                                <Link href="#features">
-                                    {t("Landing.hero.explore_features")}
-                                </Link>
-                            </Button>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mt-2">
-                            {[
-                                t("Landing.hero.support_24_7"),
-                            ].map((text, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 + i * 0.1 }}
-                                    className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
-                                >
-                                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                    <span>{text}</span>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
-
-                    {/* Visual Content */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="relative"
-                    >
-                        <div className="relative z-10 p-2 rounded-[2.5rem] border border-border bg-background/50 backdrop-blur-sm shadow-2xl overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <motion.div
-                                animate={{
-                                    y: [0, -15, 0],
-                                }}
-                                transition={{
-                                    duration: 6,
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                }}
-                            >
-                                <Image
-                                    src="/og-image.png"
-                                    alt="Makhzanko Dashboard"
-                                    width={1200}
-                                    height={800}
-                                    className="rounded-[2rem] w-full h-auto object-cover shadow-inner transition-transform duration-700 group-hover:scale-[1.02]"
-                                    priority
-                                />
-                            </motion.div>
-                        </div>
-
-                        {/* Floating Element 1 */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.8, duration: 0.8 }}
-                            className="absolute -top-6 -right-6 z-20 hidden md:block"
-                        >
-                            <motion.div
-                                animate={{ y: [0, -10, 0] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                className="bg-background/90 backdrop-blur p-4 rounded-2xl shadow-xl border border-border flex items-center gap-4"
-                            >
-                                <div className="size-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                    <CheckCircle2 className="h-6 w-6 text-green-500" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t("Landing.hero.floating.total_sales")}</p>
-                                    <p className="text-lg font-bold">{t("Landing.hero.floating.sales_value")}</p>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-
-                        {/* Floating Element 2 */}
+            <div className="container relative z-10 mx-auto px-6">
+                <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+                    {/* Content Column */}
+                    <div className="flex-1 text-start space-y-10">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1, duration: 0.8 }}
-                            className="absolute -bottom-6 -left-6 z-20 hidden md:block"
+                            className="inline-flex items-center gap-2 group cursor-pointer"
                         >
-                            <motion.div
-                                animate={{ y: [0, 10, 0] }}
-                                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                                className="bg-background/90 backdrop-blur p-4 rounded-2xl shadow-xl border border-border flex items-center gap-4"
-                            >
-                                <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                    <Sparkles className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">{t("Landing.hero.floating.new_customers")}</p>
-                                    <p className="text-lg font-bold">{t("Landing.hero.floating.customers_value")}</p>
-                                </div>
-                            </motion.div>
+                            <span className="h-px w-8 bg-secondary transition-all group-hover:w-12" />
+                            <span className="text-secondary font-bold tracking-widest text-xs uppercase">
+                                {t("Landing.hero.badge")}
+                            </span>
                         </motion.div>
+
+                        <div className="space-y-6">
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="text-4xl md:text-5xl font-black text-foreground tracking-tighter leading-[1.05]"
+                                style={{ fontFamily: "var(--font-amiri), serif" }}
+                            >
+                                {t("Landing.hero.title_start")}
+                                <span className="text-secondary block md:inline mx-2">
+                                    {t("Landing.hero.title_highlight")}
+                                </span>
+                                {t("Landing.hero.title_end")}
+                            </motion.h1>
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-xl"
+                            >
+                                {t("Landing.hero.description")}
+                            </motion.p>
+                        </div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="flex flex-wrap gap-5"
+                        >
+                            {user ? (
+                                <Button asChild size="xl" className="h-14 px-10 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                                    <Link href="/dashboard">
+                                        {t("Dashboard.dashboard")}
+                                        <LayoutDashboard className="ms-2 h-5 w-5" />
+                                    </Link>
+                                </Button>
+                            ) : (
+                                <Button asChild size="xl" className="h-14 px-10 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-lg shadow-primary/10 hover:translate-y-[-2px] transition-all">
+                                    <Link href="/register">
+                                        {t("Landing.hero.start_free")}
+                                        <ArrowRight className="ms-2 h-5 w-5 rtl:rotate-180" />
+                                    </Link>
+                                </Button>
+                            )}
+                            <Button asChild variant="ghost" size="xl" className="h-14 px-10 rounded-lg font-bold text-lg border border-border/50 hover:bg-accent/50 transition-all">
+                                <Link href="/#features">
+                                    {t("Landing.hero.explore_features")}
+                                </Link>
+                            </Button>
+                        </motion.div>
+                    </div>
+
+                    {/* Architectural Hero Image Mockup */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4, duration: 0.8 }}
+                        className="flex-1 w-full lg:max-w-130 relative"
+                    >
+                        <div className="relative z-10 aspect-16/10 rounded-xl bg-white dark:bg-card border border-border/50 shadow-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-500 hover:shadow-primary/10">
+                            <div className="absolute top-0 left-0 w-full h-10 bg-muted/20 border-b border-border/10 flex items-center px-4 gap-2">
+                                <div className="size-2.5 rounded-full bg-border" />
+                                <div className="size-2.5 rounded-full bg-border" />
+                                <div className="size-2.5 rounded-full bg-border" />
+                            </div>
+                            <div className="w-full h-full pt-10 px-6 bg-accent/5">
+                                <div className="w-full h-full rounded-t-lg bg-background border-x border-t border-border/30 overflow-hidden shadow-inner flex flex-col p-4 gap-4">
+                                     <div className="h-8 w-1/3 bg-muted/40 rounded animate-pulse" />
+                                     <div className="grid grid-cols-3 gap-4">
+                                         <div className="h-24 bg-muted/20 rounded-lg" />
+                                         <div className="h-24 bg-muted/20 rounded-lg" />
+                                         <div className="h-24 bg-muted/20 rounded-lg" />
+                                     </div>
+                                     <div className="h-48 bg-muted/10 rounded-lg" />
+                                </div>
+                            </div>
+                        </div>
+                        {/* Minimalism Accents */}
+                        <div className="absolute -bottom-6 -left-6 w-32 h-32 border-l border-b border-secondary/20 rounded-bl-2xl -z-10" />
+                        <div className="absolute -top-6 -right-6 w-32 h-32 border-t border-r border-secondary/20 rounded-tr-2xl -z-10" />
                     </motion.div>
                 </div>
             </div>
         </section>
     );
 }
-
-

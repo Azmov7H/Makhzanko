@@ -49,7 +49,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: seoConfig.siteName.ar,
+    title: {
+        template: `%s | ${seoConfig.siteName.ar}`,
+        default: seoConfig.siteName.ar,
+    },
     description: seoConfig.siteDescription.ar,
     metadataBase: new URL(seoConfig.siteUrl),
     icons: {
@@ -67,12 +70,12 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const organizationLD = generateOrganizationLD();
+    const locale = await getLocale();
+    const direction = getDirection(locale);
 
     return (
-        <html lang="ar" dir="rtl" suppressHydrationWarning>
+        <html lang={locale} dir={direction} suppressHydrationWarning>
             <body className={`${cairo.variable} ${inter.variable} ${ibmPlexArabic.variable} antialiased font-sans`}>
-
                 <Suspense fallback={null}>
                     <AppShell>{children}</AppShell>
                 </Suspense>
@@ -80,4 +83,3 @@ export default async function RootLayout({
         </html>
     );
 }
-

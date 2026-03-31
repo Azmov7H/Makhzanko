@@ -1,22 +1,20 @@
 import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/jwt";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { Role } from "@prisma/client";
 
 const COOKIE_NAME = "saas_token";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 export type TenantContext = {
   userId: string;
   tenantId: string;
-  role: Role;
+  role: string;
   email: string | null;
   name: string | null;
 };
 
 /**
  * Unified authentication utility
- * Reads token from cookies, verifies JWT, fetches current status from DB
+ * Reads token from cookies and fetches current status from Rust API
  * Redirects to /login on failure
  */
 export async function getTenantContext(): Promise<TenantContext> {
@@ -27,40 +25,30 @@ export async function getTenantContext(): Promise<TenantContext> {
     redirect("/login");
   }
 
-  const payload = await verifyToken(token);
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        'Cookie': `saas_token=${token}`,
+        'Content-Type': 'application/json'
+      },
+      cache: 'no-store'
+    });
 
-  if (!payload || typeof payload !== "object" || !("tenantId" in payload)) {
+    if (!res.ok) {
+      redirect("/login");
+    }
+
+    const user = await res.json();
+    return {
+      userId: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+      email: user.email,
+      name: user.name,
+    };
+  } catch (error) {
     redirect("/login");
   }
-
-  const tenantId = payload.tenantId as string;
-  const userId = payload.userId as string;
-  const role = payload.role as Role;
-
-  // Fetch user with active status and verify tenant with single query
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      tenantId: true,
-      isActive: true,
-      deletedAt: true,
-      email: true,
-      name: true,
-      tenant: true,
-    },
-  });
-
-  if (!user || user.tenantId !== tenantId || !user.isActive || user.deletedAt || !user.tenant) {
-    redirect("/login");
-  }
-
-  return {
-    userId,
-    tenantId,
-    role,
-    email: user.email,
-    name: user.name,
-  };
 }
 
 /**
@@ -73,26 +61,19 @@ export async function getSession(): Promise<TenantContext | null> {
     const token = cookieStore.get(COOKIE_NAME)?.value;
     if (!token) return null;
 
-    const payload = await verifyToken(token);
-    if (!payload || typeof payload !== "object" || !("tenantId" in payload)) return null;
-
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId as string },
-      select: {
-        tenantId: true,
-        isActive: true,
-        deletedAt: true,
-        email: true,
-        name: true,
-        role: true,
-        tenant: true
-      }
+    const res = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        'Cookie': `saas_token=${token}`,
+        'Content-Type': 'application/json'
+      },
+      cache: 'no-store'
     });
 
-    if (!user || user.tenantId !== payload.tenantId || !user.isActive || user.deletedAt || !user.tenant) return null;
+    if (!res.ok) return null;
 
+    const user = await res.json();
     return {
-      userId: payload.userId as string,
+      userId: user.id,
       tenantId: user.tenantId,
       role: user.role,
       email: user.email,

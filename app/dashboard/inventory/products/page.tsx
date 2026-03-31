@@ -1,48 +1,14 @@
-import { ProductService } from "@/services/products";
-import { getTenantContext } from "@/lib/auth";
-import { getI18n, getLocale } from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProductsClient } from "./ProductsClient";
 import { Card, CardHeader } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
+import { ProductsClient } from "./ProductsClient";
 
-export default async function ProductsPage() {
-    return (
-        <Suspense fallback={<ProductsSkeleton />}>
-            <ProductsContent />
-        </Suspense>
-    );
-}
-
-async function ProductsContent() {
-    const context = await getTenantContext();
-    const locale = await getLocale();
-    const t = await getI18n(locale);
-
-    let products: any[] = [];
-
-    try {
-        products = await prisma.product.findMany({
-            where: { tenantId: context.tenantId },
-            orderBy: { name: "asc" },
-            include: { stocks: true },
-        });
-    } catch (error) {
-        console.error("Database error:", error);
-        products = [];
-    }
-
-    const totalStock = products.reduce((sum: number, p: any) => {
-        return sum + (p.stocks as any[]).reduce((s: number, stock: any) => s + stock.quantity, 0);
-    }, 0);
-
+export default function ProductsPage() {
     return (
         <div className="max-w-7xl mx-auto pb-20 px-4 sm:px-6 lg:px-8">
-            <ProductsClient
-                products={JSON.parse(JSON.stringify(products))}
-                totalStock={totalStock}
-            />
+            <Suspense fallback={<ProductsSkeleton />}>
+                <ProductsClient />
+            </Suspense>
         </div>
     );
 }

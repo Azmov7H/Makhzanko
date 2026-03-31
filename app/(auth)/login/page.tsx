@@ -1,18 +1,23 @@
 "use client";
 
-import { loginAction } from "@/actions/auth";
 import Link from "next/link";
-import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
     const { t } = useI18n();
-    const [state, action, isPending] = useActionState(loginAction, null);
+    const { login, loading, error } = useAuth();
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        await login(formData);
+    };
 
     return (
         <div className="flex w-full flex-col items-center justify-center gap-6">
@@ -43,10 +48,10 @@ export default function LoginPage() {
                     <CardDescription className="text-muted-foreground">{t("Auth.enter_details")}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={action} className="space-y-4">
-                        {state?.error && (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && (
                             <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive font-medium border border-destructive/20 text-center animate-in fade-in slide-in-from-top-1">
-                                {state.error}
+                                {error}
                             </div>
                         )}
                         <div className="space-y-2">
@@ -75,8 +80,8 @@ export default function LoginPage() {
                                 className="rounded-xl bg-background/50 border-input/50 focus:bg-background focus:border-primary/50 transition-all"
                             />
                         </div>
-                        <Button type="submit" className="w-full rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" disabled={isPending}>
-                            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        <Button type="submit" className="w-full rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" disabled={loading}>
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             {t("Auth.sign_in")}
                         </Button>
                     </form>
@@ -92,5 +97,4 @@ export default function LoginPage() {
             </Card>
         </div>
     );
-
 }

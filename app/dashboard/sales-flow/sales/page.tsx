@@ -1,33 +1,13 @@
-import { prisma } from "@/lib/prisma";
-import { getTenantContext } from "@/lib/auth";
-import { getI18n, getLocale } from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SalesClient } from "./SalesClient";
 import { Card, CardHeader } from "@/components/ui/card";
 
-export default async function SalesPage() {
+export default function SalesPage() {
     return (
         <Suspense fallback={<SalesSkeleton />}>
-            <SalesContent />
+            <SalesClient />
         </Suspense>
-    );
-}
-
-async function SalesContent() {
-    const context = await getTenantContext();
-    const t = await getI18n();
-
-    const sales = await prisma.sale.findMany({
-        where: { tenantId: context.tenantId },
-        orderBy: { number: "desc" },
-        include: { user: true, items: true }
-    });
-
-    return (
-        <SalesClient
-            sales={JSON.parse(JSON.stringify(sales))}
-        />
     );
 }
 

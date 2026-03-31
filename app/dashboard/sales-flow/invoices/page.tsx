@@ -1,42 +1,13 @@
-import { prisma } from "@/lib/prisma";
-import { getTenantContext } from "@/lib/auth";
-import { getI18n, getLocale } from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InvoicesClient } from "./InvoicesClient";
 import { Card, CardHeader } from "@/components/ui/card";
 
-export default async function InvoicesPage() {
+export default function InvoicesPage() {
     return (
         <Suspense fallback={<InvoicesSkeleton />}>
-            <InvoicesContent />
+            <InvoicesClient />
         </Suspense>
-    );
-}
-
-async function InvoicesContent() {
-    const context = await getTenantContext();
-    const t = await getI18n();
-
-    const invoices = await prisma.invoice.findMany({
-        where: { tenantId: context.tenantId },
-        select: {
-            id: true,
-            sale: {
-                select: {
-                    number: true,
-                    date: true,
-                    total: true
-                }
-            }
-        },
-        orderBy: { sale: { date: "desc" } }
-    });
-
-    return (
-        <InvoicesClient
-            invoices={JSON.parse(JSON.stringify(invoices))}
-        />
     );
 }
 

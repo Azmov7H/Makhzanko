@@ -28,7 +28,7 @@ interface ChartData {
 
 export default async function ReportsPage() {
     const locale = await getLocale();
-    const context = await getTenantContext();
+    await getTenantContext();
     const t = await getI18n(locale);
 
     const [valuation, bestSellers, sales, chartData] = await Promise.all([
@@ -44,7 +44,7 @@ export default async function ReportsPage() {
         <div className="space-y-8 animate-in fade-in duration-700 text-start pb-10">
             <div className="relative">
                 <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-primary rounded-full" />
-                <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
+                <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic" style={{ fontFamily: "var(--font-amiri), serif" }}>
                     {t("reports.title")}
                 </h1>
                 <p className="text-muted-foreground mt-2 text-lg font-medium">{t("reports.description")}</p>
@@ -125,7 +125,10 @@ export default async function ReportsPage() {
                     <CardContent className="p-8 pt-0">
                         <div className="space-y-4 mt-6">
                             {bestSellers.map((item, i) => (
-                                <div key={i} className="flex items-center justify-between group p-4 rounded-2xl hover:bg-primary/5 transition-all duration-300 border border-primary/5 hover:border-primary/10">
+                                <div
+                                    key={i}
+                                    className="flex items-center justify-between group p-4 rounded-2xl hover:bg-primary/5 transition-all duration-300 border border-primary/5 hover:border-primary/10 hover:-translate-x-1"
+                                >
                                     <div className="flex items-center gap-4">
                                         <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center font-black text-sm text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all duration-500">
                                             {i + 1}
@@ -145,6 +148,7 @@ export default async function ReportsPage() {
                                     </div>
                                 </div>
                             ))}
+
                             {bestSellers.length === 0 && (
                                 <div className="flex flex-col items-center justify-center py-24 bg-muted/20 rounded-[2rem] border-2 border-dashed border-primary/10">
                                     <Package className="h-12 w-12 text-muted-foreground/30 mb-4" />

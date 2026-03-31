@@ -22,13 +22,14 @@ export function RecentSales({ locale }: { locale: string }) {
     if (loading) return <div className="h-[350px] w-full animate-pulse bg-muted/20 rounded-xl" />;
 
     return (
-        <Card className="col-span-full lg:col-span-5 border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl">
-            <CardHeader>
-                <CardTitle>{t("Sales.recent_sales")}</CardTitle>
-                <CardDescription>
+        <Card className="col-span-full lg:col-span-12 xl:col-span-4 luxury-card border-none shadow-xl shadow-primary/5 bg-card/50 backdrop-blur-xl rounded-3xl">
+            <CardHeader className="pb-8">
+                <CardTitle style={{ fontFamily: "var(--font-amiri), serif" }} className="text-3xl font-black tracking-tight">{t("Sales.recent_sales")}</CardTitle>
+                <CardDescription className="text-base font-medium">
                     {t("Sales.manage_sales_desc")}
                 </CardDescription>
             </CardHeader>
+
             <CardContent>
                 <div className="space-y-6">
                     {sales.length === 0 ? (
@@ -37,7 +38,7 @@ export function RecentSales({ locale }: { locale: string }) {
                         sales.map((sale) => (
                             <div key={sale.id} className="flex items-center justify-between group">
                                 <div className="flex items-center gap-4">
-                                    <Avatar className="h-9 w-9 bg-primary/10 text-primary border border-primary/20">
+                                    <Avatar className="h-10 w-10 bg-accent text-primary border border-border/50">
                                         <AvatarFallback className="font-bold">{sale.customerName ? sale.customerName[0] : "W"}</AvatarFallback>
                                     </Avatar>
                                     <div className="space-y-1">
@@ -49,7 +50,7 @@ export function RecentSales({ locale }: { locale: string }) {
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                     <div className="font-bold tabular-nums">+{sale.total}</div>
-                                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 rounded-md bg-green-500/10 text-green-600 border-green-500/20">
+                                    <Badge variant="outline" className="text-[10px] px-2 py-0.5 rounded-lg bg-accent/10 text-accent border-accent/20 font-bold uppercase">
                                         {t("Sales.items_count", { count: sale.items.length })}
                                     </Badge>
                                 </div>

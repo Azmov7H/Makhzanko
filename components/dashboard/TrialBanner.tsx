@@ -15,8 +15,12 @@ interface TrialBannerProps {
 
 export function TrialBanner({ daysRemaining, isExpired, locale }: TrialBannerProps) {
     const { t } = useI18n();
-    if (!isExpired && daysRemaining > 7) return null;
 
+    // The platform is currently in a free-to-use phase or trial logic is handled elsewhere.
+    // Transitioning to v2-login branch logic.
+    return null;
+
+    /* 
     return (
         <motion.div
             initial={{ height: 0, opacity: 0 }}
@@ -43,7 +47,7 @@ export function TrialBanner({ daysRemaining, isExpired, locale }: TrialBannerPro
                         </AlertDescription>
                     </div>
                 </div>
-                <Link href={`/${locale}/dashboard/settings/billing`}>
+                <Link href={`/dashboard/settings/billing`}>
                     <Button variant={isExpired ? "destructive" : "default"} size="sm" className="gap-2 font-bold shadow-lg hover:scale-105 transition-transform">
                         <ArrowUpCircle className="h-4 w-4" />
                         {t("Dashboard.trial.upgrade_now")}
@@ -52,4 +56,5 @@ export function TrialBanner({ daysRemaining, isExpired, locale }: TrialBannerPro
             </Alert>
         </motion.div>
     );
+    */
 }

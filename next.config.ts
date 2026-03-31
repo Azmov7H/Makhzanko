@@ -2,7 +2,6 @@ import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   // Experimental features for Next.js 16
-  cacheComponents: false,
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'recharts'],
     serverActions: {

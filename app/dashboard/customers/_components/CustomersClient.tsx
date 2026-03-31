@@ -1,37 +1,33 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, Plus, Phone, Mail, MoreHorizontal, Trash2, Edit, User, Search } from "lucide-react";
+import { Users, Plus, Phone, Mail, MoreHorizontal, Trash2, Edit, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { TableRow, TableCell } from "@/components/ui/table";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n/context";
-import Link from "next/link";
-import { deleteCustomerAction } from "@/actions/customers";
+import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useCustomers } from "./useCustomers";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 interface CustomersClientProps {
     customers: any[];
 }
 
-export function CustomersClient({ customers }: CustomersClientProps) {
+export function CustomersClient({ customers: initialCustomers }: CustomersClientProps) {
     const { t } = useI18n();
+    const { customers, searchTerm, setSearchTerm, deleteCustomer } = useCustomers(initialCustomers);
 
-    const container = {
+    const containerVariants = {
         hidden: { opacity: 0 },
         show: {
             opacity: 1,
@@ -39,139 +35,150 @@ export function CustomersClient({ customers }: CustomersClientProps) {
         }
     };
 
-    const item = {
+    const itemVariants = {
         hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0 }
+        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
     };
 
     return (
         <motion.div
             initial="hidden"
             animate="show"
-            variants={container}
-            className="space-y-12 text-start"
+            variants={containerVariants}
+            className="space-y-12 text-start px-0"
         >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <motion.div variants={item} className="relative">
-                    <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
-                    <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+                <motion.div variants={itemVariants} className="space-y-4">
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground" style={{ fontFamily: "var(--font-amiri), serif" }}>
                         {t("Customers.title")}
                     </h1>
-                    <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">
+                    <p className="text-muted-foreground font-medium text-lg md:text-xl max-w-2xl leading-relaxed">
                         {t("Customers.description")}
                     </p>
                 </motion.div>
-                <motion.div variants={item}>
-                    <Button asChild className="h-14 px-8 rounded-2xl bg-primary shadow-2xl shadow-primary/20 hover:scale-105 transition-all gap-3 font-black text-xs uppercase tracking-widest group">
+                
+                <motion.div variants={itemVariants}>
+                    <Button asChild size="lg" className="h-14 px-8 rounded-lg bg-primary text-white font-bold shadow-lg shadow-primary/10 hover:translate-y-[-2px] transition-all gap-3">
                         <Link href="/dashboard/customers/new">
-                            <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
+                            <Plus className="h-5 w-5" />
                             {t("Customers.add_customer")}
                         </Link>
                     </Button>
                 </motion.div>
             </div>
 
-            <motion.div variants={item}>
-                <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem] overflow-hidden group">
-                    <CardHeader className="p-10 border-b border-primary/5 bg-primary/5">
+            {/* Content Card */}
+            <motion.div variants={itemVariants}>
+                <Card className="luxury-card overflow-hidden border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem]">
+                    <CardHeader className="p-10 border-b border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-primary/5">
                         <div className="flex items-center gap-5">
-                            <div className="p-4 bg-primary/10 rounded-2xl text-primary shadow-xl shadow-primary/5 group-hover:scale-110 transition-transform duration-500">
-                                <Users className="h-7 w-7" />
+                            <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-xl shadow-primary/5">
+                                <Users className="h-6 w-6 stroke-[1.5]" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl font-black italic">{t("Customers.list_title")}</CardTitle>
-                                <CardDescription className="text-base font-medium mt-1">
-                                    {t("Customers.list_desc")}
-                                </CardDescription>
+                                <CardTitle className="text-2xl font-black tracking-tight" style={{ fontFamily: "var(--font-amiri), serif" }}>{t("Customers.list_title")}</CardTitle>
+                                <CardDescription className="text-base font-medium">{t("Customers.list_desc")}</CardDescription>
                             </div>
+                        </div>
+                        <div className="relative w-full md:w-80">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                            <Input 
+                                placeholder={t("Common.search") || "Search..."}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-11 h-12 bg-accent/30 border-none rounded-lg font-medium focus-visible:ring-primary/20"
+                            />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <Table>
-                            <TableHeader className="bg-muted/30">
-                                <TableRow className="h-16 hover:bg-transparent border-primary/5">
-                                    <TableHead className="px-10 text-xs font-black uppercase tracking-widest">{t("Customers.name")}</TableHead>
-                                    <TableHead className="text-xs font-black uppercase tracking-widest">{t("Customers.contact")}</TableHead>
-                                    <TableHead className="text-xs font-black uppercase tracking-widest text-center">{t("Customers.orders")}</TableHead>
-                                    <TableHead className="px-10 text-end text-xs font-black uppercase tracking-widest w-[120px]">{t("Common.actions")}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {customers.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="h-64 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground opacity-30 animate-pulse">
-                                                <Search className="h-20 w-20" />
-                                                <p className="text-xl font-black italic">{t("Customers.no_customers")}</p>
+                        <ResponsiveTable
+                            headers={[
+                                { label: t("Customers.name"), className: "px-10" },
+                                { label: t("Customers.contact") },
+                                { label: t("Customers.orders"), className: "text-center" },
+                                { label: t("Common.actions"), className: "px-10 text-end w-[120px]" },
+                            ]}
+                            renderCard={(customer) => (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-lg bg-accent text-primary flex items-center justify-center font-black text-xs">
+                                            {customer.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span className="font-bold text-lg text-foreground">{customer.name}</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1 pt-2 border-t border-border/20">
+                                        {customer.phone && <div className="text-xs font-bold text-muted-foreground flex items-center gap-2"><Phone className="size-3" /> {customer.phone}</div>}
+                                        {customer.email && <div className="text-[10px] font-bold text-muted-foreground/60 flex items-center gap-2"><Mail className="size-3" /> {customer.email}</div>}
+                                    </div>
+                                </div>
+                            )}
+                            data={customers}
+                            keyExtractor={(c) => c.id}
+                            renderRow={(customer) => (
+                                <TableRow key={customer.id} className="group hover:bg-accent/30 transition-all border-border/40 h-24">
+                                    <TableCell className="px-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="size-10 rounded-lg bg-accent text-primary flex items-center justify-center font-black text-xs border border-border/40">
+                                                {customer.name.charAt(0).toUpperCase()}
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    customers.map((customer) => (
-                                        <TableRow key={customer.id} className="group/row hover:bg-primary/[0.02] transition-all duration-500 border-primary/5 h-24">
-                                            <TableCell className="px-10">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-black text-xs">
-                                                        {customer.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <span className="font-black text-lg group-hover/row:text-primary transition-colors">{customer.name}</span>
+                                            <span className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{customer.name}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            {customer.phone && (
+                                                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground/80">
+                                                    <Phone className="h-3 w-3 opacity-40" />
+                                                    {customer.phone}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col gap-1">
-                                                    {customer.phone && (
-                                                        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground/80">
-                                                            <Phone className="h-3 w-3 opacity-50" />
-                                                            {customer.phone}
-                                                        </div>
-                                                    )}
-                                                    {customer.email && (
-                                                        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/50">
-                                                            <Mail className="h-3 w-3 opacity-50" />
-                                                            {customer.email}
-                                                        </div>
-                                                    )}
-                                                    {!customer.phone && !customer.email && (
-                                                        <span className="text-xs text-muted-foreground/30 italic">{t("Common.no_contact_info")}</span>
-                                                    )}
+                                            )}
+                                            {customer.email && (
+                                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/50">
+                                                    <Mail className="h-3 w-3 opacity-40" />
+                                                    {customer.email}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Badge variant="outline" className="rounded-xl px-3 py-1 font-black text-primary border-primary/10 bg-primary/5">
-                                                    {customer._count?.sales || 0}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="px-10 text-end">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-12 w-12 hover:bg-primary/10 rounded-2xl transition-all group-hover/row:scale-110">
-                                                            <MoreHorizontal className="h-6 w-6 text-muted-foreground/40 group-hover/row:text-primary" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-[180px] p-2 bg-card/60 backdrop-blur-3xl border-none rounded-[1.5rem] shadow-3xl animate-in zoom-in-95 duration-200">
-                                                        <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/10 cursor-pointer py-3 transition-all">
-                                                            <Link href={`/dashboard/customers/${customer.id}/edit`} className="flex items-center gap-3">
-                                                                <div className="p-1.5 bg-primary/5 text-primary rounded-lg"><Edit className="h-4 w-4" /></div>
-                                                                <span className="font-black text-xs uppercase tracking-widest">{t("Common.edit")}</span>
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-all text-destructive">
-                                                            <form action={deleteCustomerAction} className="w-full">
-                                                                <input type="hidden" name="id" value={customer.id} />
-                                                                <button type="submit" className="w-full flex items-center gap-3 font-black text-xs uppercase tracking-widest">
-                                                                    <div className="p-1.5 bg-destructive/10 rounded-lg"><Trash2 className="h-4 w-4" /></div>
-                                                                    <span>{t("Common.delete")}</span>
-                                                                </button>
-                                                            </form>
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant="outline" className="rounded-md border-none bg-primary/5 text-primary font-bold px-3 py-1">
+                                            {customer._count?.sales || 0}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="px-10 text-end">
+                                         <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-accent rounded-lg transition-all">
+                                                    <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                                                 </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="luxury-card border-none p-2 w-[180px] bg-card/60 backdrop-blur-3xl rounded-[1.5rem] shadow-3xl">
+                                                <DropdownMenuItem asChild className="rounded-lg py-2 focus:bg-accent cursor-pointer transition-all">
+                                                    <Link href={`/dashboard/customers/${customer.id}/edit`} className="flex items-center gap-3">
+                                                        <Edit className="h-4 w-4 text-primary" />
+                                                        <span className="font-bold text-xs uppercase tracking-widest">{t("Common.edit")}</span>
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild className="rounded-lg py-2 focus:bg-destructive/10 cursor-pointer transition-all text-destructive">
+                                                    <button 
+                                                        onClick={async () => {
+                                                            if (confirm(t("Common.confirm_delete") || "Are you sure?")) {
+                                                                await deleteCustomer(customer.id);
+                                                            }
+                                                        }}
+                                                        className="w-full flex items-center gap-3 font-bold text-xs uppercase tracking-widest px-2"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        <span>{t("Common.delete")}</span>
+                                                    </button>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        />
                     </CardContent>
                 </Card>
             </motion.div>

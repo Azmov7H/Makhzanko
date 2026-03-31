@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Users, TrendingDown, Wallet, BadgeCheck, ArrowRight } from "lucide-react";
@@ -27,28 +28,67 @@ interface CustomerWithBalance {
     loyaltyPoints?: number;
 }
 
-interface CustomerDirectoryProps {
-    customersWithBalance: CustomerWithBalance[];
-}
-
 const container = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.05
+            staggerChildren: 0.1
         }
     }
 };
 
 const item = {
     hidden: { opacity: 0, scale: 0.95 },
-    show: { opacity: 1, scale: 1 }
+    show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100 } }
 };
 
-export default function CustomerDirectoryClient({
-    customersWithBalance
-}: CustomerDirectoryProps) {
+export default function CustomerDirectoryClient() {
+    const [customersWithBalance, setCustomersWithBalance] = useState<CustomerWithBalance[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchCustomers() {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/customers`, {
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const mapped = data.map((c: any) => ({
+                        id: c.id,
+                        name: c.name,
+                        phone: c.phone,
+                        email: c.email,
+                        balance: 0, // Pending backend endpoint for balance
+                        totalSales: 0,
+                        totalPayments: 0,
+                        loyaltyPoints: 0
+                    }));
+                    setCustomersWithBalance(mapped);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchCustomers();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-96 items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <p className="text-muted-foreground font-bold tracking-widest text-xs uppercase animate-pulse">
+                        LOADING CUSTOMERS...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     const totalDebt = customersWithBalance.reduce((sum: number, c) => sum + Math.max(0, c.balance), 0);
     const activeCreditors = customersWithBalance.filter(c => c.balance > 0).length;
     const totalLoyalty = customersWithBalance.reduce((sum: number, c) => sum + (c.loyaltyPoints || 0), 0);
@@ -70,11 +110,12 @@ export default function CustomerDirectoryClient({
                 </motion.div>
                 <motion.h1
                     variants={item}
-                    className="text-5xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic"
+                    className="text-5xl md:text-6xl font-black tracking-tight text-foreground italic"
+                    style={{ fontFamily: "var(--font-amiri), serif" }}
                 >
                     Customer Statements
                 </motion.h1>
-                <motion.p variants={item} className="text-muted-foreground text-xl font-medium max-w-2xl">
+                <motion.p variants={item} className="text-muted-foreground text-xl font-medium max-w-2xl leading-relaxed">
                     Comprehensive overview of customer balances, debt, and loyalty metrics in real-time.
                 </motion.p>
             </div>
@@ -110,7 +151,7 @@ export default function CustomerDirectoryClient({
                 <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-2xl overflow-hidden rounded-[3rem] group">
                     <CardHeader className="bg-primary/5 border-b border-primary/5 p-8">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-4 text-2xl font-black italic">
+                            <CardTitle className="flex items-center gap-4 text-2xl font-black italic tracking-tight" style={{ fontFamily: "var(--font-amiri), serif" }}>
                                 <div className="p-3 bg-primary/10 rounded-2xl shadow-xl shadow-primary/5">
                                     <Users className="h-7 w-7 text-primary" />
                                 </div>
@@ -124,8 +165,8 @@ export default function CustomerDirectoryClient({
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader className="bg-muted/30">
-                                <TableRow className="hover:bg-transparent border-primary/5">
-                                    <TableHead className="py-6 px-8 text-start font-black text-xs uppercase tracking-widest">Customer</TableHead>
+                                <TableRow className="hover:bg-transparent border-primary/5 h-16">
+                                    <TableHead className="px-8 text-start font-black text-xs uppercase tracking-widest">Customer</TableHead>
                                     <TableHead className="text-end font-black text-xs uppercase tracking-widest">Total Sales</TableHead>
                                     <TableHead className="text-end font-black text-xs uppercase tracking-widest">Total Paid</TableHead>
                                     <TableHead className="text-end font-black text-xs uppercase tracking-widest">Current Balance</TableHead>
@@ -141,8 +182,8 @@ export default function CustomerDirectoryClient({
                                     </TableRow>
                                 ) : (
                                     customersWithBalance.map((c) => (
-                                        <TableRow key={c.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row">
-                                            <TableCell className="py-6 px-8">
+                                        <TableRow key={c.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row h-24">
+                                            <TableCell className="px-8">
                                                 <div className="flex flex-col gap-1">
                                                     <span className="text-lg font-black group-hover/row:text-primary transition-all duration-300">{c.name}</span>
                                                     <span className="text-xs font-bold text-muted-foreground/60 tracking-wider uppercase">{c.phone || c.email || "No contact info"}</span>

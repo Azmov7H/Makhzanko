@@ -3,74 +3,92 @@
 import { useI18n } from "@/lib/i18n/context";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import Logo from "./Logo";
-import { Facebook, Twitter, Instagram, Github } from "lucide-react";
+import { Facebook, Twitter, Instagram, Github, Mail, Phone, MapPin } from "lucide-react";
 
 export default function Footer() {
-    const { t, locale } = useI18n();
-    const currentYear = 2025;
+    const { t } = useI18n();
+    const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full border-t bg-background pt-16 pb-8">
-            <div className="container mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <footer className="relative w-full bg-background pt-24 pb-12 border-t border-border/40">
+            <div className="container relative z-10 mx-auto px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
                     {/* Brand Section */}
-                    <div className="flex flex-col gap-4 col-span-1 md:col-span-1">
+                    <div className="space-y-6">
                         <Logo />
-                        <p className="text-muted-foreground text-sm mt-2 max-w-xs">
-                            {t("desc")}
+                        <p className="text-muted-foreground text-base leading-relaxed max-w-sm font-medium">
+                            {t("Landing.footer.desc")}
                         </p>
-                        <div className="flex items-center gap-4 mt-4">
-                            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                                <Facebook className="size-5" />
-                            </a>
-                            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                                <Twitter className="size-5" />
-                            </a>
-                            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                                <Instagram className="size-5" />
-                            </a>
-                            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                                <Github className="size-5" />
-                            </a>
+                        <div className="flex items-center gap-4">
+                            {[Facebook, Twitter, Instagram, Github].map((Icon, i) => (
+                                <a key={i} href="#" className="p-2.5 rounded-lg border border-border/50 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
+                                    <Icon className="size-4" />
+                                </a>
+                            ))}
                         </div>
                     </div>
 
                     {/* Quick Links */}
-                    <div>
-                        <h4 className="font-bold mb-6">{t("Landing.footer.quick_links")}</h4>
-                        <ul className="flex flex-col gap-4 text-sm text-muted-foreground">
-                            <li><Link href="/" className="hover:text-primary transition-colors">{t("Landing.footer.links.home")}</Link></li>
-                            <li><Link href="/#features" className="hover:text-primary transition-colors">{t("Landing.footer.links.features")}</Link></li>
-                            <li><Link href="/#pricing" className="hover:text-primary transition-colors">{t("Landing.footer.links.pricing")}</Link></li>
-                            <li><Link href="/login" className="hover:text-primary transition-colors">{t("Landing.footer.links.login")}</Link></li>
+                    <div className="lg:justify-self-center">
+                        <h4 className="text-lg font-bold mb-6 tracking-tight text-foreground" style={{ fontFamily: "var(--font-amiri), serif" }}>{t("Landing.footer.quick_links")}</h4>
+                        <ul className="space-y-3">
+                            {[
+                                { name: t("Landing.footer.links.home"), href: "/" },
+                                { name: t("Landing.footer.links.features"), href: "/#features" },
+                                { name: t("Landing.faq.title"), href: "/#faq" },
+                                { name: t("Landing.footer.links.login"), href: "/login" }
+                            ].map((link, i) => (
+                                <li key={i}>
+                                    <Link href={link.href} className="text-muted-foreground/80 hover:text-primary text-sm font-semibold transition-colors">
+                                        {link.name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
                     {/* Support */}
-                    <div>
-                        <h4 className="font-bold mb-6">{t("Landing.footer.support")}</h4>
-                        <ul className="flex flex-col gap-4 text-sm text-muted-foreground">
-                            <li><Link href="/faq" className="hover:text-primary transition-colors">{t("Landing.footer.links.faq")}</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition-colors">{t("Landing.footer.links.contact_us")}</Link></li>
-                            <li><Link href="/docs" className="hover:text-primary transition-colors">{t("Landing.footer.links.docs")}</Link></li>
-                            <li><Link href="/privacy" className="hover:text-primary transition-colors">{t("Landing.footer.privacy")}</Link></li>
+                    <div className="lg:justify-self-center">
+                        <h4 className="text-lg font-bold mb-6 tracking-tight text-foreground" style={{ fontFamily: "var(--font-amiri), serif" }}>{t("Landing.footer.support")}</h4>
+                        <ul className="space-y-3">
+                            {[
+                                { name: t("Landing.footer.links.faq"), href: "/faq" },
+                                { name: t("Landing.footer.links.contact_us"), href: "/contact" },
+                                { name: t("Landing.footer.links.docs"), href: "/docs" },
+                                { name: t("Landing.footer.privacy"), href: "/privacy" }
+                            ].map((link, i) => (
+                                <li key={i}>
+                                    <Link href={link.href} className="text-muted-foreground/80 hover:text-primary text-sm font-semibold transition-colors">
+                                        {link.name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
                     {/* Contact Info */}
                     <div>
-                        <h4 className="font-bold mb-6">{t("Landing.footer.contact")}</h4>
-                        <ul className="flex flex-col gap-4 text-sm text-muted-foreground">
-                            <li>{t("Landing.footer.links.location")}</li>
-                            <li>support@makhzanko.com</li>
-                            <li>+20 123 456 7890</li>
+                        <h4 className="text-lg font-bold mb-6 tracking-tight text-foreground" style={{ fontFamily: "var(--font-amiri), serif" }}>{t("Landing.footer.contact")}</h4>
+                        <ul className="space-y-4">
+                            <li className="flex items-start gap-3 text-muted-foreground font-semibold text-sm">
+                                <MapPin className="size-4 text-primary mt-1" />
+                                <span>{t("Landing.footer.links.location")}</span>
+                            </li>
+                            <li className="flex items-center gap-3 text-muted-foreground font-semibold text-sm">
+                                <Mail className="size-4 text-primary" />
+                                <span>support@makhzanko.com</span>
+                            </li>
+                            <li className="flex items-center gap-3 text-muted-foreground font-semibold text-sm">
+                                <Phone className="size-4 text-primary" />
+                                <span>+20 123 456 7890</span>
+                            </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+                <div className="pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-6 text-sm font-bold text-muted-foreground/60">
                     <p>© {currentYear} {t("Landing.footer.brand_name")}. {t("Landing.footer.rights")}</p>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-8">
                         <Link href="/terms" className="hover:text-primary transition-colors">{t("Landing.footer.terms")}</Link>
                         <Link href="/privacy" className="hover:text-primary transition-colors">{t("Landing.footer.privacy")}</Link>
                     </div>
@@ -79,4 +97,3 @@ export default function Footer() {
         </footer>
     );
 }
-

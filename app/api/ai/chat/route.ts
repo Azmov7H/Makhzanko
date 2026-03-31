@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
             ...messages
         ];
 
-        const { stream } = await InternalModelService.generateStreamingResponse(messages, context.tenantId);
+        const { stream } = await InternalModelService.generateStreamingResponse(augmentedMessages, context.tenantId);
 
         return new NextResponse(stream, {
             headers: {
