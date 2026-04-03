@@ -16,7 +16,7 @@ import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useCustomers } from "./useCustomers";
+import { useCustomers } from "@/hooks/useCustomers";
 import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 interface CustomersClientProps {

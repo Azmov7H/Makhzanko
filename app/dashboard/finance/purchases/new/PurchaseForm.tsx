@@ -1,9 +1,9 @@
 "use client"
 
-import { createPurchaseAction } from "@/_legacy_backend/actions/purchases";
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
-import { Plus, Trash2, Truck, Warehouse as WarehouseIcon, ShoppingCart, ArrowLeft, Save, Sparkles, Package, CreditCard, Clock, DollarSign, Minus } from "lucide-react";
+import { Plus, Trash2, Warehouse as WarehouseIcon, ShoppingCart, ArrowLeft, Save, Sparkles, Package, Clock, DollarSign, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,8 @@ import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { toast } from "sonner";
 
 interface Product {
     id: string;
@@ -40,8 +42,10 @@ interface PurchaseItem {
 }
 
 export default function PurchaseForm({ products, warehouses, suppliers }: { products: Product[], warehouses: Warehouse[], suppliers: Supplier[] }) {
-    const { t, locale } = useI18n();
-    const [state, action, isPending] = useActionState(createPurchaseAction, null);
+    const { t } = useI18n();
+    const router = useRouter();
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [items, setItems] = useState<PurchaseItem[]>([]);
 
     const [selectedProduct, setSelectedProduct] = useState<string>("");
@@ -53,6 +57,7 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
     const [installmentInterval, setInstallmentInterval] = useState(1);
     const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
     const [manualSupplier, setManualSupplier] = useState("");
+    const [warehouseId, setWarehouseId] = useState<string>("");
 
     const handleAddStart = () => {
         if (!selectedProduct) return;
@@ -80,8 +85,51 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
 
     const total = items.reduce((sum: number, item) => sum + (item.cost * item.quantity), 0);
 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (items.length === 0) return;
+        
+        setIsPending(true);
+        setError(null);
+
+        const payload = {
+            warehouseId,
+            supplierId: selectedSupplierId === "manual" ? null : selectedSupplierId,
+            manualSupplier: selectedSupplierId === "manual" ? manualSupplier : null,
+            items,
+            paymentType,
+            installmentCount: paymentType === "DEFERRED" ? installmentCount : null,
+            installmentInterval: paymentType === "DEFERRED" ? installmentInterval : null,
+            total
+        };
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/purchases`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || "Failed to create purchase order");
+            }
+
+            toast.success(t("Common.success"));
+            router.push("/dashboard/finance/purchases");
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsPending(false);
+        }
+    };
+
     return (
-        <form action={action} className="space-y-12 animate-in fade-in duration-700 pb-20 max-w-5xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-12 animate-in fade-in duration-700 pb-20 max-w-5xl mx-auto">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div className="relative">
@@ -109,7 +157,7 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
                 </div>
             </div>
 
-            {state?.error && (
+            {error && (
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -118,7 +166,7 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
                     <div className="p-2 bg-destructive/20 rounded-xl">
                         <Trash2 className="h-5 w-5 text-destructive" />
                     </div>
-                    {state.error}
+                    {error}
                 </motion.div>
             )}
 
@@ -137,7 +185,7 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
                         <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-3">
                                 <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.warehouse")}</Label>
-                                <Select name="warehouseId" required>
+                                <Select value={warehouseId} onValueChange={setWarehouseId} required>
                                     <SelectTrigger className="h-14 rounded-2xl bg-muted/30 border-primary/5 focus:ring-primary/20 transition-all font-bold text-base">
                                         <SelectValue placeholder={t("Purchases.select_warehouse")} />
                                     </SelectTrigger>
@@ -150,7 +198,6 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
                                 <Label className="text-xs font-black uppercase tracking-widest text-primary/70 ml-1">{t("Purchases.supplier")}</Label>
                                 <div className="flex gap-2">
                                     <Select
-                                        name="supplierId"
                                         value={selectedSupplierId}
                                         onValueChange={setSelectedSupplierId}
                                     >
@@ -165,7 +212,6 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
                                     {selectedSupplierId === "manual" && (
                                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex-1">
                                             <Input
-                                                name="supplier"
                                                 value={manualSupplier}
                                                 onChange={e => setManualSupplier(e.target.value)}
                                                 placeholder={t("Purchases.supplier_name") || "Enter name..."}
@@ -415,11 +461,6 @@ export default function PurchaseForm({ products, warehouses, suppliers }: { prod
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-
-                            <input type="hidden" name="items" value={JSON.stringify(items)} />
-                            <input type="hidden" name="paymentType" value={paymentType} />
-                            <input type="hidden" name="installmentCount" value={installmentCount} />
-                            <input type="hidden" name="installmentInterval" value={installmentInterval} />
 
                             <Button
                                 type="submit"

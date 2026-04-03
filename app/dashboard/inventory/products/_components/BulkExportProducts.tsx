@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCw } from "lucide-react";
-import { exportProductsAction } from "@/_legacy_backend/actions/advanced-features";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { useI18n } from "@/lib/i18n/context";
 import { toast } from "sonner";
 
@@ -14,9 +14,20 @@ export function BulkExportProducts() {
     const handleExport = async () => {
         setLoading(true);
         try {
-            const csv = await exportProductsAction();
-            setLoading(false);
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/products/export`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Export failed");
+            }
+
+            const csv = await res.text();
+            
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -30,11 +41,12 @@ export function BulkExportProducts() {
             toast.success(t("Common.success"), {
                 className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
             });
-        } catch (error) {
-            setLoading(false);
-            toast.error(t("Common.error"), {
+        } catch (error: any) {
+            toast.error(error.message || t("Common.error"), {
                 className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
             });
+        } finally {
+            setLoading(false);
         }
     };
 

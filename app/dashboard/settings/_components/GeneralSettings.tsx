@@ -1,25 +1,49 @@
 "use client";
 
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Store, Save, Globe, Moon, Sun, Monitor } from "lucide-react";
-import { updateStoreName } from "@/_legacy_backend/actions/settings";
+import { Store, Save, Globe, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import LanguageToggle from "@/components/layout/LanguageToggle";
 import { ThemeToggle } from "@/components/layout/Toggel";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export function GeneralSettings({ initialName }: { initialName: string }) {
     const { t } = useI18n();
+    const [isPending, setIsPending] = useState(false);
 
-    async function handleStoreUpdate(formData: FormData) {
-        const result = await updateStoreName(formData);
-        if (result.success) {
+    async function handleStoreUpdate(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setIsPending(true);
+
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get("name") as string;
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/tenant`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update");
+            }
+
             toast.success(t("Common.success") || "Updated successfully");
-        } else {
-            toast.error(result.error || "Failed to update");
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsPending(false);
         }
     }
 
@@ -38,7 +62,7 @@ export function GeneralSettings({ initialName }: { initialName: string }) {
                     </div>
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
-                    <form action={handleStoreUpdate} className="space-y-6">
+                    <form onSubmit={handleStoreUpdate} className="space-y-6">
                         <div className="space-y-2 max-w-xl">
                             <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
                                 {t("Settings.store_name")}
@@ -52,10 +76,11 @@ export function GeneralSettings({ initialName }: { initialName: string }) {
                         </div>
                         <Button
                             type="submit"
+                            disabled={isPending}
                             className="h-14 px-10 rounded-[2rem] bg-primary shadow-2xl shadow-primary/20 hover:scale-105 transition-all duration-500 group/btn relative overflow-hidden"
                         >
                             <div className="flex items-center gap-3">
-                                <Save className="h-5 w-5 transition-transform duration-500 group-hover/btn:rotate-12" />
+                                {isPending ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5 transition-transform duration-500 group-hover/btn:rotate-12" />}
                                 <span className="font-black text-sm uppercase tracking-widest">{t("Settings.save_changes")}</span>
                             </div>
                         </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
@@ -13,12 +13,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
   const { t, locale } = useI18n();
-  const { user, checkSession } = useAuth();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    checkSession();
-  }, []);
 
   const links = [
     { id: 1, name: t("Landing.features.title"), href: "/#features" },

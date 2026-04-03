@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateInvoiceSettingsAction } from "@/_legacy_backend/actions/invoice-settings";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,21 +13,37 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Save, Image as ImageIcon, Smartphone, Mail, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export default function InvoiceDesigner({ settings }: { settings: any }) {
     const [config, setConfig] = useState(settings);
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const { t } = useI18n();
 
-    const handleSave = () => {
-        startTransition(async () => {
-            const result = await updateInvoiceSettingsAction(config);
-            if (result.error) {
-                toast.error(result.error);
-            } else {
-                toast.success(t('Invoices.designer.success_save'));
+    const handleSave = async () => {
+        setIsPending(true);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/invoice`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(config)
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update settings");
             }
-        });
+
+            toast.success(t('Invoices.designer.success_save'));
+        } catch (error: any) {
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setIsPending(false);
+        }
     };
 
     const updateConfig = (key: string, value: any) => {

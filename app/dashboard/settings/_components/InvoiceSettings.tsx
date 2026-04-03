@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { updateInvoiceSettingsAction } from "@/_legacy_backend/actions/invoice-settings";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { Save, Eye, Palette, Building2, Settings2, Sparkles, Smartphone, Mail, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -95,17 +95,30 @@ export function InvoiceSettings({
 
     setLoading(true);
 
-    const result = await updateInvoiceSettingsAction({
-      ...settings,
-      fontFamily: settings.fontFamily ?? undefined,
-    });
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/invoice`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...settings,
+          fontFamily: settings.fontFamily ?? undefined,
+        })
+      });
 
-    setLoading(false);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update settings");
+      }
 
-    if (result?.error) {
-      toast.error(result.error);
-    } else {
       toast.success(t("Settings.invoice.updated_success") || "Settings updated");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 

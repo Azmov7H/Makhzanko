@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/context";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { updateAIDialect } from "@/_legacy_backend/actions/ai";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -149,7 +148,14 @@ export function ChatBot({ locale = "en" }: { locale?: string }) {
 
     const handleDialectChange = async (d: Dialect) => {
         setCurrentDialect(d);
-        await updateAIDialect(d);
+        // TODO: Replace with REST API call
+        // const token = getAuthToken();
+        // await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenant/ai-settings`, {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        //     body: JSON.stringify({ dialect: d })
+        // });
+        
         setShowSettings(false);
         setMessages(prev => [...prev, {
             id: `sys-${Date.now()}`,

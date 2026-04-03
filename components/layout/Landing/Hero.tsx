@@ -6,15 +6,10 @@ import { Button } from "@/components/ui/button";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
 
 export default function Hero() {
     const { t } = useI18n();
-    const { user, checkSession } = useAuth();
-
-    useEffect(() => {
-        checkSession();
-    }, []);
+    const { user } = useAuth();
 
     return (
         <section className="relative min-h-[85vh] flex items-center pt-20 overflow-hidden bg-background">

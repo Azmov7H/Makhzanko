@@ -1,14 +1,17 @@
-import { getSalesReport, getInventoryValuation, getBestSellingProducts, getDashboardChartData } from "@/_legacy_backend/actions/reports";
-import { getTenantContext } from "@/lib/auth";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ReportsChartsClient from "./ReportsChartsClient";
-import { getI18n, getLocale } from "@/lib/i18n/server";
 import { TrendingUp, Package, BarChart3, Award } from "lucide-react";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SaleReportItem {
     id: string;
     total: number | string;
-    date: Date | string;
+    date: string;
 }
 
 interface InventoryValuation {
@@ -26,18 +29,50 @@ interface ChartData {
     userGrowthData: { name: string; users: number }[];
 }
 
-export default async function ReportsPage() {
-    const locale = await getLocale();
-    await getTenantContext();
-    const t = await getI18n(locale);
+export default function ReportsPage() {
+    const { t } = useI18n();
+    const [data, setData] = useState<{
+        valuation: InventoryValuation;
+        bestSellers: BestSeller[];
+        sales: SaleReportItem[];
+        chartData: ChartData;
+    } | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const [valuation, bestSellers, sales, chartData] = await Promise.all([
-        getInventoryValuation(),
-        getBestSellingProducts(),
-        getSalesReport("30days"),
-        getDashboardChartData()
-    ]) as [InventoryValuation, BestSeller[], SaleReportItem[], ChartData];
+    useEffect(() => {
+        const fetchReports = async () => {
+            try {
+                const token = getAuthToken();
+                const [valuationRes, bestSellersRes, salesRes, chartRes] = await Promise.all([
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/valuation`, { headers: { Authorization: `Bearer ${token}` } }),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/best-sellers`, { headers: { Authorization: `Bearer ${token}` } }),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales/reports?period=30days`, { headers: { Authorization: `Bearer ${token}` } }),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/dashboard-charts`, { headers: { Authorization: `Bearer ${token}` } })
+                ]);
 
+                if (valuationRes.ok && bestSellersRes.ok && salesRes.ok && chartRes.ok) {
+                    const [valuation, bestSellers, sales, chartData] = await Promise.all([
+                        valuationRes.json(),
+                        bestSellersRes.json(),
+                        salesRes.json(),
+                        chartRes.json()
+                    ]);
+                    setData({ valuation, bestSellers, sales, chartData });
+                }
+            } catch (error) {
+                console.error("Failed to fetch reports:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReports();
+    }, []);
+
+    if (loading) return <ReportsSkeleton />;
+
+    if (!data) return <div className="p-20 text-center font-black italic text-destructive">{t("Common.no_data")}</div>;
+
+    const { valuation, bestSellers, sales, chartData } = data;
     const totalRevenue = sales?.reduce((sum, s) => sum + Number(s.total), 0) || 0;
 
     return (
@@ -45,9 +80,9 @@ export default async function ReportsPage() {
             <div className="relative">
                 <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-primary rounded-full" />
                 <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic" style={{ fontFamily: "var(--font-amiri), serif" }}>
-                    {t("reports.title")}
+                    {t("Reports.title")}
                 </h1>
-                <p className="text-muted-foreground mt-2 text-lg font-medium">{t("reports.description")}</p>
+                <p className="text-muted-foreground mt-2 text-lg font-medium">{t("Reports.description")}</p>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +92,7 @@ export default async function ReportsPage() {
                     </div>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
-                            {t("reports.sales_30d")}
+                            {t("Reports.sales_30d")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -66,7 +101,7 @@ export default async function ReportsPage() {
                         </div>
                         <p className="text-sm text-muted-foreground mt-3 font-bold flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            {t("reports.sales_count", { count: sales?.length || 0 })}
+                            {t("Reports.sales_count", { count: sales?.length || 0 })}
                         </p>
                     </CardContent>
                 </Card>
@@ -77,7 +112,7 @@ export default async function ReportsPage() {
                     </div>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
-                            {t("reports.inventory_valuation")}
+                            {t("Reports.inventory_valuation")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -86,7 +121,7 @@ export default async function ReportsPage() {
                         </div>
                         <p className="text-sm text-muted-foreground mt-3 font-bold flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            {t("reports.inventory_items", { count: valuation?.totalItems || 0 })}
+                            {t("Reports.inventory_items", { count: valuation?.totalItems || 0 })}
                         </p>
                     </CardContent>
                 </Card>
@@ -100,8 +135,8 @@ export default async function ReportsPage() {
                                 <BarChart3 className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl font-black italic">{t("reports.sales_trend")}</CardTitle>
-                                <CardDescription className="text-base font-medium">{t("reports.sales_trend_desc")}</CardDescription>
+                                <CardTitle className="text-2xl font-black italic">{t("Reports.sales_trend")}</CardTitle>
+                                <CardDescription className="text-base font-medium">{t("Reports.sales_trend_desc")}</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
@@ -117,8 +152,8 @@ export default async function ReportsPage() {
                                 <Award className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl font-black italic">{t("reports.best_sellers")}</CardTitle>
-                                <CardDescription className="text-base font-medium">{t("reports.best_sellers_desc")}</CardDescription>
+                                <CardTitle className="text-2xl font-black italic">{t("Reports.best_sellers")}</CardTitle>
+                                <CardDescription className="text-base font-medium">{t("Reports.best_sellers_desc")}</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
@@ -135,7 +170,7 @@ export default async function ReportsPage() {
                                         </div>
                                         <div>
                                             <p className="text-base font-black group-hover:text-primary transition-colors">{item.name}</p>
-                                            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">{t("reports.best_seller_rank", { rank: i + 1 }) || "Top selling product"}</p>
+                                            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">{t("Reports.best_seller_rank", { rank: i + 1 }) || "Top selling product"}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -143,7 +178,7 @@ export default async function ReportsPage() {
                                             {item.quantity.toLocaleString()}
                                         </div>
                                         <div className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.1em]">
-                                            {t("reports.sold")}
+                                            {t("Reports.sold")}
                                         </div>
                                     </div>
                                 </div>
@@ -158,6 +193,22 @@ export default async function ReportsPage() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+        </div>
+    );
+}
+
+function ReportsSkeleton() {
+    return (
+        <div className="space-y-8 py-12 px-4 max-w-7xl mx-auto animate-pulse">
+            <Skeleton className="h-10 w-1/3 rounded-xl" />
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-40 rounded-[2rem]" />
+                <Skeleton className="h-40 rounded-[2rem]" />
+            </div>
+            <div className="grid gap-8 lg:grid-cols-7">
+                <Skeleton className="lg:col-span-4 h-[500px] rounded-[2.5rem]" />
+                <Skeleton className="lg:col-span-3 h-[500px] rounded-[2.5rem]" />
             </div>
         </div>
     );

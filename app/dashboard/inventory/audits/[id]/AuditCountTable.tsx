@@ -1,47 +1,78 @@
 "use client";
 
-import { updateCountLineAction, finalizeInventoryCountAction } from "@/_legacy_backend/actions/audit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, Package, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { Loader2, CheckCircle, Package, TrendingDown, TrendingUp, Minus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export default function AuditCountTable({ count }: { count: any }) {
-    const [isFinalizing, startFinalizing] = useTransition();
+    const [isFinalizing, setIsFinalizing] = useState(false);
     const router = useRouter();
     const { t } = useI18n();
 
     const handleUpdate = async (lineId: string, qty: number) => {
-        await updateCountLineAction(lineId, qty);
-        toast.success(t("Common.success"), {
-            duration: 1000,
-            className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-        });
-        router.refresh();
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/audits/lines/${lineId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ qty })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update line");
+            }
+
+            toast.success(t("Common.success"), {
+                duration: 1000,
+                className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
+            });
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
     };
 
-    const handleFinalize = () => {
+    const handleFinalize = async () => {
         if (!confirm(t("Common.are_you_sure"))) return;
 
-        startFinalizing(async () => {
-            const result = await finalizeInventoryCountAction(count.id);
-            if (result?.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
-                });
-            } else {
-                toast.success(t("Inventory.audit_completed"), {
-                    className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-                });
-                router.refresh();
+        setIsFinalizing(true);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/audits/${count.id}/finalize`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to finalize audit");
             }
-        });
+
+            toast.success(t("Inventory.audit_completed"), {
+                className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
+            });
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message, {
+                className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+            });
+        } finally {
+            setIsFinalizing(false);
+        }
     };
 
     const isCompleted = count.status === "COMPLETED";

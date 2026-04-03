@@ -1,11 +1,10 @@
-import { getTenantContext } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useAuth } from "@/lib/auth/AuthContext";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { getLocale } from "@/lib/i18n/server";
 
-export async function DashboardSidebarWrapper() {
-    const context = await getTenantContext();
-    const locale = await getLocale();
+export function DashboardSidebarWrapper() {
+    const { user } = useAuth();
 
-    return <Sidebar role={context.role} />;
+    return <Sidebar role={user?.role || "USER"} />;
 }

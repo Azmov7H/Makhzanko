@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User, Plus, Edit, Trash2, Mail, Shield, CheckCircle, XCircle } from "lucide-react";
+import { User, Plus, Edit, Trash2, Mail, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -12,9 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
-import { deleteUserAction } from "@/_legacy_backend/actions/users";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface UsersClientProps {
     users: any[];
@@ -22,6 +25,8 @@ interface UsersClientProps {
 
 export function UsersClient({ users }: UsersClientProps) {
     const { t } = useI18n();
+    const router = useRouter();
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const container = {
         hidden: { opacity: 0 },
@@ -34,6 +39,33 @@ export function UsersClient({ users }: UsersClientProps) {
     const item = {
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm(t("Common.confirm_delete") || "Are you sure?")) return;
+        
+        setDeletingId(id);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/users/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to delete user");
+            }
+
+            toast.success(t("Common.success") || "User deleted");
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setDeletingId(null);
+        }
     };
 
     return (
@@ -73,7 +105,7 @@ export function UsersClient({ users }: UsersClientProps) {
                             <CardHeader className="p-8 pb-4 relative z-10">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center font-black text-2xl text-primary">
-                                        {user.name.charAt(0).toUpperCase()}
+                                        {user.name?.charAt(0).toUpperCase() || "?"}
                                     </div>
                                     <div className="flex gap-2">
                                         <Badge variant="outline" className={cn(
@@ -91,7 +123,7 @@ export function UsersClient({ users }: UsersClientProps) {
                                         </Badge>
                                     </div>
                                 </div>
-                                <CardTitle className="text-xl font-black italic">{user.name}</CardTitle>
+                                <CardTitle className="text-xl font-black italic">{user.name || "N/A"}</CardTitle>
                                 <CardDescription className="flex items-center gap-2 mt-1">
                                     <Mail className="h-3 w-3" /> {user.email}
                                 </CardDescription>
@@ -103,23 +135,18 @@ export function UsersClient({ users }: UsersClientProps) {
                                             <Edit className="h-3 w-3" /> {t("Common.edit")}
                                         </Link>
                                     </Button>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-destructive/10 hover:bg-destructive/5 text-destructive">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-[200px] p-2 bg-card/60 backdrop-blur-3xl border-none rounded-[1.5rem] shadow-3xl">
-                                            <DropdownMenuItem className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-all text-destructive">
-                                                <form action={async (formData) => { await deleteUserAction(formData); }} className="w-full">
-                                                    <input type="hidden" name="id" value={user.id} />
-                                                    <button type="submit" className="w-full flex items-center gap-3 font-black text-xs uppercase tracking-widest">
-                                                        <span>{t("Common.confirm_delete")}</span>
-                                                    </button>
-                                                </form>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <Button 
+                                        variant="outline" 
+                                        size="icon" 
+                                        className={cn(
+                                            "h-10 w-10 rounded-xl border-destructive/10 hover:bg-destructive/5 text-destructive",
+                                            deletingId === user.id && "opacity-50 cursor-not-allowed"
+                                        )}
+                                        onClick={() => handleDelete(user.id)}
+                                        disabled={deletingId === user.id}
+                                    >
+                                        {deletingId === user.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>

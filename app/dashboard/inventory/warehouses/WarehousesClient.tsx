@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Warehouse, Plus, MapPin, Package, MoreHorizontal, Trash2, Edit, ArrowRight, Eye, Globe } from "lucide-react";
+import { Warehouse, Plus, MapPin, Package, MoreHorizontal, Trash2, Edit, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -13,8 +13,10 @@ import {
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { deleteWarehouseAction } from "@/_legacy_backend/actions/warehouses";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface WarehousesClientProps {
     warehouses: any[];
@@ -22,6 +24,7 @@ interface WarehousesClientProps {
 
 export function WarehousesClient({ warehouses }: WarehousesClientProps) {
     const { t } = useI18n();
+    const router = useRouter();
 
     const container = {
         hidden: { opacity: 0 },
@@ -34,6 +37,30 @@ export function WarehousesClient({ warehouses }: WarehousesClientProps) {
     const item = {
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm(t("Common.confirm_delete"))) return;
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/warehouses/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to delete warehouse");
+            }
+
+            toast.success(t("Common.success"));
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
     };
 
     return (
@@ -85,14 +112,14 @@ export function WarehousesClient({ warehouses }: WarehousesClientProps) {
                                                 <span className="font-black text-xs uppercase tracking-widest">{t("Common.edit")}</span>
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem asChild className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-all text-destructive">
-                                            <form action={deleteWarehouseAction}>
-                                                <input type="hidden" name="id" value={warehouse.id} />
-                                                <button type="submit" className="flex items-center w-full gap-3 font-black text-xs uppercase tracking-widest">
-                                                    <div className="p-1.5 bg-destructive/10 rounded-lg"><Trash2 className="h-4 w-4" /></div>
-                                                    <span>{t("Common.delete")}</span>
-                                                </button>
-                                            </form>
+                                        <DropdownMenuItem
+                                            className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-all text-destructive"
+                                            onClick={() => handleDelete(warehouse.id)}
+                                        >
+                                            <div className="flex items-center w-full gap-3 font-black text-xs uppercase tracking-widest">
+                                                <div className="p-1.5 bg-destructive/10 rounded-lg"><Trash2 className="h-4 w-4" /></div>
+                                                <span>{t("Common.delete")}</span>
+                                            </div>
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

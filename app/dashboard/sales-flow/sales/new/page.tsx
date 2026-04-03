@@ -1,30 +1,36 @@
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useEffect, useState } from "react";
 import SalesForm from "./SalesForm";
-import { getTenantContext } from "@/lib/auth";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function NewSalePage() {
-    const context = await getTenantContext();
-    const t = await getI18n();
+export default function NewSalePage() {
+    const { t } = useI18n();
+    const [data, setData] = useState<{ products: any[], warehouses: any[] } | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const products = await prisma.product.findMany({
-        where: { tenantId: context.tenantId },
-        orderBy: { name: "asc" }
-    });
+    useEffect(() => {
+        // TODO: Replace with REST API call
+        // const token = getAuthToken();
+        // Promise.all([
+        //     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, { headers: { Authorization: `Bearer ${token}` } }),
+        //     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/warehouses`, { headers: { Authorization: `Bearer ${token}` } })
+        // ]).then(async ([prodRes, warRes]) => {
+        //     const products = await prodRes.json();
+        //     const warehouses = await warRes.json();
+        //     setData({ products, warehouses });
+        //     setLoading(false);
+        // }).catch(() => setLoading(false));
 
-    const serializedProducts = products.map(p => ({
-        ...p,
-        price: Number(p.price),
-        cost: Number(p.cost)
-    }));
+        setLoading(false);
+    }, []);
 
-    const warehouses = await prisma.warehouse.findMany({
-        where: { tenantId: context.tenantId },
-        orderBy: { name: "asc" }
-    });
+    if (loading) return <div className="p-12 space-y-8"><Skeleton className="h-20 w-1/3" /><Skeleton className="h-[600px] w-full" /></div>;
 
     return (
         <div className="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-start space-y-12">
@@ -54,19 +60,9 @@ export default async function NewSalePage() {
             <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-[3.5rem] blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
                 <div className="relative bg-card/60 backdrop-blur-3xl rounded-[3rem] p-1 shadow-3xl overflow-hidden">
-                    <SalesForm products={serializedProducts} warehouses={warehouses} />
+                    <SalesForm products={data?.products || []} warehouses={data?.warehouses || []} />
                 </div>
             </div>
         </div>
     );
 }
-
-const styles = `
-@keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-.animate-bounce-slow {
-  animation: bounce-slow 3s infinite ease-in-out;
-}
-`;

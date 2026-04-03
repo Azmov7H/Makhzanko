@@ -8,7 +8,6 @@ import { getLocale } from "@/lib/i18n/server";
 
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import { DashboardContainer } from "./_components/DashboardContainer";
-import { getTenantContext } from "@/lib/auth";
 
 export default async function DashboardLayout({
     children,

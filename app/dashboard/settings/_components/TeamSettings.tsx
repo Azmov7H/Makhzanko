@@ -1,12 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Users, Trash2, Shield, UserPlus, AlertCircle } from "lucide-react";
-import { addUserToTeam, deleteUserFromTeam, toggleDeferredPaymentAction } from "@/_legacy_backend/actions/settings";
+import { Users, Trash2, Shield, UserPlus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -25,13 +25,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Role } from "@prisma/client";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface User {
     id: string;
     email: string;
     name: string | null;
-    role: Role;
+    role: string;
     canDeferred: boolean;
 }
 
@@ -42,25 +43,89 @@ interface TeamSettingsProps {
 
 export function TeamSettings({ users, currentUserId }: TeamSettingsProps) {
     const { t } = useI18n();
+    const router = useRouter();
+    const [isAdding, setIsAdding] = useState(false);
     const limit = "Unlimited";
     const isLimitReached = false;
 
-    async function handleAddUser(formData: FormData) {
-        const result = await addUserToTeam(formData);
-        if (result.success) {
+    async function handleAddUser(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setIsAdding(true);
+
+        const formData = new FormData(e.currentTarget);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/users`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to add user");
+            }
+
             toast.success(t("Common.success") || "User added");
-        } else {
-            toast.error(result.error || "Failed to add user");
+            router.refresh();
+            (e.target as HTMLFormElement).reset();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsAdding(false);
         }
     }
 
     async function handleDeleteUser(userId: string) {
         if (!confirm(t("Common.confirm_delete") || "Are you sure?")) return;
-        const result = await deleteUserFromTeam(userId);
-        if (result.success) {
+        
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/users/${userId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to delete user");
+            }
+
             toast.success(t("Common.success") || "User deleted");
-        } else {
-            toast.error(result.error || "Failed to delete user");
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
+        }
+    }
+
+    async function handleToggleDeferred(userId: string, val: boolean) {
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/users/${userId}/deferred`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ canDeferred: val })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update permission");
+            }
+
+            toast.success(t("Common.success"));
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
         }
     }
 
@@ -118,12 +183,8 @@ export function TeamSettings({ users, currentUserId }: TeamSettingsProps) {
                                         <TableCell className="py-5 px-8">
                                             <Switch
                                                 checked={user.canDeferred}
-                                                onCheckedChange={async (val) => {
-                                                    const res = await toggleDeferredPaymentAction(user.id, val);
-                                                    if (res.success) toast.success(t("Common.success"));
-                                                    else toast.error(res.error || t("Common.error"));
-                                                }}
-                                                disabled={user.role === Role.OWNER}
+                                                onCheckedChange={(val) => handleToggleDeferred(user.id, val)}
+                                                disabled={user.role === "OWNER"}
                                                 className="data-[state=checked]:bg-emerald-500"
                                             />
                                         </TableCell>
@@ -159,7 +220,7 @@ export function TeamSettings({ users, currentUserId }: TeamSettingsProps) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-8">
-                    <form action={handleAddUser} className="grid sm:grid-cols-4 gap-6">
+                    <form onSubmit={handleAddUser} className="grid sm:grid-cols-4 gap-6">
                         <div className="space-y-3">
                             <Label htmlFor="email" className="font-bold text-sm tracking-tight">{t("Settings.user_email")}</Label>
                             <Input
@@ -186,14 +247,14 @@ export function TeamSettings({ users, currentUserId }: TeamSettingsProps) {
                         </div>
                         <div className="space-y-3">
                             <Label htmlFor="role" className="font-bold text-sm tracking-tight">{t("Settings.user_role")}</Label>
-                            <Select name="role" defaultValue={Role.STAFF} disabled={isLimitReached}>
+                            <Select name="role" defaultValue="STAFF" disabled={isLimitReached}>
                                 <SelectTrigger className="h-12 rounded-2xl bg-muted/50 border-primary/10 font-bold">
                                     <SelectValue placeholder="Select role" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-primary/10">
-                                    <SelectItem value={Role.ADMIN}>Admin</SelectItem>
-                                    <SelectItem value={Role.MANAGER}>Manager</SelectItem>
-                                    <SelectItem value={Role.STAFF}>Staff</SelectItem>
+                                    <SelectItem value="ADMIN">Admin</SelectItem>
+                                    <SelectItem value="MANAGER">Manager</SelectItem>
+                                    <SelectItem value="STAFF">Staff</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -201,9 +262,9 @@ export function TeamSettings({ users, currentUserId }: TeamSettingsProps) {
                             <Button
                                 type="submit"
                                 className="w-full h-12 gap-2 rounded-2xl font-black shadow-xl shadow-accent/20 hover:shadow-accent/30 transition-all duration-300"
-                                disabled={isLimitReached}
+                                disabled={isLimitReached || isAdding}
                             >
-                                <UserPlus className="h-5 w-5" />
+                                {isAdding ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
                                 {t("Settings.add_user")}
                             </Button>
                         </div>

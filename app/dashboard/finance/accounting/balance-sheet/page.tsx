@@ -1,9 +1,13 @@
-import { getI18n, getLocale } from "@/lib/i18n/server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Scale, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { getBalanceSheet } from "@/_legacy_backend/actions/accounting";
+import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BalanceSheetAccount {
     id: string;
@@ -25,11 +29,34 @@ interface BalanceSheetData {
     isBalanced: boolean;
 }
 
-export default async function BalanceSheetPage() {
-    const locale = await getLocale();
-    const t = await getI18n(locale);
+export default function BalanceSheetPage() {
+    const { t } = useI18n();
+    const [data, setData] = useState<BalanceSheetData | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const data = await getBalanceSheet() as BalanceSheetData;
+    useEffect(() => {
+        const fetchBalanceSheet = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/balance-sheet`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const balanceData = await res.json();
+                    setData(balanceData);
+                }
+            } catch (error) {
+                console.error("Failed to fetch balance sheet:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBalanceSheet();
+    }, []);
+
+    if (loading) return <BalanceSheetSkeleton />;
+
+    if (!data) return <div className="p-20 text-center font-black italic text-destructive">{t("Common.no_data")}</div>;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700 text-start pb-20 max-w-6xl mx-auto">
@@ -184,6 +211,26 @@ export default async function BalanceSheetPage() {
                     {formatCurrency(data.totalAssets)} <span className="text-sm font-bold mx-4 opacity-50">=</span> {formatCurrency(data.totalLiabilities + data.totalEquity)}
                 </div>
             </Card>
+        </div>
+    );
+}
+
+function BalanceSheetSkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-6xl mx-auto animate-pulse">
+            <Skeleton className="h-16 w-1/2 rounded-2xl" />
+            <div className="grid gap-8 md:grid-cols-3">
+                <Skeleton className="h-32 rounded-[2.5rem]" />
+                <Skeleton className="h-32 rounded-[2.5rem]" />
+                <Skeleton className="h-32 rounded-[2.5rem]" />
+            </div>
+            <div className="grid gap-10 md:grid-cols-2">
+                <Skeleton className="h-[600px] rounded-[3rem]" />
+                <div className="space-y-10">
+                    <Skeleton className="h-64 rounded-[3rem]" />
+                    <Skeleton className="h-64 rounded-[3rem]" />
+                </div>
+            </div>
         </div>
     );
 }

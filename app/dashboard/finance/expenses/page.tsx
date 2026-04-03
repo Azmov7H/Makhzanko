@@ -1,7 +1,8 @@
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Trash2, Plus, Receipt, History, Calendar, Tag, DollarSign, ArrowRight } from "lucide-react";
-import { deleteExpenseAction } from "@/_legacy_backend/actions/expenses";
+import { Trash2, Plus, Receipt, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,29 +14,60 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getTenantContext } from "@/lib/auth";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { toast } from "sonner";
 
-export default async function ExpensesPage() {
-    return (
-        <Suspense fallback={<ExpensesSkeleton />}>
-            <ExpensesContent />
-        </Suspense>
-    );
-}
+export default function ExpensesPage() {
+    const [expenses, setExpenses] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { t, locale } = useI18n();
 
-async function ExpensesContent() {
-    const locale = await getLocale();
-    const t = await getI18n(locale);
-    const context = await getTenantContext();
+    const fetchExpenses = async () => {
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setExpenses(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch expenses:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const expenses = await prisma.expense.findMany({
-        where: { tenantId: context.tenantId },
-        orderBy: { date: "desc" },
-    });
+    useEffect(() => {
+        fetchExpenses();
+    }, []);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm(t("Common.confirm_delete") || "Are you sure?")) return;
+        
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                toast.success(t("Common.success"));
+                fetchExpenses();
+            } else {
+                toast.error(t("Common.error"));
+            }
+        } catch (error) {
+            toast.error(t("Common.error"));
+        }
+    };
+
+    if (loading) return <ExpensesSkeleton />;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700 text-start pb-20 max-w-6xl mx-auto">
@@ -112,11 +144,9 @@ async function ExpensesContent() {
                                             </span>
                                         </TableCell>
                                         <TableCell className="px-8">
-                                            <form action={async () => {
-                                                "use server";
-                                                await deleteExpenseAction(expense.id);
-                                            }} className="flex justify-end">
+                                            <div className="flex justify-end">
                                                 <Button
+                                                    onClick={() => handleDelete(expense.id)}
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-12 w-12 text-destructive/40 hover:text-destructive hover:bg-destructive/10 rounded-2xl transition-all"
@@ -124,7 +154,7 @@ async function ExpensesContent() {
                                                     <Trash2 className="h-5 w-5" />
                                                     <span className="sr-only">{t("Expenses.delete")}</span>
                                                 </Button>
-                                            </form>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

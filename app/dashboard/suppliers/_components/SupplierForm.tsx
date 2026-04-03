@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n/context";
-import { useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createSupplierAction, updateSupplierAction } from "@/_legacy_backend/actions/suppliers";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { toast } from "sonner";
 import { Loader2, Save, X, Truck, Phone, Mail, MapPin, BadgeDollarSign, Info } from "lucide-react";
 import { motion } from "framer-motion";
@@ -21,7 +21,7 @@ interface SupplierFormProps {
 export function SupplierForm({ supplier }: SupplierFormProps) {
     const { t } = useI18n();
     const router = useRouter();
-    const [isPending, startTransition] = useTransition();
+    const { createSupplier, updateSupplier, loading: isPending } = useSuppliers();
 
     const { register, handleSubmit } = useForm({
         defaultValues: {
@@ -34,31 +34,24 @@ export function SupplierForm({ supplier }: SupplierFormProps) {
         }
     });
 
-    const onSubmit = (data: any) => {
-        startTransition(async () => {
-            try {
-                const formData = new FormData();
-                if (supplier?.id) formData.append("id", supplier.id);
-                formData.append("name", data.name);
-                formData.append("phone", data.phone);
-                formData.append("email", data.email);
-                formData.append("address", data.address);
-                formData.append("creditLimit", data.creditLimit);
-                formData.append("notes", data.notes);
+    const onSubmit = async (data: any) => {
+        try {
+            const payload = {
+                ...data,
+                creditLimit: parseFloat(data.creditLimit) || 0
+            };
 
-                if (supplier) {
-                    await updateSupplierAction(formData);
-                    toast.success(t("Common.success") || "Supplier updated successfully");
-                } else {
-                    await createSupplierAction(formData);
-                    toast.success(t("Common.success") || "Supplier created successfully");
-                }
-                router.push("/dashboard/suppliers");
-                router.refresh();
-            } catch (error) {
-                toast.error(t("Common.error") || "Something went wrong");
+            if (supplier?.id) {
+                await updateSupplier(supplier.id, payload);
+                toast.success(t("Common.success") || "Supplier updated successfully");
+            } else {
+                await createSupplier(payload);
+                toast.success(t("Common.success") || "Supplier created successfully");
             }
-        });
+            router.push("/dashboard/suppliers");
+        } catch (error) {
+            toast.error(t("Common.error") || "Something went wrong");
+        }
     };
 
     const container = {

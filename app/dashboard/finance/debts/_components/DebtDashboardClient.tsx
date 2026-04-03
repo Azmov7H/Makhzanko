@@ -29,15 +29,16 @@ import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { useState } from "react";
 
-import { payInstallmentAction } from "@/_legacy_backend/actions/installments";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { toast } from "sonner";
 
 interface DebtDashboardProps {
     installments: any[];
 }
 
-export function DebtDashboardClient({ installments }: DebtDashboardProps) {
+export function DebtDashboardClient({ installments: initialInstallments }: DebtDashboardProps) {
     const { t } = useI18n();
+    const [installments, setInstallments] = useState(initialInstallments);
     const [filter, setFilter] = useState<"ALL" | "COLLECTIONS" | "REPAYMENTS">("ALL");
     const [isPending, setIsPending] = useState<string | null>(null);
 
@@ -60,10 +61,24 @@ export function DebtDashboardClient({ installments }: DebtDashboardProps) {
     const handlePay = async (id: string) => {
         setIsPending(id);
         try {
-            await payInstallmentAction(id);
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/finance/installments/${id}/pay`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to record payment");
+            }
+
             toast.success(t("Common.success") || "Payment recorded successfully");
-        } catch (error) {
-            toast.error(t("Common.error") || "Failed to record payment");
+            // Update local state to reflect payment
+            setInstallments(prev => prev.map(inst => inst.id === id ? { ...inst, status: "PAID" } : inst));
+        } catch (error: any) {
+            toast.error(error.message || t("Common.error") || "Failed to record payment");
         } finally {
             setIsPending(null);
         }

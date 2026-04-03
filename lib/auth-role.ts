@@ -1,6 +1,8 @@
 import { getTenantContext, type TenantContext } from "@/lib/auth";
-import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
+
+// Define a local Role type since we removed @prisma/client
+export type Role = "OWNER" | "ADMIN" | "MANAGER" | "STAFF";
 
 /**
  * Require specific role to access resource
@@ -10,7 +12,7 @@ export async function requireRole(requiredRole: Role): Promise<TenantContext> {
   const context = await getTenantContext();
 
   // OWNER can access everything
-  if (context.role === Role.OWNER) {
+  if (context.role === "OWNER") {
     return context;
   }
 
@@ -22,8 +24,8 @@ export async function requireRole(requiredRole: Role): Promise<TenantContext> {
     STAFF: 1,
   };
 
-  const userLevel = roleHierarchy[context.role] || 0;
-  const requiredLevel = roleHierarchy[requiredRole] || 0;
+  const userLevel = roleHierarchy[context.role as Role] || 0;
+  const requiredLevel = roleHierarchy[requiredRole as Role] || 0;
 
   if (userLevel < requiredLevel) {
     redirect("/dashboard");
@@ -37,8 +39,11 @@ export async function requireRole(requiredRole: Role): Promise<TenantContext> {
  * Now checks for separate owner authentication
  */
 export async function requireOwner(): Promise<{ username: string }> {
-  const { getOwnerSession } = await import("@/actions/admin/auth");
-  const session = await getOwnerSession();
+  // Legacy owner session check - now disabled or needs migration to REST API
+  // const { getOwnerSession } = await import("@/_legacy_backend/actions/admin/auth");
+  // const session = await getOwnerSession();
+  
+  const session = { authenticated: false, username: "" }; // Placeholder
 
   if (!session || !session.authenticated) {
     redirect("/admin/login");
@@ -54,7 +59,7 @@ export async function hasRole(requiredRole: Role): Promise<boolean> {
   try {
     const context = await getTenantContext();
 
-    if (context.role === Role.OWNER) {
+    if (context.role === "OWNER") {
       return true;
     }
 
@@ -65,8 +70,8 @@ export async function hasRole(requiredRole: Role): Promise<boolean> {
       STAFF: 1,
     };
 
-    const userLevel = roleHierarchy[context.role] || 0;
-    const requiredLevel = roleHierarchy[requiredRole] || 0;
+    const userLevel = roleHierarchy[context.role as Role] || 0;
+    const requiredLevel = roleHierarchy[requiredRole as Role] || 0;
 
     return userLevel >= requiredLevel;
   } catch {

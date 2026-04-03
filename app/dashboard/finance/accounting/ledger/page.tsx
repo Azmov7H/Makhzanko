@@ -1,8 +1,9 @@
-import { getI18n, getLocale } from "@/lib/i18n/server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BookOpen } from "lucide-react";
-import { getJournalEntries } from "@/_legacy_backend/actions/accounting";
 import { formatCurrency, cn } from "@/lib/utils";
 import {
     Table,
@@ -12,6 +13,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface JournalTransaction {
     id: string;
@@ -26,17 +30,38 @@ interface JournalTransaction {
 
 interface JournalEntry {
     id: string;
-    date: Date | string;
+    date: string;
     description: string;
     reference?: string | null;
     transactions: JournalTransaction[];
 }
 
-export default async function LedgerPage() {
-    const locale = await getLocale();
-    const t = await getI18n(locale);
+export default function LedgerPage() {
+    const { t, locale } = useI18n();
+    const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const journalEntries = await getJournalEntries() as JournalEntry[];
+    useEffect(() => {
+        const fetchEntries = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/journal`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setJournalEntries(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch ledger entries:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEntries();
+    }, []);
+
+    if (loading) return <LedgerSkeleton />;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700 text-start pb-20 max-w-6xl mx-auto">
@@ -83,8 +108,8 @@ export default async function LedgerPage() {
                             ) : (
                                 journalEntries.map((entry) => (
                                     <TableRow key={entry.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors align-top group/row">
-                                        <TableCell className="px-8 py-6 font-bold text-sm tracking-tight">
-                                            {new Date(entry.date).toLocaleDateString("ar-EG")}
+                                        <TableCell className="px-8 py-6 font-bold text-sm tracking-tight opacity-70">
+                                            {new Date(entry.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
                                         </TableCell>
                                         <TableCell className="py-6">
                                             <div className="flex flex-col gap-1">
@@ -107,24 +132,24 @@ export default async function LedgerPage() {
                                         </TableCell>
                                         <TableCell className="p-0 text-end px-8">
                                             <div className="flex flex-col">
-                                                {entry.transactions.map((t, idx) => (
-                                                    <div key={t.id} className={cn(
-                                                        "py-4 flex items-center justify-end min-h-[70px] font-black text-lg tracking-tighter",
+                                                {entry.transactions.map((tx, idx) => (
+                                                    <div key={tx.id} className={cn(
+                                                        "py-4 flex items-center justify-end min-h-[70px] font-black text-sm tracking-tighter",
                                                         idx !== entry.transactions.length - 1 && "border-b border-primary/5"
                                                     )}>
-                                                        {t.type === "DEBIT" ? formatCurrency(Number(t.amount)) : <span className="opacity-10 text-xs">—</span>}
+                                                        {tx.type === "DEBIT" ? formatCurrency(Number(tx.amount)) : <span className="opacity-10 text-xs">—</span>}
                                                     </div>
                                                 ))}
                                             </div>
                                         </TableCell>
                                         <TableCell className="p-0 text-end px-8">
                                             <div className="flex flex-col">
-                                                {entry.transactions.map((t, idx) => (
-                                                    <div key={t.id} className={cn(
-                                                        "py-4 flex items-center justify-end min-h-[70px] font-black text-lg tracking-tighter text-destructive/80",
+                                                {entry.transactions.map((tx, idx) => (
+                                                    <div key={tx.id} className={cn(
+                                                        "py-4 flex items-center justify-end min-h-[70px] font-black text-sm tracking-tighter text-destructive/80",
                                                         idx !== entry.transactions.length - 1 && "border-b border-primary/5"
                                                     )}>
-                                                        {t.type === "CREDIT" ? formatCurrency(Number(t.amount)) : <span className="opacity-10 text-xs">—</span>}
+                                                        {tx.type === "CREDIT" ? formatCurrency(Number(tx.amount)) : <span className="opacity-10 text-xs">—</span>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -136,6 +161,15 @@ export default async function LedgerPage() {
                     </Table>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function LedgerSkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-7xl mx-auto animate-pulse">
+            <Skeleton className="h-20 w-1/3 rounded-xl" />
+            <Skeleton className="h-96 w-full rounded-[3rem]" />
         </div>
     );
 }

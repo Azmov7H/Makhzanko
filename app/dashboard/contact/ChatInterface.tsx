@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { startChatSessionAction, sendChatMessageAction } from "@/_legacy_backend/actions/chat";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n/context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 interface Message {
     id: string;
@@ -47,11 +47,28 @@ export function ChatInterface({
 
     const handleStartChat = async () => {
         setIsStarting(true);
-        const result = await startChatSessionAction();
-        if (result.success && result.sessionId) {
-            setSessionId(result.sessionId);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/support/sessions`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setSessionId(data.id);
+                toast.success(t("Dashboard.chat.started") || "Support chat started");
+            } else {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to start chat session");
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Failed to start chat session");
+        } finally {
+            setIsStarting(false);
         }
-        setIsStarting(false);
     };
 
     const handleSendMessage = async (e: React.FormEvent) => {
@@ -62,24 +79,39 @@ export function ChatInterface({
         setInput("");
         setIsSending(true);
 
-        const result = await sendChatMessageAction({
-            sessionId,
-            content,
-            sender: "CLIENT",
-            senderName: tenantName
-        });
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/support/sessions/${sessionId}/messages`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    content,
+                    sender: "CLIENT",
+                    senderName: tenantName
+                })
+            });
 
-        if (result.success) {
-            setMessages(prev => [...prev, {
-                id: result.messageId || Date.now().toString(),
-                content,
-                sender: "CLIENT",
-                createdAt: new Date()
-            }]);
-        } else {
-            toast.error(result.error || "Failed to send message");
+            if (res.ok) {
+                const data = await res.json();
+                setMessages(prev => [...prev, {
+                    id: data.id || Date.now().toString(),
+                    content,
+                    sender: "CLIENT",
+                    createdAt: new Date()
+                }]);
+            } else {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to send message");
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Failed to send message");
+            setInput(content); // Restore input on failure
+        } finally {
+            setIsSending(false);
         }
-        setIsSending(false);
     };
 
     if (!sessionId) {

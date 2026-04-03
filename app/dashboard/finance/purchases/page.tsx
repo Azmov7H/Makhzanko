@@ -1,5 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import { getTenantContext } from "@/lib/auth";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,31 +12,40 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
-import { Plus, Truck, History, Calendar, ShoppingBag, ArrowRight, Warehouse } from "lucide-react";
+import { Plus, Truck, ShoppingBag, Warehouse } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
-export default async function PurchasesPage() {
-    return (
-        <Suspense fallback={<PurchasesSkeleton />}>
-            <PurchasesContent />
-        </Suspense>
-    );
-}
+export default function PurchasesPage() {
+    const [purchases, setPurchases] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { t, locale } = useI18n();
 
-async function PurchasesContent() {
-    const context = await getTenantContext();
-    const locale = await getLocale();
-    const t = await getI18n(locale);
+    useEffect(() => {
+        const fetchPurchases = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/purchases`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setPurchases(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch purchases:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPurchases();
+    }, []);
 
-    const purchases = await prisma.purchaseOrder.findMany({
-        where: { tenantId: context.tenantId },
-        include: { warehouse: true },
-        orderBy: { number: "desc" },
-    });
+    if (loading) return <PurchasesSkeleton />;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700 text-start pb-20 max-w-6xl mx-auto">

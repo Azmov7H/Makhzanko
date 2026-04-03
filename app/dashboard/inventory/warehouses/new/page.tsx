@@ -1,20 +1,17 @@
 "use client";
 
-import { createWarehouseAction } from "@/_legacy_backend/actions/warehouses";
-import { useState, useTransition } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ArrowLeft, Save, Warehouse, MapPin, Info, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { getWarehouseSchema } from "@/lib/validation";
-import { Warehouse, Save, AlertCircle, Sparkles, MapPin, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 
 export default function NewWarehousePage() {
     const { t } = useI18n();
@@ -37,19 +34,30 @@ export default function NewWarehousePage() {
 
     const onSubmit = async (data: any) => {
         startTransition(async () => {
-            const formData = new FormData();
-            Object.entries(data).forEach(([key, value]) => formData.append(key, String(value)));
-
-            const result = await createWarehouseAction(null, formData);
-            if (result?.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/warehouses`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
                 });
-            } else {
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.message || "Failed to create warehouse");
+                }
+
                 toast.success(t("Common.success"), {
                     className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
                 });
                 router.push("/dashboard/inventory/warehouses");
+            } catch (error: any) {
+                toast.error(error.message || t("Common.error"), {
+                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+                });
             }
         });
     };

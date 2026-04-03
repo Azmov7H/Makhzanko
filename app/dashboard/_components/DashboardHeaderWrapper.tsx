@@ -1,5 +1,7 @@
-import { getTenantContext } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useAuth } from "@/lib/auth/AuthContext";
+import { useI18n } from "@/lib/i18n/context";
 import { MobileSidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,32 +12,21 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { CircleUser, Settings, HelpCircle, LogOut, Shield, Search, Bell, Globe } from "lucide-react";
-import { logoutAction } from "@/_legacy_backend/actions/auth";
+import { CircleUser, Settings, LogOut, Search, Globe } from "lucide-react";
 import Link from "next/link";
-import { getI18n, getLocale } from "@/lib/i18n/server";
 import { cn } from "@/lib/cn";
 import { Input } from "@/components/ui/input";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
-export async function DashboardHeaderWrapper() {
-    const context = await getTenantContext();
-    const locale = await getLocale();
-    const t = await getI18n(locale);
+export function DashboardHeaderWrapper() {
+    const { user, logout } = useAuth();
+    const { t, locale } = useI18n();
 
-    const tenant = await prisma.tenant.findUnique({
-        where: { id: context.tenantId },
-        select: { name: true }
-    });
-
-    const tenantName = tenant?.name || t("Dashboard.brand_name");
-
-
+    const tenantName = user?.companyName || user?.name || t("Dashboard.brand_name");
 
     return (
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 transition-all duration-300">
-            <MobileSidebar role={context.role} />
+            <MobileSidebar role={user?.role || "USER"} />
 
             {/* Search Bar */}
             <div className="flex-1 flex max-w-md items-center gap-2 relative hidden sm:flex">
@@ -72,7 +63,7 @@ export async function DashboardHeaderWrapper() {
 
                 {/* Notifications */}
                 <NotificationCenter
-                    locale={locale}
+                    locale={locale as "ar" | "en"}
                     translations={{
                         title: t("Dashboard.notifications.title"),
                         mark_all_read: t("Dashboard.notifications.mark_all_read"),
@@ -81,9 +72,6 @@ export async function DashboardHeaderWrapper() {
                         delete: t("Dashboard.notifications.delete"),
                     }}
                 />
-
-
-
 
                 <div className="h-6 w-[1px] bg-primary/10 mx-1" />
 
@@ -99,9 +87,9 @@ export async function DashboardHeaderWrapper() {
                     <DropdownMenuContent align="end" className="w-64 p-2 bg-card/95 backdrop-blur-2xl border-primary/10 rounded-2xl shadow-2xl">
                         <DropdownMenuLabel className="px-3 py-3 text-start">
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-bold leading-none">{t("Dashboard.user_menu.my_account")}</p>
+                                <p className="text-sm font-bold leading-none">{tenantName}</p>
                                 <div className="flex items-center gap-2">
-                                    <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[100px]">{context.tenantId}</p>
+                                    <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[100px]">{user?.tenantId || "N/A"}</p>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
@@ -114,14 +102,13 @@ export async function DashboardHeaderWrapper() {
                         </DropdownMenuItem>
 
                         <DropdownMenuSeparator className="bg-primary/5" />
-                        <form action={logoutAction}>
-                            <DropdownMenuItem asChild className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-colors">
-                                <button type="submit" className="flex w-full items-center gap-3 text-destructive">
-                                    <div className="p-1.5 bg-destructive/10 rounded-lg"><LogOut className="h-4 w-4" /></div>
-                                    <span className="font-bold text-sm uppercase tracking-tight">{t("Dashboard.logout")}</span>
-                                </button>
-                            </DropdownMenuItem>
-                        </form>
+                        <DropdownMenuItem 
+                            onClick={() => logout()}
+                            className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-colors text-destructive flex w-full items-center gap-3"
+                        >
+                            <div className="p-1.5 bg-destructive/10 rounded-lg"><LogOut className="h-4 w-4" /></div>
+                            <span className="font-bold text-sm uppercase tracking-tight">{t("Dashboard.logout")}</span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

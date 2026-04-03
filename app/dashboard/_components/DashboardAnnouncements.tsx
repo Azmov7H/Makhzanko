@@ -1,17 +1,27 @@
-import { getActiveAnnouncementsAction } from "@/_legacy_backend/actions/admin/announcements";
-import { AnnouncementBanner } from "@/components/ui/AnnouncementBanner";
-import { getTenantContext } from "@/lib/auth";
-import { getLocale } from "@/lib/i18n/server";
+"use client";
 
-export async function DashboardAnnouncements() {
-    const context = await getTenantContext();
-    const locale = await getLocale();
-    const announcements = await getActiveAnnouncementsAction();
+import { useEffect, useState } from "react";
+import { AnnouncementBanner } from "@/components/ui/AnnouncementBanner";
+import { useI18n } from "@/lib/i18n/context";
+
+export function DashboardAnnouncements() {
+    const { locale } = useI18n();
+    const [announcements, setAnnouncements] = useState([]);
+
+    useEffect(() => {
+        // Fetch from new API architecture when ready
+        // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/announcements`)
+        //     .then(res => res.json())
+        //     .then(data => setAnnouncements(data || []))
+        //     .catch(console.error);
+    }, []);
+
+    if (announcements.length === 0) return null;
 
     return (
         <AnnouncementBanner
-            announcements={JSON.parse(JSON.stringify(announcements))}
-            locale={locale}
+            announcements={announcements}
+            locale={locale as "en" | "ar"}
         />
     );
 }

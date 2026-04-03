@@ -1,110 +1,59 @@
-import { db } from "@/lib/db";
-import { getTenantContext } from "@/lib/auth";
-import { getEmployeePerformance } from "@/_legacy_backend/actions/advanced-features";
+"use client";
+
+import { useEffect, useState } from "react";
 import AdvancedAnalyticsClient from "./AdvancedAnalyticsClient";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface TopProduct {
-  productId: string;
-  _sum: {
-    quantity: number | null;
-    price: any; // Prisma Decimal
-  };
-}
-
-export default async function AdvancedAnalyticsPage({
+export default function AdvancedAnalyticsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  const context = await getTenantContext();
-  const performance = await getEmployeePerformance();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch top products
-  const topProducts = await db.saleItem.groupBy({
-    by: ["productId"],
-    where: { sale: { tenantId: context.tenantId, status: "COMPLETED" } },
-    _sum: { quantity: true, price: true },
-    orderBy: { _sum: { price: "desc" } },
-    take: 5,
-  }) as unknown as TopProduct[];
-
-  const topProductsWithTotal = topProducts.map((p) => {
-    const quantity = p._sum.quantity ?? 0;
-    const price =
-      typeof p._sum.price === "object" && p._sum.price !== null && "toNumber" in p._sum.price
-        ? (p._sum.price as any).toNumber()
-        : p._sum.price ?? 0;
-
-    return {
-      productId: p.productId,
-      totalQuantity: quantity,
-      totalAmount: quantity * price,
-    };
-  });
-
-  const productDetails = await db.product.findMany({
-    where: { id: { in: topProducts.map((p: TopProduct) => p.productId) } },
-  });
-
-  // Fetch growth rate data (last 30 days vs previous 30 days)
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-  const [currentSales, previousSales] = await Promise.all([
-    db.sale.aggregate({
-      where: {
-        tenantId: context.tenantId,
-        status: "COMPLETED",
-        date: { gte: thirtyDaysAgo }
-      },
-      _sum: { total: true }
-    }),
-    db.sale.aggregate({
-      where: {
-        tenantId: context.tenantId,
-        status: "COMPLETED",
-        date: { gte: sixtyDaysAgo, lt: thirtyDaysAgo }
-      },
-      _sum: { total: true }
-    })
-  ]);
-
-  const currentTotal = Number(currentSales._sum.total || 0);
-  const previousTotal = Number(previousSales._sum.total || 0);
-
-  const growthRate = previousTotal > 0
-    ? ((currentTotal - previousTotal) / previousTotal) * 100
-    : (currentTotal > 0 ? 100 : 0);
-
-  // Simple target calculation (e.g., target is 10% more than previous period)
-  const target = previousTotal * 1.1 || 5000; // Fallback target
-  const targetAchievement = Math.min(Math.round((currentTotal / target) * 100), 100);
-
-  const analyticsData = topProductsWithTotal.map((tp) => {
-    const p = productDetails.find((prod) => prod.id === tp.productId);
-    return {
-      productId: tp.productId,
-      name: p?.name || "Unknown",
-      sku: p?.sku || "N/A",
-      _sum: {
-        quantity: tp.totalQuantity,
-        total: tp.totalAmount
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const token = getAuthToken();
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/finance/analytics`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const analyticsData = await res.json();
+          setData(analyticsData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      } finally {
+        setLoading(false);
       }
     };
-  });
+    fetchAnalytics();
+  }, []);
 
-  const stats = {
-    growthRate: growthRate.toFixed(1) + "%",
-    targetAchievement: targetAchievement + "%",
-    growthStatus: (growthRate >= 0 ? "up" : "down") as "up" | "down"
-  };
+  if (loading) return <AnalyticsSkeleton />;
 
   return (
     <AdvancedAnalyticsClient
       params={params}
-      data={{ performance, analyticsData, stats }}
+      data={data}
     />
   );
+}
+
+function AnalyticsSkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-7xl mx-auto animate-pulse">
+            <Skeleton className="h-12 w-1/3 rounded-xl" />
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-40 rounded-[2rem]" />
+                <Skeleton className="h-40 rounded-[2rem]" />
+                <Skeleton className="h-40 rounded-[2rem]" />
+            </div>
+            <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
+        </div>
+    );
 }

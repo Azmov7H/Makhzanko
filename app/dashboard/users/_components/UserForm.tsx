@@ -1,7 +1,6 @@
 "use client";
 
-import { createUserAction, updateUserAction } from "@/_legacy_backend/actions/users";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useI18n } from "@/lib/i18n/context";
 import { useForm, Controller } from "react-hook-form";
-import { User, Save, RefreshCw, Shield, Mail, CheckCircle } from "lucide-react";
+import { User, Save, RefreshCw, Mail, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 interface UserFormProps {
     user?: any;
@@ -22,14 +21,13 @@ interface UserFormProps {
 
 export default function UserForm({ user }: UserFormProps) {
     const { t } = useI18n();
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const router = useRouter();
 
     const {
         register,
         handleSubmit,
         control,
-        formState: { errors },
     } = useForm({
         defaultValues: {
             name: user?.name || "",
@@ -40,21 +38,35 @@ export default function UserForm({ user }: UserFormProps) {
     });
 
     const onSubmit = async (data: any) => {
-        startTransition(async () => {
-            const formData = new FormData();
-            if (user) formData.append("id", user.id);
-            Object.entries(data).forEach(([key, value]) => formData.append(key, String(value)));
+        setIsPending(true);
+        try {
+            const token = getAuthToken();
+            const url = user 
+                ? `${process.env.NEXT_PUBLIC_API_URL}/api/settings/users/${user.id}`
+                : `${process.env.NEXT_PUBLIC_API_URL}/api/settings/users`;
+            
+            const res = await fetch(url, {
+                method: user ? "PUT" : "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
 
-            const action = user ? updateUserAction : createUserAction;
-            const result = await action(null, formData);
-
-            if (result?.error) {
-                toast.error(result.error);
-            } else {
-                toast.success(t("Common.success"));
-                router.push("/dashboard/users");
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to save user");
             }
-        });
+
+            toast.success(t("Common.success"));
+            router.push("/dashboard/users");
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsPending(false);
+        }
     };
 
     const container = {

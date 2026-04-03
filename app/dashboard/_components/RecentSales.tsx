@@ -3,9 +3,10 @@
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getSalesReport } from "@/_legacy_backend/actions/reports";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export function RecentSales({ locale }: { locale: string }) {
     const { t } = useI18n();
@@ -13,10 +14,24 @@ export function RecentSales({ locale }: { locale: string }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getSalesReport("7days").then(res => {
-            setSales(res.slice(0, 5)); // Limit to 5
-            setLoading(false);
-        });
+        const fetchRecentSales = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/recent-sales`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setSales(data.slice(0, 5));
+                }
+            } catch (error) {
+                console.error("Failed to fetch recent sales:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecentSales();
     }, []);
 
     if (loading) return <div className="h-[350px] w-full animate-pulse bg-muted/20 rounded-xl" />;
