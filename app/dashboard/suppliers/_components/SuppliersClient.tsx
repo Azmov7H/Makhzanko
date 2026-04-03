@@ -133,10 +133,13 @@ export function SuppliersClient() {
                                         <TableRow key={supplier.id} className="group/row hover:bg-primary/[0.02] transition-all duration-500 border-primary/5 h-24">
                                             <TableCell className="px-10">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center font-black text-xs">
+                                                    <div className="h-12 w-12 rounded-2xl bg-primary/5 text-primary flex items-center justify-center font-black text-xs shadow-inner">
                                                         {supplier.name.charAt(0).toUpperCase()}
                                                     </div>
-                                                    <span className="font-black text-lg group-hover/row:text-primary transition-colors">{supplier.name}</span>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-black text-lg group-hover/row:text-primary transition-colors leading-none">{supplier.name}</span>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mt-1">Verified Partner</span>
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -159,7 +162,7 @@ export function SuppliersClient() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Badge variant="outline" className="rounded-xl px-3 py-1 font-black text-primary border-primary/10 bg-primary/5">
+                                                <Badge variant="outline" className="rounded-xl px-4 py-1 font-black text-primary border-primary/10 bg-primary/5 shadow-sm group-hover/row:bg-primary/10 transition-all">
                                                     {supplier._count?.purchases || 0}
                                                 </Badge>
                                             </TableCell>

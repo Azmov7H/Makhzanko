@@ -18,19 +18,23 @@ export default function InvoicePage() {
   useEffect(() => {
     if (!id) return;
 
-    // TODO: Replace with REST API call
-    // const token = getAuthToken();
-    // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invoices/${id}`, {
-    //   headers: { Authorization: `Bearer ${token}` }
-    // })
-    // .then(res => res.json())
-    // .then(data => {
-    //   setInvoiceData(data);
-    //   setLoading(false);
-    // })
-    // .catch(() => setLoading(false));
-
-    setLoading(false);
+    const fetchInvoice = async () => {
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invoices/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setInvoiceData(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch invoice:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchInvoice();
   }, [id]);
 
   if (loading) return <div className="p-12 space-y-8"><Skeleton className="h-20 w-1/3" /><Skeleton className="h-[800px] w-full" /></div>;

@@ -1,19 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User, Plus, Edit, Trash2, Mail, CheckCircle, XCircle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useI18n } from "@/lib/i18n/context";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { User, Plus, Edit, Trash2, Mail, CheckCircle, XCircle, RefreshCw, ShieldCheck, ShieldAlert, Key } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getAuthToken } from "@/lib/auth/AuthContext";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -123,13 +114,36 @@ export function UsersClient({ users }: UsersClientProps) {
                                         </Badge>
                                     </div>
                                 </div>
-                                <CardTitle className="text-xl font-black italic">{user.name || "N/A"}</CardTitle>
-                                <CardDescription className="flex items-center gap-2 mt-1">
-                                    <Mail className="h-3 w-3" /> {user.email}
+                                <CardTitle className="text-xl font-black italic flex items-center justify-between">
+                                    {user.name || "N/A"}
+                                    {user.role === "OWNER" && <ShieldCheck className="h-4 w-4 text-amber-500" />}
+                                </CardTitle>
+                                <CardDescription className="flex items-center gap-2 mt-1 font-medium truncate">
+                                    <Mail className="h-3 w-3 opacity-40" /> {user.email}
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="p-8 pt-0 relative z-10">
-                                <div className="mt-6 flex gap-3">
+                            <CardContent className="p-8 pt-0 relative z-10 space-y-6">
+                                <Separator className="bg-primary/5" />
+                                
+                                {/* Permissions Preview */}
+                                <div className="space-y-3">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2">
+                                        <Key className="h-3 w-3" /> {t("Users.permissions_preview") || "Access Levels"}
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {user.role === "OWNER" ? (
+                                            <Badge variant="outline" className="bg-amber-500/5 text-amber-500 border-none px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">Full Access</Badge>
+                                        ) : (
+                                            <>
+                                                <Badge variant="outline" className="bg-primary/5 text-primary border-none px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">Inventory</Badge>
+                                                <Badge variant="outline" className="bg-primary/5 text-primary border-none px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">Sales</Badge>
+                                                <Badge variant="outline" className="bg-muted text-muted-foreground/50 border-none px-2 py-0.5 text-[8px] font-black uppercase tracking-widest">Finance</Badge>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 flex gap-3 pt-4 border-t border-primary/5">
                                     <Button asChild variant="outline" className="flex-1 rounded-xl h-10 border-primary/10 hover:bg-primary/5 font-black uppercase text-[10px] tracking-widest gap-2">
                                         <Link href={`/dashboard/users/${user.id}/edit`}>
                                             <Edit className="h-3 w-3" /> {t("Common.edit")}

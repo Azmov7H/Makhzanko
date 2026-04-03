@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { downloadCSV } from "@/lib/utils/export";
 
 interface ReportsClientProps {
     sales: any[];
@@ -57,7 +58,11 @@ export function ReportsClient({ sales, valuation, bestSellers, chartData }: Repo
                         <Download className="h-4 w-4" />
                         {t("Reports.export_pdf")}
                     </Button>
-                    <Button variant="outline" className="rounded-2xl h-12 border-primary/10 hover:bg-primary/5 font-black uppercase tracking-widest text-xs gap-2">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => downloadCSV(sales, "Makhzanko_Sales_Report")}
+                        className="rounded-2xl h-12 border-primary/10 hover:bg-primary/5 font-black uppercase tracking-widest text-xs gap-2"
+                    >
                         <FileText className="h-4 w-4" />
                         {t("Reports.export_csv")}
                     </Button>

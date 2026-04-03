@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { motion } from "framer-motion";
 import { FileText, Palette, Eye, Layout, Calendar, MessageCircle, Share2, Sparkles, ArrowRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import {
     Table,
     TableBody,
@@ -27,9 +28,12 @@ export function InvoicesClient() {
     useEffect(() => {
         async function fetchInvoices() {
             try {
+                const token = getAuthToken();
                 // Fetching from /api/sales because Rust backend handles invoices via the sales table
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/sales`, {
-                    credentials: 'include'
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
                 if (res.ok) {
                     const data = await res.json();

@@ -134,7 +134,27 @@ export function WarehousesClient({ warehouses }: WarehousesClientProps) {
                                         </div>
                                     </div>
 
-                                    <div className="pt-6 border-t border-primary/5 flex items-center justify-between">
+                                    {/* Capacity Progress Bar */}
+                                    <div className="space-y-3 pt-6 border-t border-primary/5">
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                            <span>{t("Warehouses.stock_level") || "Capacity Used"}</span>
+                                            <span className="text-primary">{Math.min(Math.round(((warehouse.stocks?.length || 0) / 100) * 100), 100)}%</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-primary/5 rounded-full overflow-hidden">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.min(Math.round(((warehouse.stocks?.length || 0) / 100) * 100), 100)}%` }}
+                                                className={cn(
+                                                    "h-full rounded-full transition-all duration-1000",
+                                                    (warehouse.stocks?.length || 0) > 80 ? "bg-destructive shadow-lg shadow-destructive/20" : 
+                                                    (warehouse.stocks?.length || 0) > 50 ? "bg-amber-500 shadow-lg shadow-amber-500/20" : 
+                                                    "bg-primary shadow-lg shadow-primary/20"
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-blue-500/10 rounded-xl text-blue-500">
                                                 <Package className="h-4 w-4" />

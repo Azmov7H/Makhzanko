@@ -101,34 +101,46 @@ export default function PurchasesPage() {
                                 </TableRow>
                             ) : (
                                 purchases.map((po) => (
-                                    <TableRow key={po.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row h-24">
-                                        <TableCell className="px-8 font-bold text-sm tracking-tight opacity-70">
-                                            {new Date(po.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric'
-                                            })}
+                                    <TableRow key={po.id} className="border-primary/5 hover:bg-primary/[0.04] transition-all duration-500 group/row h-36">
+                                        <TableCell className="px-10">
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="font-black text-xs uppercase tracking-widest text-muted-foreground/30">{t("Purchases.date")}</span>
+                                                <span className="font-bold text-sm tracking-tight opacity-70">
+                                                    {new Date(po.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
+                                                </span>
+                                            </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="font-black text-lg text-primary bg-primary/5 px-3 py-1 rounded-xl shadow-inner group-hover/row:scale-105 transition-transform inline-block">#{po.number}</span>
+                                            <div className="flex flex-col gap-2">
+                                                <span className="font-black text-xl text-primary drop-shadow-sm group-hover/row:scale-105 transition-transform origin-left inline-block">#{po.number}</span>
+                                                <Badge variant="outline" className="w-fit text-[9px] font-black uppercase tracking-widest bg-primary/5 border-none px-2 py-0.5 opacity-40 group-hover/row:opacity-100 transition-opacity">Purchase Order</Badge>
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="font-bold text-base">{po.supplierName || "-"}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 group/item">
-                                                <Warehouse className="h-4 w-4 text-primary opacity-30 group-hover/item:opacity-100 transition-opacity" />
-                                                <span className="font-bold text-sm">{po.warehouse?.name}</span>
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Truck className="h-4 w-4 text-muted-foreground/40" />
+                                                    <span className="font-black text-lg leading-none">{po.supplierName || "Direct Order"}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 opacity-60">
+                                                    <Warehouse className="h-3 w-3 text-primary" />
+                                                    <span className="text-xs font-bold">{po.warehouse?.name}</span>
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-end">
-                                            <span className="font-black text-2xl tracking-tighter text-primary">
-                                                {formatCurrency(Number(po.total))}
-                                            </span>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className="font-black text-3xl tracking-tighter text-primary">
+                                                    {formatCurrency(Number(po.total))}
+                                                </span>
+                                                <div className="w-12 h-0.5 bg-primary/10 rounded-full" />
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="px-8 text-end">
+                                        <TableCell className="px-10 text-end">
                                             <Badge
                                                 variant="outline"
                                                 className={cn(
-                                                    "font-black text-[10px] tracking-widest uppercase rounded-xl border-none shadow-sm px-3 py-1.5",
+                                                    "font-black text-[10px] tracking-[0.2em] uppercase rounded-xl border-none shadow-md px-4 py-2 group-hover/row:scale-110 transition-transform origin-right",
                                                     po.status === "RECEIVED" ? "bg-emerald-500/10 text-emerald-500" : "bg-primary/10 text-primary"
                                                 )}
                                             >

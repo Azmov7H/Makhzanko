@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Wallet, Landmark, Zap, History } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { TreasuryActions } from "./TreasuryActions";
+import { downloadCSV } from "@/lib/utils/export";
+import { Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -71,12 +73,22 @@ export default function TreasuryPage() {
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700 text-start pb-20 max-w-6xl mx-auto">
-            <div className="relative">
-                <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
-                <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
-                    {t("Dashboard.treasury")}
-                </h1>
-                <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">{t("Dashboard.treasury_desc")}</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="relative">
+                    <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-16 bg-primary/20 rounded-full blur-sm" />
+                    <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent italic">
+                        {t("Dashboard.treasury")}
+                    </h1>
+                    <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">{t("Dashboard.treasury_desc")}</p>
+                </div>
+                <Button 
+                    variant="outline" 
+                    onClick={() => downloadCSV(transactions, "Makhzanko_Treasury_Export")}
+                    className="h-14 px-8 rounded-2xl border-primary/10 hover:bg-primary/5 font-black uppercase text-xs tracking-widest gap-3 group"
+                >
+                    <Download className="h-5 w-5 opacity-40 group-hover:opacity-100 transition-opacity" />
+                    {t("Common.export") || "Export CSV"}
+                </Button>
             </div>
 
             <Separator className="bg-primary/5 h-px" />
@@ -158,31 +170,42 @@ export default function TreasuryPage() {
                                 </TableRow>
                             ) : (
                                 transactions.map((tx: any) => (
-                                    <TableRow key={tx.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row h-24">
-                                        <TableCell className="px-8 font-bold text-sm tracking-tight opacity-70">
-                                            {new Date(tx.journalEntry.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
+                                    <TableRow key={tx.id} className="border-primary/5 hover:bg-primary/[0.04] transition-all duration-500 group/row h-36">
+                                        <TableCell className="px-10">
+                                            <div className="flex flex-col gap-1.5 pt-2">
+                                                <span className="font-black text-xs uppercase tracking-widest text-muted-foreground/30">{t("Common.date")}</span>
+                                                <span className="font-bold text-sm tracking-tight opacity-70">
+                                                    {new Date(tx.journalEntry.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
+                                                </span>
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-black text-lg group-hover/row:text-primary transition-colors">{tx.journalEntry.description}</span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">REF:</span>
-                                                    <span className="text-xs font-black bg-muted/50 px-2 py-1 rounded-lg text-muted-foreground">{tx.journalEntry.reference || "N/A"}</span>
+                                        <TableCell className="max-w-[300px]">
+                                            <div className="flex flex-col gap-2">
+                                                <span className="font-black text-xl group-hover/row:text-primary transition-colors leading-none truncate">{tx.journalEntry.description}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <Badge variant="outline" className="text-[9px] font-black bg-muted/30 border-none px-2 py-0.5 rounded-lg opacity-40 group-hover/row:opacity-100 transition-opacity uppercase tracking-tighter">REF: {tx.journalEntry.reference || "N/A"}</Badge>
+                                                    <span className="text-[10px] font-bold text-muted-foreground/20 italic">Manual Entry</span>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className={cn(
-                                                "font-black text-[10px] tracking-widest uppercase rounded-xl border-none shadow-sm px-3 py-1.5",
-                                                tx.type === "DEBIT" ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
-                                            )}>
-                                                {tx.type === "DEBIT" ? t("Dashboard.inflow") : t("Dashboard.outflow")}
-                                            </Badge>
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn(
+                                                    "w-1.5 h-12 rounded-full blur-[2px]",
+                                                    tx.type === "DEBIT" ? "bg-emerald-500/40" : "bg-destructive/40"
+                                                )} />
+                                                <Badge variant="outline" className={cn(
+                                                    "font-black text-[10px] tracking-[0.2em] uppercase rounded-xl border-none shadow-sm px-4 py-2",
+                                                    tx.type === "DEBIT" ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
+                                                )}>
+                                                    {tx.type === "DEBIT" ? t("Dashboard.inflow") : t("Dashboard.outflow")}
+                                                </Badge>
+                                            </div>
                                         </TableCell>
-                                        <TableCell className={cn("text-end px-8 font-black text-2xl tracking-tighter", tx.type === "DEBIT" ? "text-emerald-500" : "text-destructive/80")}>
-                                            <div className="flex flex-col items-end gap-1">
-                                                <span>{tx.type === "DEBIT" ? "+" : "-"}{formatCurrency(Number(tx.amount))}</span>
-                                                <div className={cn("w-12 h-1 rounded-full", tx.type === "DEBIT" ? "bg-emerald-500/20" : "bg-destructive/20")} />
+                                        <TableCell className={cn("text-end px-10 font-black text-3xl tracking-tighter", tx.type === "DEBIT" ? "text-emerald-500" : "text-destructive/80")}>
+                                            <div className="flex flex-col items-end gap-1 group-hover/row:scale-105 transition-transform duration-500 origin-right">
+                                                <span className="drop-shadow-sm">{tx.type === "DEBIT" ? "+" : "-"}{formatCurrency(Number(tx.amount))}</span>
+                                                <div className={cn("w-16 h-1 rounded-full animate-pulse", tx.type === "DEBIT" ? "bg-emerald-500/20" : "bg-destructive/20")} />
                                             </div>
                                         </TableCell>
                                     </TableRow>
