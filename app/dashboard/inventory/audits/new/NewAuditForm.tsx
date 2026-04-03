@@ -1,24 +1,23 @@
 "use client";
 
-import { createInventoryCountAction } from "@/_legacy_backend/actions/audit";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
 import { toast } from "sonner";
-import { Loader2, Sparkles, ClipboardCheck, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export default function NewAuditForm({ warehouses }: { warehouses: any[] }) {
     const [warehouseId, setWarehouseId] = useState<string>("");
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const { t } = useI18n();
     const router = useRouter();
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!warehouseId) {
             toast.error(t("Inventory.select_warehouse"), {
                 className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
@@ -26,19 +25,36 @@ export default function NewAuditForm({ warehouses }: { warehouses: any[] }) {
             return;
         }
 
-        startTransition(async () => {
-            const result = await createInventoryCountAction(warehouseId);
-            if (result.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
-                });
-            } else {
-                toast.success(t("Inventory.audit_started"), {
-                    className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-                });
-                router.push(`/dashboard/inventory/audits/${result.countId}`);
+        setIsPending(true);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/audits`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ warehouseId })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to start audit");
             }
-        });
+
+            const result = await res.json();
+            toast.success(t("Inventory.audit_started"), {
+                className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
+            });
+            router.push(`/dashboard/inventory/audits/${result.id}`);
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message || "Something went wrong", {
+                className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+            });
+        } finally {
+            setIsPending(false);
+        }
     };
 
     return (

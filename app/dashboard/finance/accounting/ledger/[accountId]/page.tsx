@@ -1,12 +1,16 @@
-import { getAccountLedger } from "@/_legacy_backend/actions/accounting";
+"use client";
+
+import { useEffect, useState, use } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, BookOpen, Calculator, History, TrendingUp, TrendingDown } from "lucide-react";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+import { useI18n } from "@/lib/i18n/context";
 import { cn, formatCurrency } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LedgerTransaction {
     id: string;
@@ -29,13 +33,35 @@ interface LedgerData {
     transactions: LedgerTransaction[];
 }
 
-export default async function AccountLedgerPage(props: { params: Promise<{ accountId: string }> }) {
-    const params = await props.params;
+export default function AccountLedgerPage(props: { params: Promise<{ accountId: string }> }) {
+    const params = use(props.params);
     const { accountId } = params;
+    const { t } = useI18n();
 
-    const locale = await getLocale();
-    const t = await getI18n(locale);
-    const data = await getAccountLedger(accountId) as LedgerData | null;
+    const [data, setData] = useState<LedgerData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchLedger = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/accounts/${accountId}/ledger`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const ledgerData = await res.json();
+                    setData(ledgerData);
+                }
+            } catch (error) {
+                console.error("Failed to fetch ledger:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchLedger();
+    }, [accountId]);
+
+    if (loading) return <LedgerSkeleton />;
 
     if (!data) return <div className="p-20 text-center text-2xl font-black italic text-muted-foreground">{t("Accounting.account_not_found")}</div>;
 
@@ -113,7 +139,7 @@ export default async function AccountLedgerPage(props: { params: Promise<{ accou
                             {ledgerRows.reverse().map(tx => (
                                 <TableRow key={tx.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row">
                                     <TableCell className="px-8 py-6 font-bold text-sm tracking-tight opacity-70">
-                                        {new Date(tx.journalEntry.date).toLocaleDateString("ar-EG")}
+                                        {new Date(tx.journalEntry.date).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell className="py-6">
                                         <div className="flex flex-col gap-1">
@@ -151,6 +177,21 @@ export default async function AccountLedgerPage(props: { params: Promise<{ accou
                     </Table>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function LedgerSkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-6xl mx-auto animate-pulse">
+            <div className="flex justify-between items-start">
+                <div className="space-y-4">
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                    <Skeleton className="h-16 w-[400px] rounded-2xl" />
+                </div>
+                <Skeleton className="h-24 w-64 rounded-[2.5rem]" />
+            </div>
+            <Skeleton className="h-[600px] w-full rounded-[3rem]" />
         </div>
     );
 }

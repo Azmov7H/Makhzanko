@@ -1,9 +1,12 @@
-import { getJournalEntries } from "@/_legacy_backend/actions/accounting";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+import { useI18n } from "@/lib/i18n/context";
 import { History, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface JournalTransaction {
     id: string;
@@ -18,16 +21,38 @@ interface JournalTransaction {
 
 interface JournalEntry {
     id: string;
-    date: Date | string;
+    date: string;
     description: string;
     reference?: string | null;
     transactions: JournalTransaction[];
 }
 
-export default async function JournalEntriesPage() {
-    const locale = await getLocale();
-    const entries = await getJournalEntries() as JournalEntry[];
-    const t = await getI18n(locale);
+export default function JournalEntriesPage() {
+    const { t, locale } = useI18n();
+    const [entries, setEntries] = useState<JournalEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEntries = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/journal`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setEntries(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch journal entries:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEntries();
+    }, []);
+
+    if (loading) return <JournalSkeleton />;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700 text-start pb-20">
@@ -51,7 +76,9 @@ export default async function JournalEntriesPage() {
                                     <div>
                                         <CardTitle className="text-2xl font-black italic mb-1 group-hover:text-primary transition-colors">{entry.description}</CardTitle>
                                         <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground/70">
-                                            <span className="bg-muted px-2 py-0.5 rounded-lg">{new Date(entry.date).toLocaleDateString("ar-EG")}</span>
+                                            <span className="bg-muted px-2 py-0.5 rounded-lg">
+                                                {new Date(entry.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
+                                            </span>
                                             <span className="opacity-30">•</span>
                                             <span>{t("Accounting.reference")}: <span className="text-foreground">{entry.reference || "N/A"}</span></span>
                                         </div>
@@ -104,6 +131,19 @@ export default async function JournalEntriesPage() {
                         <p className="text-muted-foreground font-black text-xl italic">{t("Accounting.no_entries")}</p>
                     </div>
                 )}
+            </div>
+        </div>
+    );
+}
+
+function JournalSkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-7xl mx-auto animate-pulse">
+            <Skeleton className="h-20 w-1/3 rounded-xl" />
+            <div className="space-y-8">
+                {[1, 2].map(i => (
+                    <Skeleton key={i} className="h-64 rounded-[2.5rem]" />
+                ))}
             </div>
         </div>
     );

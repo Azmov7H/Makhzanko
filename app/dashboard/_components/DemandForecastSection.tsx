@@ -1,14 +1,26 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { TrendingDown, Clock } from "lucide-react";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
-interface DemandForecastSectionProps {
-    alerts: any;
-    t: any;
-}
+export function DemandForecastSection() {
+    const { t } = useI18n();
+    const [alerts, setAlerts] = useState<any>({ forecasts: [] });
 
-export function DemandForecastSection({ alerts, t }: DemandForecastSectionProps) {
+    useEffect(() => {
+        // Fetch from the Rust REST API
+        // const token = getAuthToken();
+        // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/alerts/forecasts`, {
+        //     headers: { Authorization: `Bearer ${token}` }
+        // })
+        // .then(res => res.json())
+        // .then(data => setAlerts(data || { forecasts: [] }))
+        // .catch(console.error);
+    }, []);
+
     return (
         <Card className="luxury-card h-full">
             <CardHeader className="flex flex-row items-center gap-4 pb-6 border-b border-border/40">

@@ -1,7 +1,6 @@
 "use client";
 
-import { updateWarehouseAction } from "@/_legacy_backend/actions/warehouses";
-import { useTransition } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +14,7 @@ import { Warehouse, Save, AlertCircle, Sparkles, MapPin, RefreshCw } from "lucid
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 interface EditWarehousePageProps {
     warehouse: any;
@@ -22,7 +22,7 @@ interface EditWarehousePageProps {
 
 export default function EditWarehousePage({ warehouse }: EditWarehousePageProps) {
     const { t } = useI18n();
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const router = useRouter();
 
     const schema = getWarehouseSchema(t);
@@ -39,23 +39,35 @@ export default function EditWarehousePage({ warehouse }: EditWarehousePageProps)
     });
 
     const onSubmit = async (data: any) => {
-        startTransition(async () => {
-            const formData = new FormData();
-            formData.append("id", warehouse.id);
-            Object.entries(data).forEach(([key, value]) => formData.append(key, String(value)));
+        setIsPending(true);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventory/warehouses/${warehouse.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
 
-            const result = await updateWarehouseAction(null, formData);
-            if (result?.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
-                });
-            } else {
-                toast.success(t("Common.success"), {
-                    className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-                });
-                router.push("/dashboard/inventory/warehouses");
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update warehouse");
             }
-        });
+
+            toast.success(t("Common.success"), {
+                className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
+            });
+            router.push("/dashboard/inventory/warehouses");
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message || "Something went wrong", {
+                className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+            });
+        } finally {
+            setIsPending(false);
+        }
     };
 
     const container: Variants = {

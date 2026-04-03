@@ -1,25 +1,17 @@
-import { getTenantContext } from "@/lib/auth";
-import { getLocale } from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LowStockAlert } from "./_components/LowStockAlert";
 import { DashboardClient } from "./DashboardClient";
-import { prisma } from "@/lib/prisma";
-import { getI18n } from "@/lib/i18n/server";
 import { AnnouncementSection } from "./_components/AnnouncementSection";
 import { DemandForecastSection } from "./_components/DemandForecastSection";
-import { getInventoryAlerts } from "@/_legacy_backend/actions/reports";
 
-export default async function DashboardLandingPage() {
-    const locale = await getLocale();
-    await getTenantContext();
-
+export default function DashboardLandingPage() {
     return (
         <div className="space-y-12 text-start px-0">
             <DashboardClient />
 
             <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
-                <AnnouncementWrapper locale={locale as "en" | "ar"} />
+                <AnnouncementSection />
             </Suspense>
 
             <div className="grid gap-8 lg:grid-cols-12">
@@ -28,29 +20,10 @@ export default async function DashboardLandingPage() {
                 </div>
                 <div className="lg:col-span-5">
                     <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-xl" />}>
-                        <DemandForecastWrapper locale={locale as "en" | "ar"} />
+                        <DemandForecastSection />
                     </Suspense>
                 </div>
             </div>
         </div>
     );
-}
-
-// Logic Wrappers for components not yet fully migrated to client hooks
-async function AnnouncementWrapper({ locale }: { locale: "en" | "ar" }) {
-    const t = await getI18n(locale);
-    const announcement = await prisma.announcement.findFirst({
-        where: {
-            isActive: true,
-            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-        },
-        orderBy: { createdAt: 'desc' }
-    });
-    return <AnnouncementSection announcement={announcement} t={t} />;
-}
-
-async function DemandForecastWrapper({ locale }: { locale: "en" | "ar" }) {
-    const alerts = await getInventoryAlerts();
-    const t = await getI18n(locale);
-    return <DemandForecastSection alerts={alerts} t={t} />;
 }

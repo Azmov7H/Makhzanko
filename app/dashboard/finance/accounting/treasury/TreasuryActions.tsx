@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n/context"
 import { Button } from "@/components/ui/button";
 import {
@@ -10,54 +10,72 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowUpCircle, ArrowDownCircle, Loader2, Plus, Minus } from "lucide-react";
-import { createTreasuryTransactionAction } from "@/_legacy_backend/actions/accounting";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
-export function TreasuryActions() {
+interface TreasuryActionsProps {
+    onSuccess?: () => void;
+}
+
+export function TreasuryActions({ onSuccess }: TreasuryActionsProps) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
-    const [actionType, setActionType] = useState<"DEPOSIT" | "WITHDRAW" | null>(null);
+    const [actionType, setActionType] = useState<"DEBIT" | "CREDIT" | null>(null);
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("");
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
 
-    const handleAction = (type: "DEPOSIT" | "WITHDRAW") => {
+    const handleAction = (type: "DEBIT" | "CREDIT") => {
         setActionType(type);
         setAmount("");
         setDescription("");
         setOpen(true);
     };
 
-    const onSubmit = () => {
+    const onSubmit = async () => {
         if (!actionType || !amount) return;
 
-        startTransition(async () => {
-            const res = await createTreasuryTransactionAction({
-                type: actionType,
-                amount: parseFloat(amount),
-                description: description
+        setIsPending(true);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/treasury/transaction`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    type: actionType,
+                    amount: parseFloat(amount),
+                    description: description
+                })
             });
 
-            if (res?.success) {
-                toast.success(t("Dashboard.transaction_success"));
-                setOpen(false);
-            } else {
-                toast.error(t("Dashboard.transaction_error"));
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Transaction failed");
             }
-        });
+
+            toast.success(t("Dashboard.transaction_success"));
+            setOpen(false);
+            if (onSuccess) onSuccess();
+        } catch (error: any) {
+            toast.error(error.message || t("Dashboard.transaction_error"));
+        } finally {
+            setIsPending(false);
+        }
     };
 
     return (
         <div className="flex items-center gap-4 w-full">
             <Button
-                onClick={() => handleAction("DEPOSIT")}
+                onClick={() => handleAction("DEBIT")}
                 className="h-14 flex-1 rounded-2xl bg-emerald-500 hover:bg-emerald-600 shadow-xl shadow-emerald-500/10 font-black text-xs uppercase tracking-widest gap-2 group transition-all"
             >
                 <Plus className="h-4 w-4 group-hover:scale-125 transition-transform" />
@@ -65,7 +83,7 @@ export function TreasuryActions() {
             </Button>
             <Button
                 variant="outline"
-                onClick={() => handleAction("WITHDRAW")}
+                onClick={() => handleAction("CREDIT")}
                 className="h-14 flex-1 rounded-2xl border-destructive/20 text-destructive hover:bg-destructive/5 hover:border-destructive/30 shadow-xl shadow-destructive/5 font-black text-xs uppercase tracking-widest gap-2 group transition-all"
             >
                 <Minus className="h-4 w-4 group-hover:scale-125 transition-transform" />
@@ -76,15 +94,15 @@ export function TreasuryActions() {
                 <DialogContent className="border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem] p-8 max-w-md w-full focus:outline-none overflow-hidden">
                     <div className={cn(
                         "absolute top-0 left-0 w-full h-2",
-                        actionType === "DEPOSIT" ? "bg-emerald-500" : "bg-destructive"
+                        actionType === "DEBIT" ? "bg-emerald-500" : "bg-destructive"
                     )} />
 
                     <DialogHeader className="pt-4">
                         <DialogTitle className="text-3xl font-black italic tracking-tight">
-                            {actionType === "DEPOSIT" ? t("Dashboard.deposit_title") : t("Dashboard.withdraw_title")}
+                            {actionType === "DEBIT" ? t("Dashboard.deposit_title") : t("Dashboard.withdraw_title")}
                         </DialogTitle>
                         <DialogDescription className="text-base font-medium text-muted-foreground/80 pt-1">
-                            {actionType === "DEPOSIT" ? t("Dashboard.deposit_desc") : t("Dashboard.withdraw_desc")}
+                            {actionType === "DEBIT" ? t("Dashboard.deposit_desc") : t("Dashboard.withdraw_desc")}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -124,13 +142,13 @@ export function TreasuryActions() {
                             disabled={!amount || isPending}
                             className={cn(
                                 "h-14 flex-[2] rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-2xl transition-all",
-                                actionType === "DEPOSIT" ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" : "bg-destructive hover:bg-destructive/90 shadow-destructive/20"
+                                actionType === "DEBIT" ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" : "bg-destructive hover:bg-destructive/90 shadow-destructive/20"
                             )}
                         >
                             {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : (
-                                actionType === "DEPOSIT" ? <ArrowUpCircle className="h-5 w-5" /> : <ArrowDownCircle className="h-5 w-5" />
+                                actionType === "DEBIT" ? <ArrowUpCircle className="h-5 w-5" /> : <ArrowDownCircle className="h-5 w-5" />
                             )}
-                            {actionType === "DEPOSIT" ? t("Dashboard.confirm_deposit") : t("Dashboard.confirm_withdraw")}
+                            {actionType === "DEBIT" ? t("Dashboard.confirm_deposit") : t("Dashboard.confirm_withdraw")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

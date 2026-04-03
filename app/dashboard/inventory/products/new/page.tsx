@@ -1,6 +1,5 @@
 "use client";
 
-import { createProductAction, checkProductExistsAction } from "@/_legacy_backend/actions/products";
 import { useState, useTransition } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -42,19 +41,30 @@ export default function NewProductPage() {
 
     const onSubmit = async (data: any) => {
         startTransition(async () => {
-            const formData = new FormData();
-            Object.entries(data).forEach(([key, value]) => formData.append(key, String(value)));
-
-            const result = await createProductAction(null, formData);
-            if (result?.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
                 });
-            } else {
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.message || "Failed to create product");
+                }
+
                 toast.success(t("Common.success"), {
                     className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
                 });
                 router.push("/dashboard/inventory/products");
+            } catch (error: any) {
+                toast.error(error.message || t("Common.error"), {
+                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+                });
             }
         });
     };
@@ -66,10 +76,19 @@ export default function NewProductPage() {
     const checkDuplicate = async (field: "sku" | "name", value: string) => {
         if (!value) return;
         setIsChecking(true);
-        const exists = await checkProductExistsAction(field, value);
-        if (field === "name") setNameExists(exists);
-        if (field === "sku") setSkuExists(exists);
-        setIsChecking(false);
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/check-exists?field=${field}&value=${value}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const { exists } = await res.json();
+            if (field === "name") setNameExists(exists);
+            if (field === "sku") setSkuExists(exists);
+        } catch (error) {
+            console.error("Failed to check duplicate:", error);
+        } finally {
+            setIsChecking(false);
+        }
     };
 
     const generateSKU = () => {

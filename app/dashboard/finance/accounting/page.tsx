@@ -1,10 +1,12 @@
-import { getI18n } from "@/lib/i18n/server";
+"use client";
+
+import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { BookOpen, FileBarChart, Landmark } from "lucide-react";
 
-export default async function AccountingPage() {
-    const t = await getI18n();
+export default function AccountingPage() {
+    const { t } = useI18n();
 
     const modules = [
         {

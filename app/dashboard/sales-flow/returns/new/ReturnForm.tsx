@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, RotateCcw, AlertTriangle, Package, FileCheck, ClipboardList, TrendingDown, Info, Sparkles, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { createReturnAction, getReturnableItemsAction } from "@/_legacy_backend/actions/returns";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency, cn } from "@/lib/utils";
 
@@ -52,19 +52,26 @@ export default function ReturnForm({ invoiceId, currency }: ReturnFormProps) {
 
     useEffect(() => {
         const fetchData = async () => {
-            const result = await getReturnableItemsAction(invoiceId);
-            if ("error" in result) {
-                toast.error(result.error);
-                return;
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/returns/returnable-items?invoiceId=${invoiceId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Failed to fetch returnable items");
+                const result = await res.json();
+                
+                setInvoiceData({
+                    ...result,
+                    invoiceToken: result.invoiceToken || "N/A",
+                });
+                setIsLoading(false);
+            } catch (error: any) {
+                toast.error(error.message || t("Common.error"));
+                setIsLoading(false);
             }
-            setInvoiceData({
-                ...result,
-                invoiceToken: result.invoiceToken || "N/A",
-            });
-            setIsLoading(false);
         };
         fetchData();
-    }, [invoiceId]);
+    }, [invoiceId, t]);
 
     const toggleItem = (productId: string, maxQty: number) => {
         setSelectedItems(prev => {
@@ -113,23 +120,37 @@ export default function ReturnForm({ invoiceId, currency }: ReturnFormProps) {
         }
 
         startTransition(async () => {
-            const items = Array.from(selectedItems.entries()).map(([productId, quantity]) => ({
-                productId,
-                quantity,
-            }));
+            try {
+                const token = getAuthToken();
+                const items = Array.from(selectedItems.entries()).map(([productId, quantity]) => ({
+                    productId,
+                    quantity,
+                }));
 
-            const result = await createReturnAction({
-                invoiceId,
-                items,
-                reason: reason.trim(),
-                notes: notes.trim() || undefined,
-            });
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/returns`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        invoiceId,
+                        items,
+                        reason: reason.trim(),
+                        notes: notes.trim() || undefined,
+                    })
+                });
 
-            if (result.error) {
-                toast.error(result.error);
-            } else {
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.message || "Failed to process return");
+                }
+
+                const result = await res.json();
                 toast.success(t("Returns.success_msg", { token: result.token ?? "", }));
                 router.push(`/dashboard/sales-flow/returns`);
+            } catch (error: any) {
+                toast.error(error.message || t("Common.error"));
             }
         });
     };

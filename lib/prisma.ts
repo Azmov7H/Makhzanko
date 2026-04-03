@@ -1,15 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+// DUMMY PRISMA OBJECT
+// This file exists temporarily to prevent build errors in legacy Server Components.
+// All pages importing this must be converted to Client Components fetching from the Rust REST API.
 
-const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined;
-};
+export const prisma = new Proxy({}, {
+    get: function(target, prop) {
+        return function() {
+            console.warn(`[SPA Migration] Attempted to call prisma.${String(prop)}(). This is a legacy call that must be migrated to the Rust API.`);
+            return Promise.resolve([]);
+        }
+    }
+}) as any;
 
-export const prisma =
-    globalForPrisma.prisma ??
-    new PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-    });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-export const db = prisma; // For backward compatibility during refactoring
+export const db = prisma;

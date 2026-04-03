@@ -4,7 +4,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGri
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { getDashboardChartData } from "@/_legacy_backend/actions/reports";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export function Overview({ locale }: { locale: string }) {
     const { t } = useI18n();
@@ -12,10 +12,24 @@ export function Overview({ locale }: { locale: string }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getDashboardChartData().then(res => {
-            setData(res.revenueData);
-            setLoading(false);
-        });
+        const fetchChartData = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/dashboard-chart`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const chartData = await res.json();
+                    setData(chartData.revenueData || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard chart:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchChartData();
     }, []);
 
     if (loading) return <div className="h-[350px] w-full animate-pulse bg-muted/20 rounded-xl" />;

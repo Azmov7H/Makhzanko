@@ -22,16 +22,14 @@ import {
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
-import { deleteSupplierAction } from "@/_legacy_backend/actions/suppliers";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface SuppliersClientProps {
-    suppliers: any[];
-}
-
-export function SuppliersClient({ suppliers }: SuppliersClientProps) {
+export function SuppliersClient() {
     const { t } = useI18n();
+    const { suppliers, loading, deleteSupplier } = useSuppliers();
 
     const container = {
         hidden: { opacity: 0 },
@@ -45,6 +43,28 @@ export function SuppliersClient({ suppliers }: SuppliersClientProps) {
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 }
     };
+
+    if (loading && suppliers.length === 0) {
+        return (
+            <div className="space-y-12">
+                <div className="flex justify-between items-center">
+                    <Skeleton className="h-16 w-64 rounded-2xl" />
+                    <Skeleton className="h-14 w-40 rounded-2xl" />
+                </div>
+                <Card className="rounded-[3rem] border-none shadow-3xl overflow-hidden">
+                    <div className="h-20 bg-muted/30 mb-1" />
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="h-24 border-b border-muted/20 px-10 flex items-center justify-between">
+                            <Skeleton className="h-10 w-48" />
+                            <Skeleton className="h-10 w-32" />
+                            <Skeleton className="h-10 w-12" />
+                            <Skeleton className="h-10 w-10" />
+                        </div>
+                    ))}
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <motion.div
@@ -165,14 +185,18 @@ export function SuppliersClient({ suppliers }: SuppliersClientProps) {
                                                                 <span className="font-black text-xs uppercase tracking-widest">{t("Common.edit")}</span>
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-all text-destructive">
-                                                            <form action={deleteSupplierAction} className="w-full">
-                                                                <input type="hidden" name="id" value={supplier.id} />
-                                                                <button type="submit" className="w-full flex items-center gap-3 font-black text-xs uppercase tracking-widest">
-                                                                    <div className="p-1.5 bg-destructive/10 rounded-lg"><Trash2 className="h-4 w-4" /></div>
-                                                                    <span>{t("Common.delete")}</span>
-                                                                </button>
-                                                            </form>
+                                                        <DropdownMenuItem 
+                                                            className="rounded-xl focus:bg-destructive/10 cursor-pointer py-3 transition-all text-destructive"
+                                                            onClick={async () => {
+                                                                if(confirm(t("Common.are_you_sure") || "Are you sure?")) {
+                                                                    await deleteSupplier(supplier.id);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="flex items-center gap-3 font-black text-xs uppercase tracking-widest">
+                                                                <div className="p-1.5 bg-destructive/10 rounded-lg"><Trash2 className="h-4 w-4" /></div>
+                                                                <span>{t("Common.delete")}</span>
+                                                            </div>
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>

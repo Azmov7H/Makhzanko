@@ -1,10 +1,14 @@
-import { getTrialBalance } from "@/_legacy_backend/actions/accounting";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+import { useI18n } from "@/lib/i18n/context";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Calculator, FileText, PieChart, TrendingUp, TrendingDown, Clock } from "lucide-react";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TrialBalanceAccount {
     id: string;
@@ -16,20 +20,42 @@ interface TrialBalanceAccount {
     balance: number;
 }
 
-export default async function AccountingReportsPage() {
-    const locale = await getLocale();
-    const t = await getI18n(locale);
-    const trialBalance = await getTrialBalance() as TrialBalanceAccount[];
+export default function AccountingReportsPage() {
+    const { t } = useI18n();
+    const [trialBalance, setTrialBalance] = useState<TrialBalanceAccount[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const totalDebit = trialBalance.reduce((sum, acc) => sum + acc.debit, 0);
-    const totalCredit = trialBalance.reduce((sum, acc) => sum + acc.credit, 0);
+    useEffect(() => {
+        const fetchTrialBalance = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/trial-balance`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setTrialBalance(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch trial balance:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTrialBalance();
+    }, []);
+
+    if (loading) return <AccountingReportsSkeleton />;
+
+    const totalDebit = trialBalance.reduce((sum, acc) => sum + (Number(acc.debit) || 0), 0);
+    const totalCredit = trialBalance.reduce((sum, acc) => sum + (Number(acc.credit) || 0), 0);
 
     const profitLoss = trialBalance.filter(acc => ["REVENUE", "EXPENSE"].includes(acc.type));
     const revenueItems = profitLoss.filter(acc => acc.type === "REVENUE");
     const expenseItems = profitLoss.filter(acc => acc.type === "EXPENSE");
 
-    const revenue = revenueItems.reduce((sum, acc) => sum + (acc.credit - acc.debit), 0);
-    const expenses = expenseItems.reduce((sum, acc) => sum + (acc.debit - acc.credit), 0);
+    const revenue = revenueItems.reduce((sum, acc) => sum + (Number(acc.credit) - Number(acc.debit)), 0);
+    const expenses = expenseItems.reduce((sum, acc) => sum + (Number(acc.debit) - Number(acc.credit)), 0);
     const netIncome = revenue - expenses;
 
     return (
@@ -63,7 +89,7 @@ export default async function AccountingReportsPage() {
                                     <CardTitle className="text-2xl font-black italic">{t("Accounting.trial_balance")}</CardTitle>
                                     <CardDescription className="text-base font-medium mt-1 flex items-center gap-2">
                                         <Clock className="h-4 w-4 opacity-50" />
-                                        {t("Accounting.as_of")} {new Date().toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
+                                        {t("Accounting.as_of")} {new Date().toLocaleDateString()}
                                     </CardDescription>
                                 </div>
                             </div>
@@ -78,22 +104,28 @@ export default async function AccountingReportsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {trialBalance.map(acc => (
-                                        <TableRow key={acc.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row">
-                                            <TableCell className="px-8 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-xs font-black text-muted-foreground/40 font-mono tracking-tighter bg-muted/50 px-2 py-0.5 rounded-lg">{acc.code}</span>
-                                                    <span className="font-bold text-lg group-hover/row:text-primary transition-colors">{acc.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-end py-5 font-black text-lg tracking-tighter">
-                                                {acc.debit > 0 ? formatCurrency(acc.debit) : <span className="opacity-10 text-xs">—</span>}
-                                            </TableCell>
-                                            <TableCell className="text-end px-8 py-5 font-black text-lg tracking-tighter text-destructive/80">
-                                                {acc.credit > 0 ? formatCurrency(acc.credit) : <span className="opacity-10 text-xs">—</span>}
-                                            </TableCell>
+                                    {trialBalance.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-48 text-center text-muted-foreground/30 italic font-black text-xl italic uppercase tracking-widest">{t("Common.no_data")}</TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        trialBalance.map(acc => (
+                                            <TableRow key={acc.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row">
+                                                <TableCell className="px-8 py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-xs font-black text-muted-foreground/40 font-mono tracking-tighter bg-muted/50 px-2 py-0.5 rounded-lg">{acc.code}</span>
+                                                        <span className="font-bold text-lg group-hover/row:text-primary transition-colors">{acc.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-end py-5 font-black text-lg tracking-tighter">
+                                                    {acc.debit > 0 ? formatCurrency(acc.debit) : <span className="opacity-10 text-xs">—</span>}
+                                                </TableCell>
+                                                <TableCell className="text-end px-8 py-5 font-black text-lg tracking-tighter text-destructive/80">
+                                                    {acc.credit > 0 ? formatCurrency(acc.credit) : <span className="opacity-10 text-xs">—</span>}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                     <TableRow className="bg-primary/5 hover:bg-primary/5 border-t-2 border-primary/20">
                                         <TableCell className="px-8 h-20 text-xl font-black italic text-primary uppercase tracking-widest">{t("Common.total")}</TableCell>
                                         <TableCell className="text-end h-20 font-black text-2xl tracking-tighter text-primary">{formatCurrency(totalDebit)}</TableCell>
@@ -182,6 +214,16 @@ export default async function AccountingReportsPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+        </div>
+    );
+}
+
+function AccountingReportsSkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-6xl mx-auto animate-pulse">
+            <Skeleton className="h-16 w-1/2 rounded-2xl" />
+            <Skeleton className="h-12 w-64 rounded-xl" />
+            <Skeleton className="h-[600px] w-full rounded-[3rem]" />
         </div>
     );
 }

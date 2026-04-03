@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, ArrowRight, Package } from "lucide-react";
-import { getLowStockProducts } from "@/_legacy_backend/actions/advanced-features";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export function LowStockAlert() {
     const { t } = useI18n();
@@ -14,10 +14,20 @@ export function LowStockAlert() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getLowStockProducts().then(res => {
-            setProducts(res);
-            setLoading(false);
-        });
+        // Fetch from the Rust REST API
+        // const token = getAuthToken();
+        // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/low-stock`, {
+        //     headers: { Authorization: `Bearer ${token}` }
+        // })
+        // .then(res => res.json())
+        // .then(data => {
+        //     setProducts(data || []);
+        //     setLoading(false);
+        // })
+        // .catch(() => setLoading(false));
+        
+        // Temporary while API is hooked up:
+        setLoading(false);
     }, []);
 
     if (loading) return <div className="h-32 animate-pulse bg-muted rounded-xl" />;

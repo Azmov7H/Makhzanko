@@ -1,20 +1,24 @@
 "use client";
 
-import { createExpenseAction } from "@/_legacy_backend/actions/expenses";
-import { useActionState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, Save, Sparkles, DollarSign, Receipt, Tag, Calendar, Layout } from "lucide-react";
+import { ArrowLeft, Save, Receipt, Tag, Calendar, Layout, DollarSign } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 import { motion } from "framer-motion";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { toast } from "sonner";
 
 export default function NewExpensePage() {
     const { t } = useI18n();
-    const [state, action, isPending] = useActionState(createExpenseAction, null);
+    const router = useRouter();
+    const [isPending, setIsPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const categories = [
         "RENT",
@@ -24,6 +28,42 @@ export default function NewExpensePage() {
         "MAINTENANCE",
         "OTHER",
     ];
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsPending(true);
+        setError(null);
+
+        const formData = new FormData(e.currentTarget);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...data,
+                    amount: parseFloat(data.amount as string)
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || "Failed to create expense");
+            }
+
+            toast.success(t("Common.success"));
+            router.push("/dashboard/finance/expenses");
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsPending(false);
+        }
+    };
 
     return (
         <div className="space-y-12 animate-in fade-in duration-700 pb-20 max-w-4xl mx-auto">
@@ -44,7 +84,7 @@ export default function NewExpensePage() {
                 </Button>
             </div>
 
-            {state?.error && (
+            {error && (
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -53,7 +93,7 @@ export default function NewExpensePage() {
                     <div className="p-2 bg-destructive/20 rounded-xl">
                         <Receipt className="h-5 w-5 text-destructive" />
                     </div>
-                    {state.error}
+                    {error}
                 </motion.div>
             )}
 
@@ -70,7 +110,7 @@ export default function NewExpensePage() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-10">
-                    <form action={action} className="space-y-10">
+                    <form onSubmit={handleSubmit} className="space-y-10">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
                                 <Label className="text-xs font-black uppercase tracking-[0.2em] text-primary/60 ml-1 flex items-center gap-2">

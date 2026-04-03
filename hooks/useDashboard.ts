@@ -18,8 +18,9 @@ export function useDashboard() {
         setLoading(true);
         setError(null);
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
-            const res = await fetch(`${baseUrl}/reports/dashboard`, {
+            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+            const apiBase = base.endsWith('/api') ? base : `${base}/api`;
+            const res = await fetch(`${apiBase}/reports/dashboard`, {
                 credentials: 'include'
             });
             

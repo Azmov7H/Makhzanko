@@ -1,7 +1,7 @@
 "use client";
 
-import { createCustomerAction, updateCustomerAction } from "@/_legacy_backend/actions/customers";
-import { useState, useTransition } from "react";
+import { useCustomers } from "@/hooks/useCustomers";
+import { useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,8 +22,8 @@ interface CustomerFormProps {
 
 export default function CustomerForm({ customer }: CustomerFormProps) {
     const { t } = useI18n();
-    const [isPending, startTransition] = useTransition();
     const router = useRouter();
+    const { createCustomer, updateCustomer, loading: isPending } = useCustomers();
 
     const schema = getCustomerSchema(t);
     const {
@@ -40,25 +40,18 @@ export default function CustomerForm({ customer }: CustomerFormProps) {
     });
 
     const onSubmit = async (data: any) => {
-        startTransition(async () => {
-            const formData = new FormData();
-            if (customer) formData.append("id", customer.id);
-            Object.entries(data).forEach(([key, value]) => formData.append(key, String(value)));
-
-            const action = customer ? updateCustomerAction : createCustomerAction;
-            const result = await action(null, formData);
-
-            if (result?.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
-                });
+        try {
+            if (customer?.id) {
+                await updateCustomer(customer.id, data);
+                toast.success(t("Common.success") || "Customer updated successfully");
             } else {
-                toast.success(t("Common.success"), {
-                    className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-                });
-                router.push("/dashboard/customers");
+                await createCustomer(data);
+                toast.success(t("Common.success") || "Customer created successfully");
             }
-        });
+            router.push("/dashboard/customers");
+        } catch (error) {
+            toast.error(t("Common.error") || "Something went wrong");
+        }
     };
 
     const container: Variants = {

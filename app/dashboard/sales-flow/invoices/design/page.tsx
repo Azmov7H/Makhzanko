@@ -1,18 +1,37 @@
-import { getInvoiceSettingsAction } from "@/_legacy_backend/actions/invoice-settings";
+"use client";
+
+import { useEffect, useState } from "react";
 import InvoiceDesigner from "./InvoiceDesigner";
-import { getAuthPayload } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { getI18n } from "@/lib/i18n/server";
-import { Locale } from "@/lib/i18n/config";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function InvoiceDesignPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params;
-    const t = await getI18n(locale as Locale);
-    // ✅ جلب المستخدم من JWT
-    const auth = await getAuthPayload();
-    if (!auth?.tenantId) redirect("/login");
+export default function InvoiceDesignPage() {
+    const { t } = useI18n();
+    const [settings, setSettings] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    const settings = await getInvoiceSettingsAction();
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/invoice`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setSettings(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch invoice settings:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    if (loading) return <InvoiceDesignSkeleton />;
 
     return (
         <div className="space-y-6">
@@ -22,6 +41,18 @@ export default async function InvoiceDesignPage({ params }: { params: Promise<{ 
             </div>
 
             <InvoiceDesigner settings={settings} />
+        </div>
+    );
+}
+
+function InvoiceDesignSkeleton() {
+    return (
+        <div className="space-y-6 animate-pulse">
+            <div className="space-y-2">
+                <Skeleton className="h-8 w-1/4" />
+                <Skeleton className="h-4 w-1/2" />
+            </div>
+            <Skeleton className="h-[600px] w-full rounded-2xl" />
         </div>
     );
 }

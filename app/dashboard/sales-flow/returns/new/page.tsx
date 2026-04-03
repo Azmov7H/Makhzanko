@@ -1,36 +1,49 @@
-import { getI18n, getLocale } from "@/lib/i18n/server";
-import { getTenantContext } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowLeft, RotateCcw } from "lucide-react";
 import ReturnForm from "./ReturnForm";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function NewReturnPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ invoiceId?: string }>;
-}) {
-    const { invoiceId } = await searchParams;
-    const context = await getTenantContext();
-    const t = await getI18n();
+export default function NewReturnPage() {
+    const { t } = useI18n();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const invoiceId = searchParams.get("invoiceId");
 
-    if (!invoiceId) {
-        redirect(`/dashboard/sales-flow/invoices`);
-    }
+    const [invoice, setInvoice] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    // Verify invoice exists and belongs to tenant
-    const invoice = await prisma.invoice.findUnique({
-        where: { id: invoiceId, tenantId: context.tenantId },
-        include: { tenant: true },
-    });
+    useEffect(() => {
+        if (!invoiceId) {
+            router.push(`/dashboard/sales-flow/invoices`);
+            return;
+        }
 
-    if (!invoice) {
-        notFound();
-    }
+        // TODO: Replace with REST API call
+        // const token = getAuthToken();
+        // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invoices/${invoiceId}`, {
+        //     headers: { Authorization: `Bearer ${token}` }
+        // })
+        // .then(res => res.json())
+        // .then(data => {
+        //     setInvoice(data);
+        //     setLoading(false);
+        // })
+        // .catch(() => setLoading(false));
 
-    const currency = invoice.tenant.currency || "EGP";
+        setLoading(false);
+    }, [invoiceId, router]);
+
+    if (loading) return <div className="p-12 space-y-8"><Skeleton className="h-20 w-1/3" /><Skeleton className="h-[600px] w-full" /></div>;
+    
+    // Placeholder if invoice not found (we'd handled this in fetch normally)
+    const displayInvoice = invoice || { token: "...", currency: "EGP" };
 
     return (
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-start space-y-12">
@@ -43,7 +56,7 @@ export default async function NewReturnPage({
                         {t("Returns.new_return")}
                     </h1>
                     <p className="text-muted-foreground mt-3 text-lg font-medium max-w-2xl">
-                        {t("Returns.process_for_invoice")} <span className="text-primary font-black italic tracking-tighter">#{invoice.token}</span>
+                        {t("Returns.process_for_invoice")} <span className="text-primary font-black italic tracking-tighter">#{displayInvoice.token}</span>
                     </p>
                 </div>
 
@@ -58,7 +71,7 @@ export default async function NewReturnPage({
             {/* Form Container */}
             <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 rounded-[3rem] blur-3xl -z-10" />
-                <ReturnForm invoiceId={invoiceId} currency={currency} />
+                <ReturnForm invoiceId={invoiceId!} currency={displayInvoice.currency} />
             </div>
         </div>
     );

@@ -1,41 +1,90 @@
 "use client";
 
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n/context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { User, Save, Shield } from "lucide-react";
-import { updateProfile, changePassword } from "@/_legacy_backend/actions/settings";
+import { User, Save, Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { Role } from "@prisma/client";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 interface ProfileSettingsProps {
     user: {
+        id: string;
         name: string | null;
         email: string;
-        role: Role;
+        role: string;
     };
 }
 
 export function ProfileSettings({ user }: ProfileSettingsProps) {
     const { t } = useI18n();
+    const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-    async function handleProfileUpdate(formData: FormData) {
-        const result = await updateProfile(formData);
-        if (result.success) {
+    async function handleProfileUpdate(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setIsUpdatingProfile(true);
+
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get("name") as string;
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/profile`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update profile");
+            }
+
             toast.success(t("Common.success") || "Profile updated");
-        } else {
-            toast.error(result.error || "Failed to update profile");
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsUpdatingProfile(false);
         }
     }
 
-    async function handlePasswordChange(formData: FormData) {
-        const result = await changePassword(formData);
-        if (result.success) {
+    async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setIsChangingPassword(true);
+
+        const formData = new FormData(e.currentTarget);
+        const currentPassword = formData.get("currentPassword") as string;
+        const newPassword = formData.get("newPassword") as string;
+
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/password`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to update password");
+            }
+
             toast.success(t("Common.success") || "Password updated successfully");
-        } else {
-            toast.error(result.error || "Failed to update password");
+            (e.target as HTMLFormElement).reset();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsChangingPassword(false);
         }
     }
 
@@ -51,7 +100,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                 <CardDescription className="text-base font-medium">{t("Settings.profile_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
-                <form action={handleProfileUpdate} className="space-y-8">
+                <form onSubmit={handleProfileUpdate} className="space-y-8">
                     <div className="grid sm:grid-cols-2 gap-8">
                         <div className="space-y-3">
                             <Label htmlFor="profile-name" className="text-sm font-bold tracking-tight">
@@ -88,9 +137,10 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 
                     <Button
                         type="submit"
+                        disabled={isUpdatingProfile}
                         className="gap-2 h-12 px-10 rounded-2xl font-black shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
                     >
-                        <Save className="h-5 w-5" />
+                        {isUpdatingProfile ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                         {t("Settings.save_changes")}
                     </Button>
                 </form>
@@ -105,7 +155,7 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                         <h3 className="text-xl font-black uppercase tracking-tight">{t("Settings.profile.security_title")}</h3>
                     </div>
 
-                    <form action={handlePasswordChange} className="space-y-6 p-8 border border-primary/5 rounded-3xl bg-muted/20 backdrop-blur-sm">
+                    <form onSubmit={handlePasswordChange} className="space-y-6 p-8 border border-primary/5 rounded-3xl bg-muted/20 backdrop-blur-sm">
                         <div className="grid gap-6 sm:grid-cols-2">
                             <div className="space-y-3">
                                 <Label htmlFor="currentPassword" className="font-bold">{t("Settings.profile.current_password")}</Label>
@@ -128,7 +178,8 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                                 />
                             </div>
                         </div>
-                        <Button variant="outline" type="submit" className="h-12 px-8 rounded-2xl font-black border-primary/10 hover:bg-primary/5 transition-all">
+                        <Button variant="outline" type="submit" disabled={isChangingPassword} className="h-12 px-8 rounded-2xl font-black border-primary/10 hover:bg-primary/5 transition-all">
+                            {isChangingPassword ? <RefreshCw className="h-5 w-5 animate-spin mr-2" /> : null}
                             {t("Settings.profile.change_password")}
                         </Button>
                     </form>

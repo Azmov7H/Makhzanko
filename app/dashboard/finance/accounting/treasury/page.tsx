@@ -1,9 +1,10 @@
-import { getI18n, getLocale } from "@/lib/i18n/server";
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, ArrowUpCircle, ArrowDownCircle, History, Landmark, Zap } from "lucide-react";
-import { getTreasuryAccount, getAccountLedger } from "@/_legacy_backend/actions/accounting";
+import { Wallet, Landmark, Zap, History } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import { TreasuryActions } from "./TreasuryActions";
 import {
@@ -14,46 +15,57 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LedgerTransaction {
     id: string;
     type: "DEBIT" | "CREDIT";
     amount: number;
     journalEntry: {
-        date: Date | string;
+        date: string;
         description: string;
         reference?: string | null;
     };
-    account: {
-        code: string;
-        name: string;
-    };
 }
 
-interface LedgerData {
-    account: {
-        id: string;
-        code: string;
-        name: string;
-    };
-    transactions: LedgerTransaction[];
-}
+export default function TreasuryPage() {
+    const { t, locale } = useI18n();
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-export default async function TreasuryPage() {
-    const locale = await getLocale();
-    const t = await getI18n(locale);
+    const fetchTreasury = useCallback(async () => {
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/accounting/treasury`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const treasuryData = await res.json();
+                setData(treasuryData);
+            }
+        } catch (error) {
+            console.error("Failed to fetch treasury data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-    const treasuryAccount = await getTreasuryAccount();
-    const ledger = await getAccountLedger(treasuryAccount.id) as LedgerData | null;
+    useEffect(() => {
+        fetchTreasury();
+    }, [fetchTreasury]);
 
-    if (!ledger) {
+    if (loading) return <TreasurySkeleton />;
+
+    if (!data) {
         return <div className="p-20 text-center text-destructive font-black italic">{t("Dashboard.error_loading") || "Error loading treasury data"}</div>;
     }
 
-    const { account, transactions } = ledger;
+    const { account, transactions } = data;
 
     // Calculate balance
-    const balance = transactions.reduce((acc, curr) => {
+    const balance = transactions.reduce((acc: number, curr: any) => {
         return curr.type === "DEBIT" ? acc + Number(curr.amount) : acc - Number(curr.amount);
     }, 0);
 
@@ -108,7 +120,7 @@ export default async function TreasuryPage() {
                 </Card>
 
                 <Card className="border-none shadow-3xl bg-card/40 backdrop-blur-3xl rounded-[2.5rem] p-4 flex items-center justify-center group hover:bg-card/50 transition-colors">
-                    <TreasuryActions />
+                    <TreasuryActions onSuccess={fetchTreasury} />
                 </Card>
             </div>
 
@@ -145,17 +157,17 @@ export default async function TreasuryPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                transactions.map((tx) => (
+                                transactions.map((tx: any) => (
                                     <TableRow key={tx.id} className="border-primary/5 hover:bg-primary/[0.02] transition-colors group/row h-24">
                                         <TableCell className="px-8 font-bold text-sm tracking-tight opacity-70">
-                                            {new Date(tx.journalEntry.date).toLocaleDateString("ar-EG")}
+                                            {new Date(tx.journalEntry.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-black text-lg group-hover/row:text-primary transition-colors">{tx.journalEntry.description}</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">REF:</span>
-                                                    <span className="text-xs font-black bg-muted/50 px-2 py-0.5 rounded-lg text-muted-foreground">{tx.journalEntry.reference || "N/A"}</span>
+                                                    <span className="text-xs font-black bg-muted/50 px-2 py-1 rounded-lg text-muted-foreground">{tx.journalEntry.reference || "N/A"}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
@@ -180,6 +192,20 @@ export default async function TreasuryPage() {
                     </Table>
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+function TreasurySkeleton() {
+    return (
+        <div className="space-y-10 py-12 px-4 max-w-6xl mx-auto animate-pulse">
+            <Skeleton className="h-20 w-1/3 rounded-xl" />
+            <div className="grid gap-8 md:grid-cols-3">
+                <Skeleton className="h-40 rounded-[2.5rem]" />
+                <Skeleton className="h-40 rounded-[2.5rem]" />
+                <Skeleton className="h-40 rounded-[2.5rem]" />
+            </div>
+            <Skeleton className="h-96 w-full rounded-[3rem]" />
         </div>
     );
 }

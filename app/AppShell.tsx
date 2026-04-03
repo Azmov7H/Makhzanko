@@ -5,6 +5,7 @@ import { OrganizationSchema } from "@/components/seo/OrganizationSchema";
 import { locales, Locale } from "@/lib/i18n/config";
 import { getMessages, getDirection, getLocale } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/context";
+import { AuthProvider } from "@/lib/auth/AuthContext";
 import { generateWebSiteLD } from "@/lib/seo/structuredData";
 import { Toaster } from "sonner";
 
@@ -25,9 +26,11 @@ export default async function AppShell({ children }: { children: React.ReactNode
                     enableSystem
                     disableTransitionOnChange={false}
                 >
-                    <PageTransition>
-                        {children}
-                    </PageTransition>
+                    <AuthProvider>
+                        <PageTransition>
+                            {children}
+                        </PageTransition>
+                    </AuthProvider>
                     <Toaster position="top-center" richColors />
                 </ThemeProvider>
             </div>

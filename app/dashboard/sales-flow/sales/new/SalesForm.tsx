@@ -1,8 +1,8 @@
 "use client";
 
-import { createSaleAction } from "@/_legacy_backend/actions/sales";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
@@ -80,25 +80,34 @@ export default function SalesForm({ products, warehouses }: { products: any[]; w
 
         startTransition(async () => {
             try {
-                const result = await createSaleAction({
-                    warehouseId: selectedWarehouse,
-                    items: cart.map(item => ({ productId: item.productId, quantity: item.quantity, price: item.price })),
-                    customerName: customerName || undefined,
-                    discountType: discountType !== "none" ? discountType : undefined,
-                    discountValue: discountType !== "none" ? discountValue : undefined,
-                    paymentType: paymentType as any,
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        warehouseId: selectedWarehouse,
+                        items: cart.map(item => ({ productId: item.productId, quantity: item.quantity, price: item.price })),
+                        customerName: customerName || undefined,
+                        discountType: discountType !== "none" ? discountType : undefined,
+                        discountValue: discountType !== "none" ? discountValue : undefined,
+                        paymentType: paymentType,
+                    })
                 });
 
-                if (result.error) {
-                    toast.error(result.error);
-                } else {
-                    toast.success(t("Common.success"), {
-                        className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
-                    });
-                    router.push(`/dashboard/sales-flow/sales`);
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.message || "Failed to create sale");
                 }
-            } catch (error) {
-                toast.error(t("Common.error"));
+
+                toast.success(t("Common.success"), {
+                    className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
+                });
+                router.push(`/dashboard/sales-flow/sales`);
+            } catch (error: any) {
+                toast.error(error.message || t("Common.error"));
             }
         });
     };

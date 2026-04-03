@@ -1,19 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User, Phone, Mail, FileText, ArrowLeft, Edit, Calendar } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
+import {
+    Phone, Mail, FileText, ArrowLeft, Edit, Calendar, TrendingDown
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/context";
 import Link from "next/link";
-import { formatCurrency, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 interface CustomerDetailsProps {
     customer: any;
+    stats: {
+        totalSales: number;
+        totalPayments: number;
+        balance: number;
+    };
 }
 
-export function CustomerDetails({ customer }: CustomerDetailsProps) {
+export function CustomerDetails({ customer, stats }: CustomerDetailsProps) {
     const { t } = useI18n();
 
     const container = {
@@ -79,7 +86,66 @@ export function CustomerDetails({ customer }: CustomerDetailsProps) {
                 </motion.div>
             </div>
 
-            {/* Recent Sales */}
+            {/* Stats Cards */}
+            <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="border-none shadow-2xl bg-card/60 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group">
+                    <CardContent className="p-8">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-4 bg-primary/10 rounded-2xl text-primary group-hover:scale-110 transition-transform duration-500">
+                                <FileText className="h-6 w-6" />
+                            </div>
+                            <Badge variant="outline" className="border-primary/20 text-[10px] font-black uppercase italic">{t("Dashboard.sales") || "Total Sales"}</Badge>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-4xl font-black italic tracking-tighter">{formatCurrency(stats.totalSales)}</p>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{customer.sales?.length || 0} Order(s)</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-2xl bg-card/60 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group">
+                    <CardContent className="p-8">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-4 bg-emerald-500/10 rounded-2xl text-emerald-500 group-hover:scale-110 transition-transform duration-500">
+                                <Calendar className="h-6 w-6" />
+                            </div>
+                            <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase italic">{t("Suppliers.payments") || "Total Paid"}</Badge>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-4xl font-black italic tracking-tighter">{formatCurrency(stats.totalPayments)}</p>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{customer.payments?.length || 0} Payment(s)</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className={cn(
+                    "border-none shadow-2xl backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group",
+                    stats.balance > 0 ? "bg-amber-500/10 text-amber-600" : "bg-primary/5 text-primary"
+                )}>
+                    <CardContent className="p-8">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className={cn(
+                                "p-4 rounded-2xl group-hover:scale-110 transition-transform duration-500",
+                                stats.balance > 0 ? "bg-amber-500/20 text-amber-600" : "bg-primary/20 text-primary"
+                            )}>
+                                <TrendingDown className="h-6 w-6" />
+                            </div>
+                            <Badge variant="outline" className={cn(
+                                "text-[10px] font-black uppercase italic",
+                                stats.balance > 0 ? "border-amber-500/20 text-amber-600" : "border-primary/20 text-primary"
+                            )}>
+                                {t("Finance.balance") || "Current Balance"}
+                            </Badge>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-4xl font-black italic tracking-tighter">{formatCurrency(stats.balance)}</p>
+                            <p className="text-xs font-bold uppercase tracking-widest opacity-60 text-start">
+                                {stats.balance > 0 ? "Credit Amount" : "Account Balanced"}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
             <motion.div variants={item}>
                 <Card className="border-none shadow-3xl bg-card/60 backdrop-blur-3xl rounded-[3rem] overflow-hidden">
                     <CardHeader className="p-10 border-b border-primary/5 bg-primary/5">

@@ -1,18 +1,30 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LocaleLink as Link } from "@/components/ui/LocaleLink";
+import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
-interface AnnouncementSectionProps {
-    announcement: any;
-    t: any;
-}
+export function AnnouncementSection() {
+    const { t } = useI18n();
+    const [announcement, setAnnouncement] = useState<any>(null);
 
-export function AnnouncementSection({ announcement, t }: AnnouncementSectionProps) {
+    useEffect(() => {
+        // Fetch from the Rust REST API
+        // const token = getAuthToken();
+        // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/announcements/active`, {
+        //     headers: { Authorization: `Bearer ${token}` }
+        // })
+        // .then(res => res.json())
+        // .then(data => setAnnouncement(data))
+        // .catch(console.error);
+    }, []);
+
     if (!announcement) return null;
 
     return (

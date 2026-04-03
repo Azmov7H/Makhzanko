@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Loader2 } from "lucide-react";
-import { getWhatsAppMessage } from "@/_legacy_backend/actions/advanced-features";
 import { useI18n } from "@/lib/i18n/context";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 interface WhatsAppShareProps {
     invoiceId: string;
@@ -17,10 +17,19 @@ export function WhatsAppShare({ invoiceId }: WhatsAppShareProps) {
     const handleShare = async () => {
         setLoading(true);
         try {
-            const res = await getWhatsAppMessage(invoiceId);
-            if (res.url) {
-                window.open(res.url, "_blank");
+            const token = getAuthToken();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/sales/invoices/${invoiceId}/share/whatsapp`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                if (data.url) {
+                    window.open(data.url, "_blank");
+                }
             }
+        } catch (error) {
+            console.error("Failed to share on WhatsApp:", error);
         } finally {
             setLoading(false);
         }

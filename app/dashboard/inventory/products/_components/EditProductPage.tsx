@@ -1,7 +1,6 @@
 "use client";
 
-import { updateProductAction } from "@/_legacy_backend/actions/products";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { motion, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,20 +42,30 @@ export default function EditProductPage({ product }: EditProductPageProps) {
 
     const onSubmit = async (data: any) => {
         startTransition(async () => {
-            const formData = new FormData();
-            formData.append("id", product.id);
-            Object.entries(data).forEach(([key, value]) => formData.append(key, String(value)));
-
-            const result = await updateProductAction(null, formData);
-            if (result?.error) {
-                toast.error(result.error, {
-                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${product.id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
                 });
-            } else {
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.message || "Failed to update product");
+                }
+
                 toast.success(t("Common.success"), {
                     className: "rounded-2xl border-none bg-emerald-500 text-white font-black italic shadow-2xl",
                 });
                 router.push("/dashboard/inventory/products");
+            } catch (error: any) {
+                toast.error(error.message || t("Common.error"), {
+                    className: "rounded-2xl border-none bg-destructive text-white font-black italic shadow-2xl",
+                });
             }
         });
     };

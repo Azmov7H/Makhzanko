@@ -1,34 +1,37 @@
-import { prisma } from "@/lib/prisma";
-import { getTenantContext } from "@/lib/auth";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReturnsClient } from "./ReturnsClient";
 import { Card, CardHeader } from "@/components/ui/card";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
-export default async function ReturnsPage() {
-    return (
-        <Suspense fallback={<ReturnsSkeleton />}>
-            <ReturnsContent />
-        </Suspense>
-    );
-}
+export default function ReturnsPage() {
+    const [returns, setReturns] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-async function ReturnsContent() {
-    const context = await getTenantContext();
+    useEffect(() => {
+        // TODO: Replace with REST API call
+        // const token = getAuthToken();
+        // fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/returns`, {
+        //     headers: { Authorization: `Bearer ${token}` }
+        // })
+        // .then(res => res.json())
+        // .then(data => {
+        //     setReturns(data || []);
+        //     setLoading(false);
+        // })
+        // .catch(() => setLoading(false));
 
-    const returns = await prisma.return.findMany({
-        where: { tenantId: context.tenantId },
-        include: {
-            invoice: true,
-            items: { include: { product: true } },
-        },
-        orderBy: { createdAt: "desc" },
-    });
+        setLoading(false);
+    }, []);
+
+    if (loading) return <ReturnsSkeleton />;
 
     return (
         <ReturnsClient
-            returns={JSON.parse(JSON.stringify(returns))}
+            returns={returns}
         />
     );
 }

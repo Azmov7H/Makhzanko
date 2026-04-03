@@ -1,40 +1,41 @@
-import { getTenantContext } from "@/lib/auth";
-import { getI18n, getLocale } from "@/lib/i18n/server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WarehousesClient } from "./WarehousesClient";
-import { Card, CardHeader } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
-export default async function WarehousesPage() {
-    return (
-        <Suspense fallback={<WarehousesSkeleton />}>
-            <WarehousesContent />
-        </Suspense>
-    );
-}
+export default function WarehousesPage() {
+    const [warehouses, setWarehouses] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-async function WarehousesContent() {
-    const context = await getTenantContext();
-    const locale = await getLocale();
-    const t = await getI18n(locale);
+    useEffect(() => {
+        const fetchWarehouses = async () => {
+            try {
+                const token = getAuthToken();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/warehouses`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setWarehouses(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch warehouses:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchWarehouses();
+    }, []);
 
-    let warehouses: any[] = [];
-
-    try {
-        warehouses = await prisma.warehouse.findMany({
-            where: { tenantId: context.tenantId },
-            include: { stocks: true }
-        });
-    } catch (error) {
-        console.error("Database error:", error);
-        warehouses = [];
-    }
+    if (loading) return <WarehousesSkeleton />;
 
     return (
         <div className="max-w-7xl mx-auto pb-20 px-4 sm:px-6 lg:px-8">
             <WarehousesClient
-                warehouses={JSON.parse(JSON.stringify(warehouses))}
+                warehouses={warehouses}
             />
         </div>
     );

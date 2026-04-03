@@ -1,6 +1,5 @@
-"use client";
-
 import { useState, useEffect, useCallback } from "react";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 export function useProducts(page: number, limit: number = 10) {
     const [products, setProducts] = useState<any[]>([]);
@@ -13,9 +12,12 @@ export function useProducts(page: number, limit: number = 10) {
         setLoading(true);
         setError(null);
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
-            const res = await fetch(`${baseUrl}/products?page=${page}&limit=${limit}`, {
-                credentials: 'include'
+            const token = getAuthToken();
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+            const res = await fetch(`${baseUrl}/api/products?page=${page}&limit=${limit}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             
             if (res.ok) {
@@ -48,10 +50,13 @@ export function useProducts(page: number, limit: number = 10) {
 
     const deleteProduct = useCallback(async (id: string) => {
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
-            const res = await fetch(`${baseUrl}/products/${id}`, {
+            const token = getAuthToken();
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+            const res = await fetch(`${baseUrl}/api/products/${id}`, {
                 method: 'DELETE',
-                credentials: 'include'
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             if (res.ok) {
                 await fetchProducts();
