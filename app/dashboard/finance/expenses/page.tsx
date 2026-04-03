@@ -134,9 +134,23 @@ export default function ExpensesPage() {
                                             <span className="font-black text-lg group-hover/row:text-primary transition-colors">{expense.description}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary" className="font-black text-[10px] tracking-widest uppercase px-3 py-1 bg-primary/10 text-primary border-none rounded-xl">
-                                                {t(`Expenses.categories.${expense.category}`)}
-                                            </Badge>
+                                            {(() => {
+                                                const categoryStyles: Record<string, string> = {
+                                                    MARKETING: "bg-blue-500/10 text-blue-500",
+                                                    SALARIES: "bg-purple-500/10 text-purple-500",
+                                                    UTILITIES: "bg-amber-500/10 text-amber-500",
+                                                    RENT: "bg-emerald-500/10 text-emerald-500",
+                                                    MAINTENANCE: "bg-rose-500/10 text-rose-500",
+                                                    SUPPLIES: "bg-indigo-500/10 text-indigo-500",
+                                                    OTHER: "bg-slate-500/10 text-slate-500"
+                                                };
+                                                const style = categoryStyles[expense.category] || categoryStyles.OTHER;
+                                                return (
+                                                    <Badge variant="outline" className={cn("rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-widest border-none shadow-sm", style)}>
+                                                        {t(`Expenses.categories.${expense.category}`)}
+                                                    </Badge>
+                                                );
+                                            })()}
                                         </TableCell>
                                         <TableCell className="text-end px-8">
                                             <span className="font-black text-2xl tracking-tighter text-primary">

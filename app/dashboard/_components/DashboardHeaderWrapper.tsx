@@ -29,12 +29,16 @@ export function DashboardHeaderWrapper() {
             <MobileSidebar role={user?.role || "USER"} />
 
             {/* Search Bar */}
-            <div className="flex-1 flex max-w-md items-center gap-2 relative hidden sm:flex">
-                <Search className="h-4 w-4 absolute left-3 rtl:right-3 rtl:left-auto text-muted-foreground" />
+            <div className="flex-1 flex max-w-md items-center gap-2 relative hidden sm:flex group">
+                <Search className="h-4 w-4 absolute left-4 rtl:right-4 rtl:left-auto text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
-                    placeholder={t("Dashboard.search_placeholder") || "Search..."}
-                    className="pl-9 rtl:pr-9 rtl:pl-3 bg-muted/50 border-transparent focus:bg-background transition-all rounded-full h-9 text-sm"
+                    placeholder={t("Dashboard.search_placeholder") || "Search everything..."}
+                    className="pl-10 pr-12 rtl:pr-10 rtl:pl-12 bg-muted/30 border-primary/5 focus:border-primary/20 focus:bg-background focus:ring-4 focus:ring-primary/5 transition-all rounded-2xl h-11 text-sm font-bold shadow-sm"
                 />
+                <div className="absolute right-3 rtl:left-3 rtl:right-auto px-2 py-1 rounded-lg bg-background border border-primary/10 text-[9px] font-black text-muted-foreground shadow-sm flex items-center gap-1 group-focus-within:opacity-0 transition-opacity">
+                    <span className="opacity-40">⌘</span>
+                    <span>K</span>
+                </div>
             </div>
 
             <div className="flex-1 sm:hidden" /> {/* Spacer for mobile */}

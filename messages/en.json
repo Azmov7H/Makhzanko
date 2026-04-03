@@ -726,7 +726,20 @@
         "min_stock": "Minimum Stock",
         "stock": "Stock",
         "category": "Category",
-        "actions": "Actions"
+        "actions": "Actions",
+        "sort": "Sort",
+        "view_grid": "Grid View",
+        "view_table": "Table View",
+        "bulk_actions": "Bulk Actions",
+        "delete_selected": "Delete Selected ({count})",
+        "search_sku": "Search by SKU",
+        "status_in_stock": "In Stock",
+        "status_low_stock": "Low Stock",
+        "status_out_of_stock": "Out of Stock",
+        "status_all": "All Statuses",
+        "warehouse_filter": "Warehouse",
+        "category_filter": "Category",
+        "clear_filters": "Clear Filters"
     },
     "Inventory": {
         "title": "Inventory Audits",

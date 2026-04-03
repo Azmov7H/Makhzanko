@@ -1,8 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { getAuthToken } from "@/lib/auth/AuthContext";
 
-export function useProducts(page: number, limit: number = 10) {
-    const [products, setProducts] = useState<any[]>([]);
+export interface Product {
+    id: string;
+    name: string;
+    sku: string;
+    description?: string;
+    price: number;
+    cost: number;
+    min_stock: number;
+    category?: string;
+    stocks: Array<{
+        warehouse_id: string;
+        warehouse_name?: string;
+        quantity: number;
+    }>;
+}
+
+export function useProducts(page: number, limit: number = 10, filters: any = {}, sort: string = "name:asc") {
+    const [products, setProducts] = useState<Product[]>([]);
     const [totalStock, setTotalStock] = useState(0);
     const [loading, setLoading] = useState(true);
     const [totalPages, setTotalPages] = useState(1);
@@ -14,7 +30,16 @@ export function useProducts(page: number, limit: number = 10) {
         try {
             const token = getAuthToken();
             const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-            const res = await fetch(`${baseUrl}/api/products?page=${page}&limit=${limit}`, {
+            
+            // Construct query parameters
+            const params = new URLSearchParams({
+                page: String(page),
+                limit: String(limit),
+                sort,
+                ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v != null && v !== ""))
+            });
+
+            const res = await fetch(`${baseUrl}/api/products?${params.toString()}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -33,8 +58,8 @@ export function useProducts(page: number, limit: number = 10) {
                     setTotalPages(page);
                 }
 
-                const ts = data.reduce((sum: number, p: any) => {
-                    return sum + (p.stocks as any[]).reduce((s: number, stock: any) => s + (stock.quantity || 0), 0);
+                const ts = data.reduce((sum: number, p: Product) => {
+                    return sum + p.stocks.reduce((s: number, stock: any) => s + (stock.quantity || 0), 0);
                 }, 0);
                 setTotalStock(ts);
             } else {
@@ -46,7 +71,7 @@ export function useProducts(page: number, limit: number = 10) {
         } finally {
             setLoading(false);
         }
-    }, [page, limit]);
+    }, [page, limit, JSON.stringify(filters), sort]);
 
     const deleteProduct = useCallback(async (id: string) => {
         try {
@@ -69,6 +94,60 @@ export function useProducts(page: number, limit: number = 10) {
         }
     }, [fetchProducts]);
 
+    const bulkDelete = useCallback(async (ids: string[]) => {
+        try {
+            const token = getAuthToken();
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+            // Assuming the backend supports bulk delete via DELETE with body or multiple calls
+            // For now, sequentially or via a dedicated endpoint if exists
+            const results = await Promise.all(ids.map(id => 
+                fetch(`${baseUrl}/api/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ));
+            
+            const allOk = results.every(r => r.ok);
+            await fetchProducts();
+            return allOk;
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+    }, [fetchProducts]);
+
+    const exportCSV = useCallback(() => {
+        if (products.length === 0) return;
+
+        const headers = ["Name", "SKU", "Category", "Price", "Cost", "Total Stock"];
+        const rows = products.map(p => {
+            const totalQty = p.stocks.reduce((acc, s) => acc + s.quantity, 0);
+            return [
+                p.name,
+                p.sku,
+                p.category || "",
+                p.price,
+                p.cost,
+                totalQty
+            ];
+        });
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `products_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }, [products]);
+
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
@@ -80,7 +159,9 @@ export function useProducts(page: number, limit: number = 10) {
         totalPages,
         error,
         refresh: fetchProducts,
-        deleteProduct
+        deleteProduct,
+        bulkDelete,
+        exportCSV
     };
 }
 

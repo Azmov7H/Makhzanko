@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/lib/auth/AuthContext";
 
 interface Message {
     id: string;
@@ -73,7 +74,10 @@ export function ChatBot({ locale = "en" }: { locale?: string }) {
                 timestamp: new Date()
             }]);
 
-            fetch("/api/tenant/ai-settings")
+            const token = getAuthToken();
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/ai`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
                 .then(res => res.json())
                 .then(data => { if (data.dialect) setCurrentDialect(data.dialect); })
                 .catch(() => { });
@@ -102,9 +106,13 @@ export function ChatBot({ locale = "en" }: { locale?: string }) {
         const botMessageId = (Date.now() + 1).toString();
 
         try {
-            const response = await fetch("/api/ai/chat", {
+            const token = getAuthToken();
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/chat`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     messages: messages.concat(userMessage).map(m => ({
                         role: m.sender === "user" ? "user" : "assistant",
@@ -148,13 +156,19 @@ export function ChatBot({ locale = "en" }: { locale?: string }) {
 
     const handleDialectChange = async (d: Dialect) => {
         setCurrentDialect(d);
-        // TODO: Replace with REST API call
-        // const token = getAuthToken();
-        // await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tenant/ai-settings`, {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        //     body: JSON.stringify({ dialect: d })
-        // });
+        try {
+            const token = getAuthToken();
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/ai`, {
+                method: "PUT",
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "Authorization": `Bearer ${token}` 
+                },
+                body: JSON.stringify({ dialect: d })
+            });
+        } catch (error) {
+            console.error("Failed to update AI dialect:", error);
+        }
         
         setShowSettings(false);
         setMessages(prev => [...prev, {

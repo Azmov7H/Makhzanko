@@ -19,6 +19,7 @@ export const getRegisterSchema = (t: (key: string) => string) => z.object({
 export const getProductSchema = (t: (key: string) => string) => z.object({
     name: z.string().min(2, t("Products.name_min")),
     sku: z.string().min(1, t("Products.sku_required")),
+    category: z.string().optional(),
     price: z.coerce.number().positive(t("Products.price_positive")),
     cost: z.coerce.number().min(0, { message: t("Validation.number_positive") }),
     minStock: z.coerce.number().int().min(0, { message: t("Validation.number_positive") }).default(0),

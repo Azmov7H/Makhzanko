@@ -116,9 +116,9 @@ export default function AdvancedAnalyticsClient({
                                     {stat.title}
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className={`text-3xl font-black ${i === 0 ? stat.color : ''}`}>{stat.value}</div>
-                                <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1 font-medium">
+                            <CardContent className="relative z-10">
+                                <div className={cn("text-3xl font-black tracking-tighter mb-1", i === 0 ? stat.color : "")}>{stat.value}</div>
+                                <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1 font-black uppercase tracking-widest opacity-60">
                                     <ArrowUpRight className="h-3 w-3" />
                                     {stat.desc}
                                 </p>

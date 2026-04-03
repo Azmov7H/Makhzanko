@@ -188,24 +188,60 @@ export function NavItemLink({ item, onClick, isCollapsed }: { item: NavItem, onC
     const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
 
     return (
-        <Link
-            href={item.href}
-            onClick={onClick}
-            className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-3 md:py-2 text-sm font-bold transition-all duration-300 relative mx-1 min-h-[44px] md:min-h-0",
-                isActive
-                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/5"
-                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
-            )}
-        >
-            <item.icon className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground")} />
-            {!isCollapsed && <span className="flex-1 truncate">{item.label}</span>}
-            {isActive && (
+        <div className="relative group/tooltip">
+            <Link
+                href={item.href}
+                onClick={onClick}
+                className={cn(
+                    "group flex items-center gap-3 rounded-xl px-3 py-3 md:py-2.5 text-sm font-bold transition-all duration-300 relative mx-1 min-h-[44px] md:min-h-0",
+                    isActive
+                        ? "bg-primary/10 text-primary shadow-sm"
+                        : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                )}
+            >
                 <div className={cn(
-                    "absolute top-1.5 bottom-1.5 w-1 bg-primary rounded-r-full rtl:rounded-r-none rtl:rounded-l-full",
-                    isCollapsed ? "left-0 rtl:right-0" : "left-0 rtl:right-0"
-                )} />
+                    "relative flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110",
+                    isActive && "text-primary"
+                )}>
+                    <item.icon className="h-5 w-5 stroke-[1.5]" />
+                    {isActive && (
+                        <motion.div
+                            layoutId="activeGlow"
+                            className="absolute -inset-2 bg-primary/20 blur-lg rounded-full -z-10"
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                    )}
+                </div>
+                
+                {!isCollapsed && (
+                    <motion.span 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex-1 truncate"
+                    >
+                        {item.label}
+                    </motion.span>
+                )}
+
+                {isActive && (
+                    <motion.div 
+                        layoutId="activeBar"
+                        className={cn(
+                            "absolute start-0 w-1 bg-primary rounded-full",
+                            isCollapsed ? "top-2 bottom-2" : "top-3 bottom-3"
+                        )}
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                )}
+            </Link>
+
+            {/* Simple Tooltip for Collapsed State */}
+            {isCollapsed && (
+                <div className="absolute start-full ms-4 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-300 whitespace-nowrap z-[100] shadow-xl translate-x-[-10px] group-hover/tooltip:translate-x-0">
+                    <div className="absolute start-0 top-1/2 -translate-y-1/2 -translate-x-full border-4 border-transparent border-e-foreground" />
+                    {item.label}
+                </div>
             )}
-        </Link>
+        </div>
     );
 }
